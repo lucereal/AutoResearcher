@@ -2,8 +2,9 @@ import json
 import os
 from openai import OpenAI
 import openai
-from dotenv import load_dotenv
+from dotenv import load_dotenv 
 from pydantic import BaseModel
+from typing import List
 
 # Load environment variables from .env file
 load_dotenv()
@@ -13,6 +14,14 @@ class MenuItem(BaseModel):
     description: str
     price: str
 
+class QueryListResult(BaseModel):
+    queryList: List[str]
+    
+    def print_query_list(self):
+        print("Query List:")
+        for index, query in enumerate(self.queryList, start=1):
+            print(f"{index}. {query}")
+
 class OpenAIClient:
     _openai_model = None
     _openai = None
@@ -20,10 +29,6 @@ class OpenAIClient:
         self.api_key = os.getenv("OPENAI_API_KEY")
         self._openai = OpenAI(api_key=self.api_key)
         self._openai_model = "gpt-4o-mini"
-
-# This is the function that we want the model to be able to call
-    def get_order_status_tool(self, order_id: str) -> str:
-        return "Your order is on the way!";
   
 
     def breakdown_menu_line(self, menu_line):
@@ -50,7 +55,59 @@ class OpenAIClient:
             print(e)
             pass
         return None
-    
+
+    def create_queries_on_topic(self, topic_query):
+        try:
+            system_instructions = """You are a research assistant. Your task is to take a user-provided topic and create 
+            related queries and questions that can be used to search for relevant media and data. The queries should be 
+            detailed and aimed at gathering high-quality insights that would be useful for business professionals."""
+
+            user_query = f"""
+            Given the topic "{topic_query}", generate a list of questions or search queries to gather relevant, high-quality data and insights. 
+            The questions should aim to clarify the topic and identify key aspects such as:
+            1. Recent trends,
+            2. Key figures or companies,
+            3. Statistics,
+            4. Challenges, 
+            5. Expert opinions.
+
+            Additional Requirements:
+            - Break the topic into smaller subtopics if necessary.
+            - The questions should cover a mix of data types such as statistics, case studies, expert opinions, news articles, and industry reports.
+            - Prioritize queries related to recent developments and practical insights.
+            - Ensure the questions are suitable for business professionals.
+
+            Example: 
+            If the topic is 'AI in healthcare', generate questions such as:
+            - 'What are the most recent developments in AI-assisted surgeries?'
+            - 'What challenges are healthcare providers facing with AI adoption?' 
+            - 'Which companies are leading the development of AI solutions in healthcare?'
+            """
+            system_message = {"role": "system", "content": system_instructions}
+            user_message = {"role": "user", "content": user_query}
+            messages = [system_message,user_message]
+
+            completion = self._openai.beta.chat.completions.parse(
+                model=self._openai_model,
+                messages=messages,
+                response_format=QueryListResult
+            )
+
+            response_msg = completion.choices[0].message
+            if response_msg.parsed:
+                return response_msg.parsed.queryList
+            elif response_msg.refusal:
+                # handle refusal
+                print("structured response not possible")
+                return response_msg.refusal
+        except Exception as e:
+            print(e)
+            pass
+        return None
+
+    def get_order_status_tool(self, order_id: str) -> str:
+        return "Your order is on the way!";
+
     def get_order_status(self):
         try:
             tools = [
@@ -149,11 +206,17 @@ class OpenAIClient:
                     print(f"{msg.role}: {msg.content}")
         return None
 
-# Example usage:
-client = OpenAIClient()
-menu_line = "- Migas - Totopos, scrambled eggs, duck fat refried beans, chorizo, queso fresco, cilantro, avocado crema, salsa cruda (gf, contains dairy) $6"
-menu_item = client.breakdown_menu_line(menu_line)
-print(menu_item)
+if __name__ == "__main__":
+    # Example usage:
+    client = OpenAIClient()
 
-order_status_response = client.get_order_status()
-print(client.print_conversion(order_status_response))
+    user_topic = "Physics of black holes"
+    query_list_response = client.create_queries_on_topic(user_topic)
+    query_list_response.print_query_list()
+
+    # menu_line = "- Migas - Totopos, scrambled eggs, duck fat refried beans, chorizo, queso fresco, cilantro, avocado crema, salsa cruda (gf, contains dairy) $6"
+    # menu_item = client.breakdown_menu_line(menu_line)
+    # print(menu_item)
+
+    # order_status_response = client.get_order_status()
+    # print(client.print_conversion(order_status_response))
