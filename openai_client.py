@@ -1,6 +1,7 @@
 import json
 import os
 from openai import OpenAI
+import openai
 from dotenv import load_dotenv
 from pydantic import BaseModel
 
@@ -13,14 +14,12 @@ class MenuItem(BaseModel):
     price: str
 
 class OpenAIClient:
-
+    _openai_model = None
     _openai = None
     def __init__(self):
         self.api_key = os.getenv("OPENAI_API_KEY")
         self._openai = OpenAI(api_key=self.api_key)
-        print("OpenAIClient initialized")
-
-
+        self._openai_model = "gpt-4o-mini"
 
 # This is the function that we want the model to be able to call
     def get_order_status_tool(self, order_id: str) -> str:
@@ -28,7 +27,6 @@ class OpenAIClient:
   
 
     def breakdown_menu_line(self, menu_line):
-        print("In breakdown_menu_line")
         try:
             instructions = "Your job is to parse and breakdown menu items into the following properties: name, description, price."
             system_message = {"role": "system", "content": instructions}
@@ -36,7 +34,7 @@ class OpenAIClient:
             messages = [system_message,user_message]
 
             completion = self._openai.beta.chat.completions.parse(
-                model="gpt-4o",
+                model=self._openai_model,
                 messages=messages,
                 response_format=MenuItem
             )
@@ -54,7 +52,6 @@ class OpenAIClient:
         return None
     
     def get_order_status(self):
-        print("In get_order_status")
         try:
             tools = [
                 {
@@ -84,13 +81,13 @@ class OpenAIClient:
             messages = [system_message,user_message]
 
             completion = self._openai.chat.completions.create(
-                model="gpt-4o",
+                model=self._openai_model,
                 messages=messages,
                 tools=tools
             )
 
             response_msgs = self.handle_completion_with_tools(completion, messages, tools)
-            return response_msgs[-1].content
+            return response_msgs
         except Exception as e:
             print(e)
             pass
@@ -98,7 +95,6 @@ class OpenAIClient:
     
 
     def handle_completion_with_tools(self, completion, messages, tools):
-        print("In handle_completion_with_tools")
         response = completion
         requiresAction = True
         while requiresAction:
@@ -123,11 +119,13 @@ class OpenAIClient:
                     }),
                     "tool_call_id": tool_call.id
                 }
-                messages.append(response.choices[0].message)
+                assistant_message = response.choices[0].message
+                messages.append(assistant_message)
                 messages.append(function_call_result_message)
                 requiresAction = True
             elif finish_reason == "stop":
-                messages.append(response.choices[0].message)
+                assistant_message = response.choices[0].message
+                messages.append(assistant_message)
                 requiresAction = False
             else:
                 requiresAction = False
@@ -135,12 +133,21 @@ class OpenAIClient:
             
             if requiresAction:
                 response = self._openai.chat.completions.create( 
-                    model="gpt-4o",
+                    model=self._openai_model,
                     messages=messages,
                     tools=tools
                     )
         return messages   
-
+    
+    def print_conversion(self, response_msgs):
+        for msg in response_msgs:
+            if isinstance(msg, dict):
+                if msg.get('role') and msg.get('content'):
+                    print(f"{msg['role']}: {msg['content']}")
+            elif type(msg).__name__ == "ChatCompletionMessage":
+                if msg.role and msg.content:
+                    print(f"{msg.role}: {msg.content}")
+        return None
 
 # Example usage:
 client = OpenAIClient()
@@ -149,4 +156,4 @@ menu_item = client.breakdown_menu_line(menu_line)
 print(menu_item)
 
 order_status_response = client.get_order_status()
-print(order_status_response)
+print(client.print_conversion(order_status_response))
