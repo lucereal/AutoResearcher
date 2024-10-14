@@ -10,11 +10,11 @@ class WebPageReader:
 
     def read_web_page(self, url):
         with sync_playwright() as p:
-            browser = p.chromium.launch(headless=False)
+            browser = p.chromium.launch(headless=True)
             page = browser.new_page()
             stealth_sync(page)
             page.goto(url)
-            page.wait_for_timeout(5000)  # Wait for 10 seconds to allow verification to complete
+            page.wait_for_timeout(2000)  # Wait for 10 seconds to allow verification to complete
             content = page.content()
             browser.close()
             #need to handle case where captcha appears and to not use that source
