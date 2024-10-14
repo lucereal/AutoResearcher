@@ -31,7 +31,7 @@ class GoogleSearchResult:
     @classmethod
     def from_json(cls, json_data):
         url = json_data.get("url", "")
-        items = [GoogleSearchItem.from_json(item) for item in json_data.get("items", [])]
+        items = [GoogleSearchItem.from_json(item) for item in json_data.get("items", [])[0:3]]
         return cls(url, items)
     
     def print_items(self):
@@ -100,4 +100,4 @@ if __name__ == "__main__":
     client = GoogleSearchClient()
     results = client.get_google_search_results("find the best restaurant in San Francisco")
     # results.print_items()
-    print(json.dumps(results, indent=2))
+    print(json.dumps(results.to_dict(), indent=2))

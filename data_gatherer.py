@@ -1,6 +1,7 @@
 import json
 from google_client import GoogleSearchClient
 from openai_client import OpenAIClient
+from web_page_reader import WebPageReader
 
 class DataGatherer:
     def __init__(self):
@@ -21,7 +22,7 @@ class DataGatherer:
         
         for query in queryList[:3]:
             google_results = self.gather_google_data(query)
-            query_result = {"query": query, "google_results": google_results}
+            query_result = {"query": query, "google_results": google_results.to_dict()}
             all_data["query_results"].append(query_result)
         
         return all_data
