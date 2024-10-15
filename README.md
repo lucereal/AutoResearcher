@@ -1,4 +1,4 @@
-# AutoResearcher
+# AutoResearcher :robot:
 Automated Data Collection with GPT, Google Custom Search, and Web Scraping
 
 This Python project automates data collection on user provided topics. 
