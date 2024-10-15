@@ -89,4 +89,4 @@ if __name__ == "__main__":
     # with open("results/"+"results.json", "w") as json_file:
     #     json.dump(all_data, json_file, indent=2)
     
-    print("Results have been saved to results.json")
+    print("Results have been saved to " + file_name)

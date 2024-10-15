@@ -38,8 +38,11 @@ This Python project automates data collection on user provided topics.
 
 4. **Run the script**:
     ```bash
-    python main.py --topic "Your topic here"
+    python src/main.py --topic "Your topic here"
     ```
+
+5. **Check Results Folder**:
+    Find result json file in results folder
 
 ## Usage
 
@@ -55,5 +58,7 @@ This Python project automates data collection on user provided topics.
 - Advanced query generation and filtering.
 - Customizable summarization options.
 - Video summaries
+- Add UI for visualizing results 
+- Add subscription features for users to get updates on a schedule
   
 
