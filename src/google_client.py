@@ -13,7 +13,7 @@ class GoogleSearchClient:
         self.api_url = "https://www.googleapis.com/customsearch/v1"
 
     def get_request_url(self, query):
-        return f"{self.api_url}?key={self.api_key}&cx={self.api_cx}&q={query}"
+        return f"{self.api_url}?key={self.api_key}&cx={self.api_cx}&q={query}&dateRestrict=m1"
 
     def get_google_search_results(self, query):
         request_url = self.get_request_url(query)

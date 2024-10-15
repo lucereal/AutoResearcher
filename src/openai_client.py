@@ -75,6 +75,7 @@ class OpenAIClient:
             5. Expert opinions.
 
             Additional Requirements:
+            - The month and year is October 2024, so focus on recent information.
             - Break the topic into smaller subtopics if necessary.
             - The questions should cover a mix of data types such as statistics, case studies, expert opinions, news articles, and industry reports.
             - Prioritize queries related to recent developments and practical insights.

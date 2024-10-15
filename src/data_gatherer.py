@@ -37,7 +37,7 @@ class DataGatherer:
         queries_and_sources = self.gather_queries_and_sources(user_topic)
         topic_sources_data = {"queries": queries_and_sources["queries"], "sources_data": []}
 
-        for query_result in queries_and_sources["query_results"][0:1]:
+        for query_result in queries_and_sources["query_results"][0:2]:
             print("\tgetting sources data for query: ", query_result["query"])
             query_source_data = {"query": query_result["query"], "sources_data": []}
             for item in query_result["google_results"]["items"]:
@@ -76,7 +76,7 @@ class DataGatherer:
 # Example usage:
 if __name__ == "__main__":
     data_gatherer = DataGatherer()
-    user_topic = "artificial intelligence and machine learning"
+    user_topic = "fantasy football advice"
     
     all_data = data_gatherer.gather_data_and_summarize_sources(user_topic)
     # Save the results to a JSON file
