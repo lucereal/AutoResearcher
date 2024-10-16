@@ -13,7 +13,11 @@ class GoogleSearchClient:
         self.api_url = "https://www.googleapis.com/customsearch/v1"
 
     def get_request_url(self, query):
-        return f"{self.api_url}?key={self.api_key}&cx={self.api_cx}&q={query}&dateRestrict=m1"
+
+        #currently can't filter out more than one site at a time
+        #google search api kinda of sucks
+        filterSites = "youtube.com"  # Filter out YouTube results
+        return f"{self.api_url}?key={self.api_key}&cx={self.api_cx}&q={query}&dateRestrict=m1&siteSearch={filterSites}&siteSearchFilter=e"
 
     def get_google_search_results(self, query):
         request_url = self.get_request_url(query)
