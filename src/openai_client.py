@@ -110,6 +110,53 @@ class OpenAIClient:
             pass
         return None
 
+    def summarize_youtube_data(self, youtube_data, topic_query):
+        try:
+            system_instructions = f"""You are a research assistant. 
+            You are tasked with summarizing a youtube audio transcript based on a specific topic provided by the user.
+            The goal is to provide a concise, insightful summary of the youtube audio data with a strong focus on the latest developments related to the given topic. 
+            The summary should be informative, highlighting key points, emerging trends, and relevant data that will keep the reader up-to-date with recent changes and updates on the topic. 
+            Keep the summary focused and relevant to the user's needs.
+
+            Instructions:
+
+            1. Topic: {topic_query}
+            2. Review the youtube audio transcript carefully.
+            3. Focus on summarizing the most recent developments, key trends, and any data points that directly relate to the topic.
+            4. Ensure the summary is clear, concise, and relevant for a weekly update, highlighting important changes or trends.
+            5. Use a professional tone, suitable for clients who are keeping up with industry developments.
+            6. If the page contains redundant information or general context not directly relevant to the topic, omit it and focus on actionable insights and updates.
+                        
+            """
+
+            user_query = f"""
+            Here is the information you need to summarize:\n\n
+            **Topic**: [{topic_query}]\n\n
+            **Youtube Audio Transcript**: [{youtube_data}]\n\n
+            Please provide a summary focused on the most recent developments and key insights related to the topic."
+            """
+            system_message = {"role": "system", "content": system_instructions}
+            user_message = {"role": "user", "content": user_query}
+            messages = [system_message,user_message]
+
+            completion = self._openai.chat.completions.create(
+                model=self._openai_model,
+                messages=messages
+            )
+
+
+            if completion.choices[0].finish_reason == "stop":
+                response_msg = completion.choices[0].message.content
+                return response_msg
+            else:
+                # handle refusal
+                print("finish reason not stop")
+                return None
+        except Exception as e:
+            print(e)
+            pass
+        return None
+    
     def summarize_web_page_data(self, web_page_data, topic_query):
         try:
             system_instructions = f"""You are a research assistant. 
@@ -299,13 +346,26 @@ class OpenAIClient:
         return None
 
     def transcribe_audio_file(self, audio_file_path):
+        try:
+            with open(audio_file_path, "rb") as audio_file:
+                transcription = self._openai.audio.transcriptions.create(
+                    model="whisper-1",
+                    file=audio_file
+                )
+            return transcription.text
+        except Exception as e:
+            print(e)
+            pass
+        return None
 
-        with open(audio_file_path, "rb") as audio_file:
-            transcription = self._openai.audio.transcriptions.create(
-                model="whisper-1",
-                file=audio_file
-            )
-        return transcription.text
+    
+    def transcribe_audio_file_chunks(self, audio_file_paths: List[str]) -> List[str]:
+        transcriptions = []
+        for file_path in audio_file_paths:
+            transcription_text = self.transcribe_audio_file(file_path)
+            if transcription_text:
+                transcriptions.append(transcription_text)
+        return transcriptions
     
 if __name__ == "__main__":
     # Example usage:

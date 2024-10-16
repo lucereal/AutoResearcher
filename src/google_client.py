@@ -3,10 +3,11 @@ from dotenv import load_dotenv
 import requests
 import json
 
+
 # Load environment variables from .env file
 load_dotenv()
 
-class GoogleSearchClient:
+class GoogleSearchClient():
     def __init__(self):
         self.api_key = os.getenv("GOOGLE_API_KEY")
         self.api_cx = os.getenv("GOOGLE_CX")
@@ -19,8 +20,22 @@ class GoogleSearchClient:
         filterSites = "youtube.com"  # Filter out YouTube results
         return f"{self.api_url}?key={self.api_key}&cx={self.api_cx}&q={query}&dateRestrict=m1&siteSearch={filterSites}&siteSearchFilter=e"
 
+    def get_request_url_with_youtube(self, query):
+
+        #currently can't filter out more than one site at a time
+        #google search api kinda of sucks
+        filterSites = "youtube.com"  # Filter out YouTube results
+        return f"{self.api_url}?key={self.api_key}&cx={self.api_cx}&q={query}&dateRestrict=m1&siteSearch={filterSites}&siteSearchFilter=i"
+
     def get_google_search_results(self, query):
         request_url = self.get_request_url(query)
+        response = requests.get(request_url)
+        response.raise_for_status()
+        
+        return GoogleSearchResult.from_json(response.json())
+    
+    def get_google_youtube_search_results(self, query):
+        request_url = self.get_request_url_with_youtube(query)
         response = requests.get(request_url)
         response.raise_for_status()
         

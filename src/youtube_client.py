@@ -50,6 +50,10 @@ class YouTubeClient:
             chunk_num = 1
             chunks = []
 
+            print(f"Duration: {duration}")
+            print(f"Chunk duration: {chunk_duration}")
+            print(f"Number of chunks: {duration/chunk_duration}")
+            
             while start < duration:
                 end = min(start + chunk_duration, duration)
                 chunk = audio.subclip(start, end)
@@ -75,7 +79,6 @@ class YouTubeClient:
             print(f"File not found: {audio_file_data.file_path}")
 
     def download_audio(self, url):
-
         try:
             yt = YouTube(url, use_oauth=False, allow_oauth_cache=False)
             stream = yt.streams.filter(only_audio=True, progressive=False, file_extension='mp4').order_by('abr').first()
@@ -101,6 +104,13 @@ class YouTubeClient:
         except Exception as e:
             print(f'An error occurred: {e}')
 
+    def download_audio_json(self, url):
+        audio_file_data = self.download_audio(url)
+        if audio_file_data:
+            return audio_file_data.to_dict()
+        else:
+            return None
+        
 # Example usage:
 if __name__ == "__main__":
     client = YouTubeClient()
