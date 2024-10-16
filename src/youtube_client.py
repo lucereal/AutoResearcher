@@ -74,7 +74,7 @@ class YouTubeClient:
         else:
             print(f"File not found: {audio_file_data.file_path}")
 
-    def download_audio_mp4(self, url):
+    def download_audio(self, url):
 
         try:
             yt = YouTube(url, use_oauth=False, allow_oauth_cache=False)
@@ -114,4 +114,4 @@ if __name__ == "__main__":
     # audio_file_data = client.split_audio_into_chunks(audio_file_data)
     # print(audio_file_data.file_name)
     # Download the highest resolution MP4 stream
-    client.download_audio_mp4('https://www.youtube.com/watch?v=dVgN63Ydqrc')
+    client.download_audio('https://www.youtube.com/watch?v=dVgN63Ydqrc')

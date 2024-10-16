@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 from pydantic import BaseModel
 from typing import List
 
+
 # Load environment variables from .env file
 load_dotenv()
 
@@ -108,7 +109,6 @@ class OpenAIClient:
             print(e)
             pass
         return None
-
 
     def summarize_web_page_data(self, web_page_data, topic_query):
         try:
@@ -243,7 +243,6 @@ class OpenAIClient:
             pass
         return None
     
-
     def handle_completion_with_tools(self, completion, messages, tools):
         response = completion
         requiresAction = True
@@ -299,29 +298,41 @@ class OpenAIClient:
                     print(f"{msg.role}: {msg.content}")
         return None
 
+    def transcribe_audio_file(self, audio_file_path):
+
+        with open(audio_file_path, "rb") as audio_file:
+            transcription = self._openai.audio.transcriptions.create(
+                model="whisper-1",
+                file=audio_file
+            )
+        return transcription.text
+    
 if __name__ == "__main__":
     # Example usage:
     client = OpenAIClient()
 
+    audio_file_path = "audio_data/cefef2bd-973c-472b-96d4-cd9699c0987c/cefef2bd-973c-472b-96d4-cd9699c0987c_chunk_1.mp3"
+    transcription_text = client.transcribe_audio_file(audio_file_path)
+    print(transcription_text)
 
-    with open("results.json", "r") as json_file:
-            data = json.load(json_file)
+    # with open("results.json", "r") as json_file:
+    #         data = json.load(json_file)
             
-    topic = "cryptocurrency trading"
+    # topic = "cryptocurrency trading"
 
-    for query_sources in data["sources_data"]:
-            print("Summarizing sources for query: " + query_sources["query"])
-            for item in query_sources["sources_data"]:
-                web_page_data = item["source_data"]
-                # print("\tchecking if " + item["link"] + " is usable")
-                # Call the is_web_page_data_usable function
-                is_usable = client.is_web_page_data_usable(web_page_data, topic)
-                print("\t" + item["link"] + " is usable: " + str(is_usable))
-                if is_usable:
-                    # Call the summarize_web_page_data function
-                    summary = client.summarize_web_page_data(web_page_data, topic)
-                    print("summary:")
-                    print(summary[:200]+"...")
+    # for query_sources in data["sources_data"]:
+    #         print("Summarizing sources for query: " + query_sources["query"])
+    #         for item in query_sources["sources_data"]:
+    #             web_page_data = item["source_data"]
+    #             # print("\tchecking if " + item["link"] + " is usable")
+    #             # Call the is_web_page_data_usable function
+    #             is_usable = client.is_web_page_data_usable(web_page_data, topic)
+    #             print("\t" + item["link"] + " is usable: " + str(is_usable))
+    #             if is_usable:
+    #                 # Call the summarize_web_page_data function
+    #                 summary = client.summarize_web_page_data(web_page_data, topic)
+    #                 print("summary:")
+    #                 print(summary[:200]+"...")
 
 
 
