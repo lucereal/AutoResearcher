@@ -110,6 +110,7 @@ class DataGatherer:
                         print("\t\tsummary: " + summary.replace('\n\n', ' ').replace('\n', ' ')[:200]+"...")
         return data
 
+    # need to implement chunking for large data sources
     def gather_youtube_data_and_summarize(self, user_topic):
         print(f"\nGathering data and summarizing sources for topic: {user_topic}")
 
