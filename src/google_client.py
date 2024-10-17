@@ -2,7 +2,8 @@ import os
 from dotenv import load_dotenv
 import requests
 import json
-
+from standard_article import ArticleContent, StandardArticle
+from web_page_reader import WebPageReader
 
 # Load environment variables from .env file
 load_dotenv()
@@ -12,6 +13,7 @@ class GoogleSearchClient():
         self.api_key = os.getenv("GOOGLE_API_KEY")
         self.api_cx = os.getenv("GOOGLE_CX")
         self.api_url = "https://www.googleapis.com/customsearch/v1"
+        self.web_reader = WebPageReader()
 
     def get_request_url(self, query):
 
@@ -34,6 +36,27 @@ class GoogleSearchClient():
         
         return GoogleSearchResult.from_json(response.json())
     
+    def get_search_result_articles(self, query):
+        try:
+            request_url = self.get_request_url(query)
+            response = requests.get(request_url)
+            response.raise_for_status()
+            googleSearchResult = GoogleSearchResult.from_json(response.json()) 
+            articles = []
+            for item in googleSearchResult.items[0:3]:
+                article_content = self.web_reader.extract_content(item.link)
+                if(article_content["success"]):
+                    article = StandardArticle(
+                        title=item.title,
+                        url=item.link,
+                        content=ArticleContent.from_dict(article_content["data"])
+                    )
+                    articles.append(article.to_dict())
+            return {"success": True, "articles": articles}
+        except Exception as e:
+            print(f"An error occurred while fetching Google search results: {e}")
+            return {"success": False, "articles": []}
+        
     def get_google_youtube_search_results(self, query):
         request_url = self.get_request_url_with_youtube(query)
         response = requests.get(request_url)
@@ -50,7 +73,7 @@ class GoogleSearchResult:
     @classmethod
     def from_json(cls, json_data):
         url = json_data.get("url", "")
-        items = [GoogleSearchItem.from_json(item) for item in json_data.get("items", [])[0:3]]
+        items = [GoogleSearchItem.from_json(item) for item in json_data.get("items", [])]
         return cls(url, items)
     
     def print_items(self):
@@ -117,6 +140,6 @@ class GoogleSearchItem:
 if __name__ == "__main__":
     # Example usage:
     client = GoogleSearchClient()
-    results = client.get_google_search_results("find the best restaurant in San Francisco")
+    results = client.get_search_result_articles("find the best restaurant in San Francisco")
     # results.print_items()
-    print(json.dumps(results.to_dict(), indent=2))
+    print(json.dumps(results, indent=2))
