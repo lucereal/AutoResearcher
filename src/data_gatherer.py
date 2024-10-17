@@ -46,7 +46,7 @@ class DataGatherer:
 
     def gather_web_page_data(self, url):
         reader = WebPageReader()
-        data = reader.extract_important_data(url)
+        data = reader.extract_content(url)
         return data
 
     def gather_all_youtube_data(self, user_topic):

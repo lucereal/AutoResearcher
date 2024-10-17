@@ -55,7 +55,7 @@ class WebPageReader:
         soup = BeautifulSoup(content, 'html.parser')
         return soup
 
-    def extract_important_data(self, url):
+    def extract_content(self, url):
         soup = self.read_web_page(url)
         if soup is None:
             return {
