@@ -45,7 +45,7 @@ class CustomNewsApiClient:
         try:
             to_param = datetime.now().strftime('%Y-%m-%d')
             from_param = (datetime.now() - timedelta(days=30)).strftime('%Y-%m-%d')
-            all_articles =custom_newsapi.get_all_articles(q=q, from_param=from_param, to=to_param, language='en', sort_by='relevancy', page=1, page_size=10)
+            all_articles =self.get_all_articles(q=q, from_param=from_param, to=to_param, language='en', sort_by='relevancy', page=1, page_size=10)
             if all_articles is None:
                 return {"success": False, "articles": []}            
             articles_list = []

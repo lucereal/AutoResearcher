@@ -60,6 +60,58 @@ class OpenAIClient:
             pass
         return None
 
+    def create_phrases_on_topic(self, topic_query):
+        try:
+            system_instructions = """You are a research assistant. Your task is to take a user-provided topic and create 
+            related phrases that can be used to search for relevant media and data. The phrases should be 
+            detailed and aimed at gathering high-quality insights that would be useful for business professionals."""
+
+            user_query = f"""
+            Given the topic "{topic_query}", generate a list of phrases for a search engine to gather relevant, high-quality data and insights. 
+            The phrase should be 3 words or less.
+            The questions should aim to clarify the topic and identify key aspects such as:
+            1. Recent trends,
+            2. Key figures or companies,
+            3. Statistics,
+            4. Challenges, 
+            5. Expert opinions.
+
+            Additional Requirements:
+            - The month and year is October 2024, so focus on recent information.
+            - Break the topic into smaller subtopics if necessary.
+            - The phrases should cover a mix of data types such as statistics, case studies, expert opinions, news articles, and industry reports.
+            - Prioritize phrases related to recent developments and practical insights.
+            - Ensure the phrases are suitable for business professionals.
+            - Ensure the phrases are no longer than 3 words
+
+            Example: 
+            If the topic is 'AI in healthcare', generate questions such as:
+            - 'AI-assisted surgeries'
+            - 'Healthcare AI challenges' 
+            - 'AI solutions healthcare'
+            """
+            system_message = {"role": "system", "content": system_instructions}
+            user_message = {"role": "user", "content": user_query}
+            messages = [system_message,user_message]
+
+            completion = self._openai.beta.chat.completions.parse(
+                model=self._openai_model,
+                messages=messages,
+                response_format=QueryListResult
+            )
+
+            response_msg = completion.choices[0].message
+            if response_msg.parsed:
+                return response_msg.parsed.queryList
+            elif response_msg.refusal:
+                # handle refusal
+                print("structured response not possible")
+                return response_msg.refusal
+        except Exception as e:
+            print(e)
+            pass
+        return None
+    
     def create_queries_on_topic(self, topic_query):
         try:
             system_instructions = """You are a research assistant. Your task is to take a user-provided topic and create 
