@@ -39,7 +39,7 @@ This Python project automates data collection on user provided topics.
 
 4. **Run the script**:
     ```bash
-    python src/main.py --topic "Your topic here"
+    python src/researcher/main.py --topic "Your topic here"
     ```
 
 5. **Check Results Folder**:
