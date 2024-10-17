@@ -6,7 +6,8 @@ This Python project automates data collection on user provided topics.
 ## Features
 
 - **Query Generation**: GPT creates relevant search queries.
-- **Search & Scraping**: Uses Google Custom Search API, Playwright, and BeautifulSoup to fetch and extract web content.
+- **Data Collection**: NewsApi, YouTube, and Google Search to collect data on specific topics
+- **Data Scraping**: Uses Playwright, and BeautifulSoup to fetch and extract web content. Uses MoviePy to extract audio data from videos. Uses OpenAI Whisper Model to created audio transcriptions. 
 - **Summarization**: GPT summarizes scraped data into concise reports.
 - **End-to-End Automation**: Fully automated from input to summarized output.
 
