@@ -2,10 +2,10 @@
 from datetime import datetime, timedelta
 from newsapi import NewsApiClient
 import os
-from web_page_reader import WebPageReader
+from data_extraction_tools.web_page_reader import WebPageReader
 from dataclasses import dataclass, field
 from typing import Optional
-from standard_article import ArticleContent, StandardArticle
+from models.standard_article import ArticleContent, StandardArticle
 
 @dataclass
 class NewsApiArticle(StandardArticle):

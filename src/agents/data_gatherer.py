@@ -1,7 +1,7 @@
 import json
 from google_client import GoogleSearchClient
-from openai_client import OpenAIClient
-from web_page_reader import WebPageReader
+from language_models.openai_client import OpenAIClient
+from data_extraction_tools.web_page_reader import WebPageReader
 from youtube_client import YouTubeClient
 
 class DataGatherer:
