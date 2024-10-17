@@ -1,6 +1,6 @@
 import json
 import argparse
-from agents.data_gatherer import DataGatherer
+from researcher.agents.data_gatherer import DataGatherer
 
 def main():
     parser = argparse.ArgumentParser(description="Run the data gatherer script.")

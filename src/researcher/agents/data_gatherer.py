@@ -1,8 +1,9 @@
 import json
-from google_client import GoogleSearchClient
-from language_models.openai_client import OpenAIClient
-from data_extraction_tools.web_page_reader import WebPageReader
-from youtube_client import YouTubeClient
+
+from researcher.data_source_clients.google_client import GoogleSearchClient
+from researcher.language_models.openai_client import OpenAIClient
+from researcher.data_extraction_tools.web_page_reader import WebPageReader
+from researcher.data_source_clients.youtube_client import YouTubeClient
 
 class DataGatherer:
     def __init__(self):
@@ -21,6 +22,10 @@ class DataGatherer:
     def gather_google_data(self, search_query):
         results = self.google_client.get_google_search_results(search_query)
         return results
+    
+    def gather_google_articles(self, search_query):
+        results = self.google_client.get_search_result_articles(search_query)
+        return results
 
     def gather_queries_and_sources_youtube(self, user_topic):
         queryList = self.openai_client.create_queries_on_topic(user_topic)
@@ -37,9 +42,9 @@ class DataGatherer:
         queryList = self.openai_client.create_queries_on_topic(user_topic)
         queries_and_sources = {"queries": queryList, "query_results": []}
         
-        for query in queryList[:3]:
-            google_results = self.gather_google_data(query)
-            query_result = {"query": query, "google_results": google_results.to_dict()}
+        for query in queryList[:1]:
+            google_articles = self.gather_google_articles(query)
+            query_result = {"query": query, "results": google_articles}
             queries_and_sources["query_results"].append(query_result)
         
         return queries_and_sources
@@ -72,23 +77,7 @@ class DataGatherer:
     def gather_all_data(self, user_topic):
         print("\ngathering all data for user topic: ", user_topic)
         queries_and_sources = self.gather_queries_and_sources(user_topic)
-        topic_sources_data = {"queries": queries_and_sources["queries"], "sources_data": []}
-
-        for query_result in queries_and_sources["query_results"][0:2]:
-            print("\tgetting sources data for query: ", query_result["query"])
-            query_source_data = {"query": query_result["query"], "sources_data": []}
-            for item in query_result["google_results"]["items"]:
-                url = item["link"]
-                print("\t\treading web page data for url: ", url)
-                item_source_data = self.gather_web_page_data(url)
-                if(item_source_data["success"] == True):
-                    item_data = {"link": url, "source_data": item_source_data["data"] }
-                    query_source_data["sources_data"].append(item_data)
-                else:
-                    print("\t\tError reading web page data for url: ", url)
-            topic_sources_data["sources_data"].append(query_source_data)
-        
-        return topic_sources_data
+        return queries_and_sources
     
     def gather_data_and_summarize_sources(self, user_topic):
         print(f"\nGathering data and summarizing sources for topic: {user_topic}")
@@ -137,18 +126,18 @@ class DataGatherer:
 if __name__ == "__main__":
     data_gatherer = DataGatherer()
     user_topic = "fantasy football advice"
-    
-    all_data = data_gatherer.gather_youtube_data_and_summarize(user_topic)
-    print(all_data)
-    # all_data = data_gatherer.gather_data_and_summarize_sources(user_topic)
-    # # Save the results to a JSON file
     file_name = user_topic.replace(" ", "_") + "_results_with_summaries.json"
-    with open("results/"+file_name, "w") as json_file:
-        json.dump(all_data, json_file, indent=2)
 
-    # all_data = data_gatherer.gather_all_data(user_topic)
-    # # Save the results to a JSON file
-    # with open("results/"+"results.json", "w") as json_file:
+    # all_data = data_gatherer.gather_youtube_data_and_summarize(user_topic)
+    # print(all_data)
+    # # all_data = data_gatherer.gather_data_and_summarize_sources(user_topic)
+    # # # Save the results to a JSON file
+    # with open("results/"+file_name, "w") as json_file:
     #     json.dump(all_data, json_file, indent=2)
+
+    all_data = data_gatherer.gather_all_data(user_topic)
+    # Save the results to a JSON file
+    with open("results/"+"results.json", "w") as json_file:
+        json.dump(all_data, json_file, indent=2)
     
     print("Results have been saved to " + file_name)

@@ -2,8 +2,8 @@ import os
 from dotenv import load_dotenv
 import requests
 import json
-from models.standard_article import ArticleContent, StandardArticle
-from data_extraction_tools.web_page_reader import WebPageReader
+from researcher.models.standard_article import ArticleContent, StandardArticle
+from researcher.data_extraction_tools.web_page_reader import WebPageReader
 
 # Load environment variables from .env file
 load_dotenv()

@@ -31,8 +31,9 @@ class WebPageReader:
                 try:
                     accept_button = page.query_selector("button:has-text('Accept')")
                     if accept_button:
-                        accept_button.click()
-                        page.wait_for_timeout(2000)  # Wait for 2 seconds to allow the pop-up to close
+                        if accept_button.is_visible():
+                            accept_button.click()
+                            page.wait_for_timeout(2000)  # Wait for 2 seconds to allow the pop-up to close
                 except Exception as e:
                     print(f"Error handling cookies pop-up: {e}")
 

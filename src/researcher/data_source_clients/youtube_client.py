@@ -3,7 +3,6 @@ from pytubefix import YouTube
 from pytubefix import exceptions
 import uuid
 import os
-from moviepy.editor import VideoFileClip
 from moviepy.editor import AudioFileClip
 
 
