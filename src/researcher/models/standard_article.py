@@ -4,8 +4,8 @@ from typing import List, Optional
 
 @dataclass
 class ArticleContent:
-    text_data: str
-    table_data: List[dict] = None
+    text_data: Optional[str]
+    table_data: Optional[List[dict]] = None
 
     def to_dict(self):
         return {
@@ -21,8 +21,8 @@ class ArticleContent:
 
 @dataclass
 class StandardArticle:
-    url: str
-    content: Optional[ArticleContent]
+    url: Optional[str] = None
+    content: Optional[ArticleContent] = None
     title: Optional[str] = None
 
     def to_dict(self):

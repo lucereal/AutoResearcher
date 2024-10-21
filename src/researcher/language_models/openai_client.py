@@ -13,10 +13,8 @@ load_dotenv()
 class IsWebPageUsable(BaseModel):
     isUsable: bool
 
-class MenuItem(BaseModel):
-    name: str
-    description: str
-    price: str
+class IsNewsPreviewUsable(BaseModel):
+    isUsable: bool
 
 class QueryListResult(BaseModel):
     queryList: List[str]
@@ -28,74 +26,100 @@ class QueryListResult(BaseModel):
 
 class OpenAIClient:
     _openai_model = None
+    _openai_model_mini = None
     _openai = None
     def __init__(self):
         self.api_key = os.getenv("OPENAI_API_KEY")
         self._openai = OpenAI(api_key=self.api_key)
-        self._openai_model = "gpt-4o-mini"
+        self._openai_model = "gpt-4o"
+        self._openai_model_mini = "gpt-4o-mini"
   
 
-    def breakdown_menu_line(self, menu_line):
+    def is_news_article_preview_usable(self, article_preview, topic_query):
+        title = article_preview["title"]
+        description = article_preview["description"]
+        content_preview = article_preview["rawContent"]
         try:
-            instructions = "Your job is to parse and breakdown menu items into the following properties: name, description, price."
-            system_message = {"role": "system", "content": instructions}
-            user_message = {"role": "user", "content": menu_line}
-            messages = [system_message,user_message]
-
-            completion = self._openai.beta.chat.completions.parse(
-                model=self._openai_model,
-                messages=messages,
-                response_format=MenuItem
-            )
-
-            response_msg = completion.choices[0].message
-            if response_msg.parsed:
-                return response_msg.parsed
-            elif response_msg.refusal:
-                # handle refusal
-                print("structured response not possible")
-                return response_msg.refusal
-        except Exception as e:
-            print(e)
-            pass
-        return None
-
-    def create_phrases_on_topic(self, topic_query):
-        try:
-            system_instructions = """You are a research assistant. Your task is to take a user-provided topic and create 
-            related phrases that can be used to search for relevant media and data. The phrases should be 
-            detailed and aimed at gathering high-quality insights that would be useful for business professionals."""
+            system_instructions = f"""You are a research assistant. 
+            Your task is to evaluate whether a news article preview is usable for generating a summary related to a specific topic.
+            You should tell me if the article preview contains relevant and sufficient data to create a meaningful summary that will bring value to the client.
+            Your evaluation will focus on the relevance and value of the content based on the provided topic."""
 
             user_query = f"""
-            Given the topic "{topic_query}", generate a list of phrases for a search engine to gather relevant, high-quality data and insights. 
-            The phrase should be 3 words or less.
-            The questions should aim to clarify the topic and identify key aspects such as:
-            1. Recent trends,
-            2. Key figures or companies,
-            3. Statistics,
-            4. Challenges, 
-            5. Expert opinions.
+            Please evaluate the following news article preview based on the given topic:
 
-            Additional Requirements:
-            - The month and year is October 2024, so focus on recent information.
-            - Break the topic into smaller subtopics if necessary.
-            - The phrases should cover a mix of data types such as statistics, case studies, expert opinions, news articles, and industry reports.
-            - Prioritize phrases related to recent developments and practical insights.
-            - Ensure the phrases are suitable for business professionals.
-            - Ensure the phrases are no longer than 3 words
+            **Topic**: [{topic_query}]
 
-            Example: 
-            If the topic is 'AI in healthcare', generate questions such as:
-            - 'AI-assisted surgeries'
-            - 'Healthcare AI challenges' 
-            - 'AI solutions healthcare'
+            **Article Preview**: 
+            - **Title**: [{title}]
+            - **Description**: [{description}]
+            - **First 200 characters of content**: [{content_preview}]
+
+            Assess if:
+            1. The article preview is related to the topic provided.
+            2. The content is relevant and sufficient to create a summary that will bring value to a client interested in this topic.
+            3. The preview suggests the article has enough depth to be worth exploring further.
+
+            Provide a brief evaluation based on these criteria.
             """
             system_message = {"role": "system", "content": system_instructions}
             user_message = {"role": "user", "content": user_query}
             messages = [system_message,user_message]
 
             completion = self._openai.beta.chat.completions.parse(
-                model=self._openai_model,
+                model=self._openai_model_mini,
+                messages=messages,
+                response_format=IsNewsPreviewUsable
+            )
+
+            if completion.choices[0].finish_reason == "stop":
+                if completion.choices[0].message.parsed:
+                    return completion.choices[0].message.parsed.isUsable
+                else:
+                    return None
+            else:
+                # handle refusal
+                print("finish reason not stop")
+                return None
+        except Exception as e:
+            print(e)
+            pass
+        return None
+            
+    def create_phrases_on_topic(self, topic_query):
+        try:
+            system_instructions = """You are a research assistant. Your task is to take a user-provided topic and create 
+                related search phrases that can be used to gather relevant, high-quality media and data. The phrases should be very concise (2 words or less), 
+                specific, and useful for gathering insights relevant to business professionals."""
+
+            user_query = f"""
+            Given the topic "{topic_query}", generate a list of concise search phrases (2 words or less) for gathering relevant, high-quality data and insights. These phrases should focus on:
+
+            1. Recent trends and developments (preferably from the past year),
+            2. Key figures or companies involved,
+            3. Statistics, facts, and challenges,
+            4. Expert opinions, case studies, and emerging issues.
+
+            Additional Requirements:
+            - Avoid using dates or time-specific terms in the phrases.
+            - Keep the phrases concise and actionable, no more than 2 words.
+            - If the topic is broad, break it down into 3-5 relevant subtopics.
+            - Ensure the phrases are industry-specific and suitable for business professionals.
+            - Prioritize phrases related to recent developments and practical insights, without including dates or vague terms.
+            - The phrases should cover a mix of data types such as statistics, expert opinions, news articles, and industry reports.
+
+            Example: 
+            If the topic is 'AI in healthcare', generate search phrases such as:
+            - 'AI surgery'
+            - 'AI diagnostics'
+            - 'AI pharma'
+            """
+            system_message = {"role": "system", "content": system_instructions}
+            user_message = {"role": "user", "content": user_query}
+            messages = [system_message,user_message]
+
+            completion = self._openai.beta.chat.completions.parse(
+                model=self._openai_model_mini,
                 messages=messages,
                 response_format=QueryListResult
             )
@@ -145,7 +169,7 @@ class OpenAIClient:
             messages = [system_message,user_message]
 
             completion = self._openai.beta.chat.completions.parse(
-                model=self._openai_model,
+                model=self._openai_model_mini,
                 messages=messages,
                 response_format=QueryListResult
             )
@@ -192,7 +216,7 @@ class OpenAIClient:
             messages = [system_message,user_message]
 
             completion = self._openai.chat.completions.create(
-                model=self._openai_model,
+                model=self._openai_model_mini,
                 messages=messages
             )
 
@@ -239,7 +263,7 @@ class OpenAIClient:
             messages = [system_message,user_message]
 
             completion = self._openai.chat.completions.create(
-                model=self._openai_model,
+                model=self._openai_model_mini,
                 messages=messages
             )
 
@@ -278,7 +302,7 @@ class OpenAIClient:
             messages = [system_message,user_message]
 
             completion = self._openai.beta.chat.completions.parse(
-                model=self._openai_model,
+                model=self._openai_model_mini,
                 messages=messages,
                 response_format=IsWebPageUsable
             )
@@ -330,7 +354,7 @@ class OpenAIClient:
             messages = [system_message,user_message]
 
             completion = self._openai.chat.completions.create(
-                model=self._openai_model,
+                model=self._openai_model_mini,
                 messages=messages,
                 tools=tools
             )
@@ -381,7 +405,7 @@ class OpenAIClient:
             
             if requiresAction:
                 response = self._openai.chat.completions.create( 
-                    model=self._openai_model,
+                    model=self._openai_model_mini,
                     messages=messages,
                     tools=tools
                     )
