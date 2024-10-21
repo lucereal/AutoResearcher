@@ -68,3 +68,6 @@ This Python project automates data collection on user provided topics.
 - Web page scraping in web_page_reader.py
 - More abstract data_gatherer.py class 
 - Chunking in openAI requests for large text especially in video summarization
+- Potentially increase performance by decreasing run time?
+- Add SerpApi
+- Reduce number of LLM calls and increase relevancy of sumary data

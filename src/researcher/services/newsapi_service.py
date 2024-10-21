@@ -9,7 +9,7 @@ class NewsApiService:
         self.newsapi_client = CustomNewsApiClient()
         self.openai_client = OpenAIClient()
         self.web_reader = WebPageReader()
-        self.article_pull_limit = 5
+        self.article_pull_limit = 2
 
     def fetch_and_check_usability(self, query):
         # Fetch articles from NewsAPI
@@ -41,7 +41,7 @@ class NewsApiService:
                     article_content = self.scrape_article_content(article["url"])
                     article["content"] = article_content
                     result_article_list.append(article)
-                return {"success": True, "articles": result_article_list["articles"]}
+                return {"success": True, "articles": result_article_list}
             else:
                 return {"success": False, "articles": []}
         except Exception as e:

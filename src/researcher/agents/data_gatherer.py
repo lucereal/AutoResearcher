@@ -144,6 +144,12 @@ class DataGatherer:
                         # Call the summarize_web_page_data function
                         summary = self.openai_client.summarize_web_page_data(item["content"], user_topic)
                         item["summary"] = summary
+                        executive_summary = self.openai_client.executive_summary_web_page_data(item["content"], user_topic)
+                        item["executive_summary"] = executive_summary
+                        bullet_points = self.openai_client.bulletpoint_web_page_data(item["content"], user_topic)
+                        item["bullet_points"] = bullet_points
+                        key_figures = self.openai_client.key_figures_web_page_data(item["content"], user_topic)
+                        item["key_figures"] = key_figures
                         print("\t\tsummary: " + summary.replace('\n\n', ' ').replace('\n', ' ')[:200]+"...")
         return queries_and_sources
     
