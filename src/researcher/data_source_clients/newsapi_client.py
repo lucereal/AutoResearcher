@@ -13,14 +13,16 @@ class NewsApiArticle(StandardArticle):
     source: Optional[str] = None
     description: Optional[str] = None
     publishedAt: Optional[datetime] = None
-    
+    rawContent: Optional[str] = None
+
     def to_dict(self):
         article_dict = super().to_dict()
         article_dict.update({
             "author": self.author,
             "source": self.source,
             "description": self.description,
-            "publishedAt": self.publishedAt.isoformat() if self.publishedAt else None
+            "publishedAt": self.publishedAt.isoformat() if self.publishedAt else None,
+            "rawContent": self.rawContent
         })
         return article_dict
     
@@ -34,18 +36,43 @@ class CustomNewsApiClient:
         data = self.web_reader.extract_content(url)
         return data
     
-    def get_all_articles(self, q=None, sources=None, domains=None, from_param=None, to=None, language=None, sort_by=None, page=None, page_size=None):
+    def get_all_articles(self, q=None, qintitle=None, sources=None, domains=None, from_param=None, to=None, language=None, sort_by=None, page=None, page_size=None):
         try:
-            return self.client.get_everything(q=q, sources=sources, domains=domains, from_param=from_param, to=to, language=language, sort_by=sort_by,page_size=page_size, page=page)
+            return self.client.get_everything(q=q, qintitle=qintitle, sources=sources, domains=domains, from_param=from_param, to=to, language=language, sort_by=sort_by,page_size=page_size, page=page)
         except Exception as e:
             print(f"An error occurred while fetching all articles: {e}")
             return None    
+
+    def get_all_articles_day_range(self, q=None, dayRange=30):
+        try:
+            to_param = datetime.now().strftime('%Y-%m-%d')
+            from_param = (datetime.now() - timedelta(days=dayRange)).strftime('%Y-%m-%d')
+            all_articles =self.get_all_articles(q=q, qintitle="title", from_param=from_param, to=to_param, language='en', sort_by='relevancy', page=1, page_size=20)
+            if all_articles is None:
+                return {"success": False, "articles": []}   
+            articles_list = []
+            if all_articles["status"] == "ok":
+                for article_data in all_articles["articles"]:
+                    article = NewsApiArticle(
+                        title=article_data['title'],
+                        url=article_data['url'],
+                        author=article_data.get('author'),
+                        source=article_data.get('source', {}).get('name'),
+                        description=article_data.get('description'),
+                        publishedAt=datetime.strptime(article_data['publishedAt'], '%Y-%m-%dT%H:%M:%SZ') if article_data.get('publishedAt') else None,
+                        rawContent=article_data.get('content')
+                    )
+                    articles_list.append(article.to_dict())   
+                return {"success": True, "articles": articles_list}  
+        except Exception as e:
+            print(f"An error occurred while fetching articles from the past month: {e}")
+            return {"success": False, "articles": []}
 
     def get_all_articles_past_month(self, q=None):
         try:
             to_param = datetime.now().strftime('%Y-%m-%d')
             from_param = (datetime.now() - timedelta(days=30)).strftime('%Y-%m-%d')
-            all_articles =custom_newsapi.get_all_articles(q=q, from_param=from_param, to=to_param, language='en', sort_by='relevancy', page=1, page_size=10)
+            all_articles =self.get_all_articles(q=q, qintitle="title", from_param=from_param, to=to_param, language='en', sort_by='relevancy', page=1, page_size=10)
             if all_articles is None:
                 return {"success": False, "articles": []}            
             articles_list = []
@@ -73,5 +100,5 @@ if __name__ == "__main__":
     custom_newsapi = CustomNewsApiClient()
 
     # Get top headlines
-    all_articles = custom_newsapi.get_all_articles_past_month(q='bitcoin')
+    all_articles = custom_newsapi.get_all_articles_past_month(q='trending in music industry')
     print(all_articles)

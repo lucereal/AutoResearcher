@@ -4,12 +4,17 @@ from data_source_clients.google_client import GoogleSearchClient
 from language_models.openai_client import OpenAIClient
 from data_extraction_tools.web_page_reader import WebPageReader
 from data_source_clients.youtube_client import YouTubeClient
+from data_source_clients.newsapi_client import CustomNewsApiClient
+from services.newsapi_service import NewsApiService
 
 class DataGatherer:
     def __init__(self):
         self.google_client = GoogleSearchClient()
         self.openai_client = OpenAIClient()
         self.youtube_client = YouTubeClient()
+        self.newsapi_client = CustomNewsApiClient()
+        self.newsapi_service = NewsApiService()
+        
 
     def gather_google_youtube_data(self, search_query):
         results = self.google_client.get_google_youtube_search_results(search_query)
@@ -26,6 +31,11 @@ class DataGatherer:
     def gather_google_articles(self, search_query):
         results = self.google_client.get_search_result_articles(search_query)
         return results
+    
+    def gather_newsapi_articles(self, search_query):
+        results = self.newsapi_service.fetch_articles(search_query)
+        return results
+
 
     def gather_queries_and_sources_youtube(self, user_topic):
         queryList = self.openai_client.create_queries_on_topic(user_topic)
@@ -46,6 +56,24 @@ class DataGatherer:
             google_articles = self.gather_google_articles(query)
             query_result = {"query": query, "results": google_articles}
             queries_and_sources["query_results"].append(query_result)
+        
+        return queries_and_sources
+
+    def gather_queries_and_sources_newsapi(self, user_topic):
+        queryList = self.openai_client.create_queries_on_topic(user_topic)
+        phraseList = self.openai_client.create_phrases_on_topic(user_topic)
+        queries_and_sources = {"queries": queryList, "phrases": phraseList, "query_results": []}
+        truncated_topic = user_topic[:500]
+        user_topic_articles = self.gather_newsapi_articles(truncated_topic)
+        if user_topic_articles["success"]:
+            user_topic_articles_results = {"query": truncated_topic, "results": user_topic_articles["articles"]}
+            queries_and_sources["query_results"].append(user_topic_articles_results)
+
+        for phrase in phraseList[0:1]:
+            phrase_articles = self.gather_newsapi_articles(phrase)
+            if phrase_articles["success"]:
+                query_result = {"query": phrase, "results": phrase_articles["articles"]}
+                queries_and_sources["query_results"].append(query_result)
         
         return queries_and_sources
 
@@ -99,6 +127,32 @@ class DataGatherer:
                             print("\t\tsummary: " + summary.replace('\n\n', ' ').replace('\n', ' ')[:200]+"...")
         return data
 
+    def gather_newsapi_data_and_summarize_sources(self, user_topic):
+        print(f"\nGathering data and summarizing sources for topic: {user_topic}")
+
+        queries_and_sources = self.gather_queries_and_sources_newsapi(user_topic)
+        for query_sources in queries_and_sources["query_results"]:
+                print("\tSummarizing sources for query: " + query_sources["query"])
+                for item in query_sources["results"]:
+                    print("\t\tchecking if " + item["url"] + " is usable")
+                    # Call the is_web_page_data_usable function
+                    # is_usable = self.openai_client.is_web_page_data_usable(item["content"], user_topic)
+                    is_usable = True
+                    print("\t\t" + item["url"] + " is usable: " + str(is_usable))
+                    item["isUsable"] = is_usable
+                    if is_usable:
+                        # Call the summarize_web_page_data function
+                        summary = self.openai_client.summarize_web_page_data(item["content"], user_topic)
+                        item["summary"] = summary
+                        executive_summary = self.openai_client.executive_summary_web_page_data(item["content"], user_topic)
+                        item["executive_summary"] = executive_summary
+                        bullet_points = self.openai_client.bulletpoint_web_page_data(item["content"], user_topic)
+                        item["bullet_points"] = bullet_points
+                        key_figures = self.openai_client.key_figures_web_page_data(item["content"], user_topic)
+                        item["key_figures"] = key_figures
+                        print("\t\tsummary: " + summary.replace('\n\n', ' ').replace('\n', ' ')[:200]+"...")
+        return queries_and_sources
+    
     # need to implement chunking for large data sources
     def gather_youtube_data_and_summarize(self, user_topic):
         print(f"\nGathering data and summarizing sources for topic: {user_topic}")
@@ -125,19 +179,24 @@ class DataGatherer:
 # Example usage:
 if __name__ == "__main__":
     data_gatherer = DataGatherer()
-    user_topic = "quantum computing"
+    user_topic = "Virtual Reality in Education"
     file_name = user_topic.replace(" ", "_") + "_results_with_summaries.json"
     print("in data_gatherer main")
-    all_data = data_gatherer.gather_youtube_data_and_summarize(user_topic)
-    print(all_data)
-    # all_data = data_gatherer.gather_data_and_summarize_sources(user_topic)
-    # # Save the results to a JSON file
-    with open("results/"+file_name, "w") as json_file:
-        json.dump(all_data, json_file, indent=2)
+    # all_data = data_gatherer.gather_youtube_data_and_summarize(user_topic)
+    # print(all_data)
+    # # all_data = data_gatherer.gather_data_and_summarize_sources(user_topic)
+    # # # Save the results to a JSON file
+    # with open("results/"+file_name, "w") as json_file:
+    #     json.dump(all_data, json_file, indent=2)
 
     # all_data = data_gatherer.gather_all_data(user_topic)
     # # Save the results to a JSON file
     # with open("results/"+file_name, "w") as json_file:
     #     json.dump(all_data, json_file, indent=2)
     
+    all_data = data_gatherer.gather_newsapi_data_and_summarize_sources(user_topic)
+    # Save the results to a JSON file
+    with open("results/"+file_name, "w") as json_file:
+        json.dump(all_data, json_file, indent=2)
+
     print("Results have been saved to " + file_name)

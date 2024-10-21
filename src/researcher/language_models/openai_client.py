@@ -13,10 +13,8 @@ load_dotenv()
 class IsWebPageUsable(BaseModel):
     isUsable: bool
 
-class MenuItem(BaseModel):
-    name: str
-    description: str
-    price: str
+class IsNewsPreviewUsable(BaseModel):
+    isUsable: bool
 
 class QueryListResult(BaseModel):
     queryList: List[str]
@@ -28,29 +26,107 @@ class QueryListResult(BaseModel):
 
 class OpenAIClient:
     _openai_model = None
+    _openai_model_mini = None
     _openai = None
     def __init__(self):
         self.api_key = os.getenv("OPENAI_API_KEY")
         self._openai = OpenAI(api_key=self.api_key)
-        self._openai_model = "gpt-4o-mini"
+        self._openai_model = "gpt-4o"
+        self._openai_model_mini = "gpt-4o-mini"
   
 
-    def breakdown_menu_line(self, menu_line):
+    def is_news_article_preview_usable(self, article_preview, topic_query):
+        title = article_preview["title"]
+        description = article_preview["description"]
+        content_preview = article_preview["rawContent"]
         try:
-            instructions = "Your job is to parse and breakdown menu items into the following properties: name, description, price."
-            system_message = {"role": "system", "content": instructions}
-            user_message = {"role": "user", "content": menu_line}
+            system_instructions = f"""You are a research assistant. 
+            Your task is to evaluate whether a news article preview is usable for generating a summary related to a specific topic.
+            You should tell me if the article preview contains relevant and sufficient data to create a meaningful summary that will bring value to the client.
+            Your evaluation will focus on the relevance and value of the content based on the provided topic."""
+
+            user_query = f"""
+            Please evaluate the following news article preview based on the given topic:
+
+            **Topic**: [{topic_query}]
+
+            **Article Preview**: 
+            - **Title**: [{title}]
+            - **Description**: [{description}]
+            - **First 200 characters of content**: [{content_preview}]
+
+            Assess if:
+            1. The article preview is related to the topic provided.
+            2. The content is relevant and sufficient to create a summary that will bring value to a client interested in this topic.
+            3. The preview suggests the article has enough depth to be worth exploring further.
+
+            Provide a brief evaluation based on these criteria.
+            """
+            system_message = {"role": "system", "content": system_instructions}
+            user_message = {"role": "user", "content": user_query}
             messages = [system_message,user_message]
 
             completion = self._openai.beta.chat.completions.parse(
-                model=self._openai_model,
+                model=self._openai_model_mini,
                 messages=messages,
-                response_format=MenuItem
+                response_format=IsNewsPreviewUsable
+            )
+
+            if completion.choices[0].finish_reason == "stop":
+                if completion.choices[0].message.parsed:
+                    return completion.choices[0].message.parsed.isUsable
+                else:
+                    return None
+            else:
+                # handle refusal
+                print("finish reason not stop")
+                return None
+        except Exception as e:
+            print(e)
+            pass
+        return None
+            
+    def create_phrases_on_topic(self, topic_query):
+        try:
+            system_instructions = """You are a research assistant. Your task is to take a user-provided topic and create 
+                related search phrases that can be used to gather relevant, high-quality media and data. The phrases should be very concise (2 words or less), 
+                specific, and useful for gathering insights relevant to business professionals."""
+
+            user_query = f"""
+            Given the topic "{topic_query}", generate a list of concise search phrases (2 words or less) for gathering relevant, high-quality data and insights. These phrases should focus on:
+
+            1. Recent trends and developments (preferably from the past year),
+            2. Key figures or companies involved,
+            3. Statistics, facts, and challenges,
+            4. Expert opinions, case studies, and emerging issues.
+
+            Additional Requirements:
+            - Avoid using dates or time-specific terms in the phrases.
+            - Keep the phrases concise and actionable, no more than 2 words.
+            - If the topic is broad, break it down into 3-5 relevant subtopics.
+            - Ensure the phrases are industry-specific and suitable for business professionals.
+            - Prioritize phrases related to recent developments and practical insights, without including dates or vague terms.
+            - The phrases should cover a mix of data types such as statistics, expert opinions, news articles, and industry reports.
+
+            Example: 
+            If the topic is 'AI in healthcare', generate search phrases such as:
+            - 'AI surgery'
+            - 'AI diagnostics'
+            - 'AI pharma'
+            """
+            system_message = {"role": "system", "content": system_instructions}
+            user_message = {"role": "user", "content": user_query}
+            messages = [system_message,user_message]
+
+            completion = self._openai.beta.chat.completions.parse(
+                model=self._openai_model_mini,
+                messages=messages,
+                response_format=QueryListResult
             )
 
             response_msg = completion.choices[0].message
             if response_msg.parsed:
-                return response_msg.parsed
+                return response_msg.parsed.queryList
             elif response_msg.refusal:
                 # handle refusal
                 print("structured response not possible")
@@ -59,7 +135,7 @@ class OpenAIClient:
             print(e)
             pass
         return None
-
+    
     def create_queries_on_topic(self, topic_query):
         try:
             system_instructions = """You are a research assistant. Your task is to take a user-provided topic and create 
@@ -93,7 +169,7 @@ class OpenAIClient:
             messages = [system_message,user_message]
 
             completion = self._openai.beta.chat.completions.parse(
-                model=self._openai_model,
+                model=self._openai_model_mini,
                 messages=messages,
                 response_format=QueryListResult
             )
@@ -140,7 +216,7 @@ class OpenAIClient:
             messages = [system_message,user_message]
 
             completion = self._openai.chat.completions.create(
-                model=self._openai_model,
+                model=self._openai_model_mini,
                 messages=messages
             )
 
@@ -172,12 +248,18 @@ class OpenAIClient:
             3. Focus on summarizing the most recent developments, key trends, and any data points that directly relate to the topic.
             4. Ensure the summary is clear, concise, and relevant for a weekly update, highlighting important changes or trends.
             5. Use a professional tone, suitable for clients who are keeping up with industry developments.
-            6. If the page contains redundant information or general context not directly relevant to the topic, omit it and focus on actionable insights and updates.
+            6. Format the summary using Markdown with the following structure:
+                - # for title
+                - ## for section headings
+                - **Bold** for important points
+                - Bullet points for key takeaways or lists
+                - [Link](URL) format for links (if applicable)
+            7. If the page contains redundant information or general context not directly relevant to the topic, omit it and focus on actionable insights and updates.
                         
             """
 
             user_query = f"""
-            Here is the information you need to summarize:\n\n
+            Here is the information you need to summarize for, in Markdown format:\n\n
             **Topic**: [{topic_query}]\n\n
             **Web Page Data**: [{web_page_data}]\n\n
             Please provide a summary focused on the most recent developments and key insights related to the topic."
@@ -187,7 +269,7 @@ class OpenAIClient:
             messages = [system_message,user_message]
 
             completion = self._openai.chat.completions.create(
-                model=self._openai_model,
+                model=self._openai_model_mini,
                 messages=messages
             )
 
@@ -203,6 +285,159 @@ class OpenAIClient:
             print(e)
             pass
         return None
+
+    def bulletpoint_web_page_data(self, web_page_data, topic_query):
+        try:
+            system_instructions = f"""You are a research assistant. 
+            You are tasked with summarizing a web page based on a specific topic provided by the user. The web page contains both text and table data.
+            The goal is to provide a clear and concise list of bullet points that highlight only the most important and relevant information related to the given topic.
+            Focus on extracting key actionable insights, recent trends, and relevant data, keeping each bullet point short and to the point.
+
+            Instructions:
+
+            1. Topic: {topic_query}
+            2. Review the web page data carefully, including any text and table data.
+            3. Create a **concise list of bullet points**, focusing only on the most important developments, trends, and data related to the topic.
+            4. Keep the bullet points short—just a few words or one brief sentence for each point.
+            5. Use a professional tone, suitable for clients who need quick, high-impact information.
+            6. Format the list of bullet points in Markdown.
+            7. Omit any redundant information or general context that does not provide immediate value.
+
+            """
+
+            user_query = f"""
+            Here is the information you need to summarize in **concise bullet points** using Markdown format:\n\n
+            **Topic**: [{topic_query}]\n\n
+            **Web Page Data**: [{web_page_data}]\n\n
+            Please provide a concise list of bullet points focused only on the most important developments and key insights related to the topic, and format it in Markdown."""
+
+            system_message = {"role": "system", "content": system_instructions}
+            user_message = {"role": "user", "content": user_query}
+            messages = [system_message,user_message]
+
+            completion = self._openai.chat.completions.create(
+                model=self._openai_model_mini,
+                messages=messages
+            )
+
+
+            if completion.choices[0].finish_reason == "stop":
+                response_msg = completion.choices[0].message.content
+                return response_msg
+            else:
+                # handle refusal
+                print("finish reason not stop")
+                return None
+        except Exception as e:
+            print(e)
+            pass
+        return None
+
+    def executive_summary_web_page_data(self, web_page_data, topic_query):
+        try:
+            system_instructions = f"""You are a research assistant. 
+            You are tasked with creating a highly concise executive summary of a web page based on a specific topic provided by the user. The web page contains both text and table data.
+            The goal is to provide a high-level overview that highlights only the most important insights, broad developments, and critical data related to the given topic.
+            The executive summary should focus on essential, big-picture information, omitting unnecessary details and emphasizing actionable takeaways for decision-makers.
+
+            Instructions:
+
+            1. Topic: {topic_query}
+            2. Review the web page data carefully, including any text and table data.
+            3. Create a **concise executive summary** that highlights the key insights, recent developments, and actionable takeaways in a few sentences or bullet points.
+            4. Focus on broad, high-level categories such as trends, major initiatives, and impactful solutions, rather than specific project details.
+            5. Keep the summary short and focused—no more than a couple of bullet points or brief sentences for each section.
+            6. Use a professional tone, suitable for decision-makers and clients who need a quick, high-level overview of the topic.
+            7. Format the summary using Markdown with the following structure:
+            - # for title
+            - ## for section headings
+            - **Bold** for important points
+            - Bullet points for key takeaways or lists
+            8. Omit redundant or overly detailed information, focusing only on the most impactful insights and actions.
+
+            """
+
+            user_query = f"""
+            Here is the information you need to create a **concise executive summary** for, in Markdown format:\n\n
+            **Topic**: [{topic_query}]\n\n
+            **Web Page Data**: [{web_page_data}]\n\n
+            Please provide a concise executive summary focusing only on high-level insights, broad trends, and actionable takeaways related to the topic, formatted in Markdown."""
+
+            system_message = {"role": "system", "content": system_instructions}
+            user_message = {"role": "user", "content": user_query}
+            messages = [system_message,user_message]
+
+            completion = self._openai.chat.completions.create(
+                model=self._openai_model_mini,
+                messages=messages
+            )
+
+
+            if completion.choices[0].finish_reason == "stop":
+                response_msg = completion.choices[0].message.content
+                return response_msg
+            else:
+                # handle refusal
+                print("finish reason not stop")
+                return None
+        except Exception as e:
+            print(e)
+            pass
+        return None
+
+    def key_figures_web_page_data(self, web_page_data, topic_query):
+        try:
+            system_instructions = f"""You are a research assistant. 
+            You are tasked with reviewing a web page based on a specific topic provided by the user. The web page contains both text and table data. 
+            Your goal is to identify and list key figures (such as influential people) and companies mentioned within the web page that are relevant to the given topic.
+            Focus on extracting the most relevant names of individuals and organizations that play a significant role in the developments or trends discussed.
+
+            Instructions:
+
+            1. Topic: {topic_query}
+            2. Review the web page data carefully, including any text and table data.
+            3. Focus on identifying and listing the key figures (such as important people, executives, or experts) and companies (including organizations or businesses) that are relevant to the topic.
+            4. Ensure the list is clear, concise, and relevant for a weekly update, prioritizing names that are closely tied to recent developments and important trends.
+            5. Use a professional tone, suitable for clients who are keeping up with industry players and developments.
+            6. Format the summary using Markdown with the following structure:
+                - # for title
+                - ## for section headings
+                - **Bold** for important points
+                - Bullet points for key takeaways or lists
+                - [Link](URL) format for links (if applicable)
+            7. If the page contains irrelevant or minor mentions of individuals or companies, omit them and focus only on the most significant names.
+
+            """
+
+            user_query = f"""
+            Here is the information you need to review for, in Markdown format::\n\n
+            **Topic**: [{topic_query}]\n\n
+            **Web Page Data**: [{web_page_data}]\n\n
+            Please provide a list of key figures and companies mentioned in the web page that are relevant to the topic."
+            """
+
+            system_message = {"role": "system", "content": system_instructions}
+            user_message = {"role": "user", "content": user_query}
+            messages = [system_message,user_message]
+
+            completion = self._openai.chat.completions.create(
+                model=self._openai_model_mini,
+                messages=messages
+            )
+
+
+            if completion.choices[0].finish_reason == "stop":
+                response_msg = completion.choices[0].message.content
+                return response_msg
+            else:
+                # handle refusal
+                print("finish reason not stop")
+                return None
+        except Exception as e:
+            print(e)
+            pass
+        return None
+
 
     def is_web_page_data_usable(self, web_page_data, topic_query):
         try:
@@ -226,7 +461,7 @@ class OpenAIClient:
             messages = [system_message,user_message]
 
             completion = self._openai.beta.chat.completions.parse(
-                model=self._openai_model,
+                model=self._openai_model_mini,
                 messages=messages,
                 response_format=IsWebPageUsable
             )
@@ -278,7 +513,7 @@ class OpenAIClient:
             messages = [system_message,user_message]
 
             completion = self._openai.chat.completions.create(
-                model=self._openai_model,
+                model=self._openai_model_mini,
                 messages=messages,
                 tools=tools
             )
@@ -329,7 +564,7 @@ class OpenAIClient:
             
             if requiresAction:
                 response = self._openai.chat.completions.create( 
-                    model=self._openai_model,
+                    model=self._openai_model_mini,
                     messages=messages,
                     tools=tools
                     )
