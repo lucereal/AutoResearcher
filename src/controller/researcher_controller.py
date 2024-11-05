@@ -1,8 +1,24 @@
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from src.researcher.agents.data_gatherer import DataGatherer
+import json
 
 app = FastAPI()
+
+origins = [
+    "http://localhost",
+    "http://localhost:3000",  # Add your frontend URL here
+    # Add other allowed origins if needed
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Initialize the DataGatherer service
 data_gatherer = DataGatherer()
@@ -12,7 +28,7 @@ class TopicRequest(BaseModel):
     source: str = "default_source"
 
 @app.post("/gather_data")
-async def gather_data(request: TopicRequest):
+def gather_data(request: TopicRequest):
     if request.source in ["news", "youtube"]:
         raise HTTPException(status_code=400, detail=f"The source '{request.source}' is not implemented.")
     

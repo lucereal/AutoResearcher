@@ -1,5 +1,5 @@
 # src/newsapi_service.py
-
+import asyncio
 from researcher.data_source_clients.newsapi_client import CustomNewsApiClient
 from researcher.language_models.openai_client import OpenAIClient
 from researcher.data_extraction_tools.web_page_reader import WebPageReader

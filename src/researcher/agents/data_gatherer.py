@@ -133,7 +133,7 @@ class DataGatherer:
         queries_and_sources = self.gather_queries_and_sources_newsapi(user_topic)
         for query_sources in queries_and_sources["query_results"]:
                 print("\tSummarizing sources for query: " + query_sources["query"])
-                for item in query_sources["results"]:
+                for item in query_sources["results"][0:1]:
                     print("\t\tchecking if " + item["url"] + " is usable")
                     # Call the is_web_page_data_usable function
                     # is_usable = self.openai_client.is_web_page_data_usable(item["content"], user_topic)
