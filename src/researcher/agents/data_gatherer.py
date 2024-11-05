@@ -1,11 +1,11 @@
 import json
 
-from data_source_clients.google_client import GoogleSearchClient
-from language_models.openai_client import OpenAIClient
-from data_extraction_tools.web_page_reader import WebPageReader
-from data_source_clients.youtube_client import YouTubeClient
-from data_source_clients.newsapi_client import CustomNewsApiClient
-from services.newsapi_service import NewsApiService
+from researcher.data_source_clients.google_client import GoogleSearchClient
+from researcher.language_models.openai_client import OpenAIClient
+from researcher.data_extraction_tools.web_page_reader import WebPageReader
+from researcher.data_source_clients.youtube_client import YouTubeClient
+from researcher.data_source_clients.newsapi_client import CustomNewsApiClient
+from researcher.services.newsapi_service import NewsApiService
 
 class DataGatherer:
     def __init__(self):
