@@ -1,7 +1,7 @@
+import asyncio
 import json
 import os
-from openai import OpenAI
-import openai
+from openai import AsyncOpenAI
 from dotenv import load_dotenv 
 from pydantic import BaseModel
 from typing import List
@@ -30,12 +30,12 @@ class OpenAIClient:
     _openai = None
     def __init__(self):
         self.api_key = os.getenv("OPENAI_API_KEY")
-        self._openai = OpenAI(api_key=self.api_key)
+        self._openai = AsyncOpenAI(api_key=self.api_key)
         self._openai_model = "gpt-4o"
         self._openai_model_mini = "gpt-4o-mini"
   
 
-    def is_news_article_preview_usable(self, article_preview, topic_query):
+    async def is_news_article_preview_usable(self, article_preview, topic_query):
         title = article_preview["title"]
         description = article_preview["description"]
         content_preview = article_preview["rawContent"]
@@ -66,7 +66,7 @@ class OpenAIClient:
             user_message = {"role": "user", "content": user_query}
             messages = [system_message,user_message]
 
-            completion = self._openai.beta.chat.completions.parse(
+            completion = await self._openai.beta.chat.completions.parse(
                 model=self._openai_model_mini,
                 messages=messages,
                 response_format=IsNewsPreviewUsable
@@ -86,7 +86,7 @@ class OpenAIClient:
             pass
         return None
             
-    def create_phrases_on_topic(self, topic_query):
+    async def create_phrases_on_topic(self, topic_query):
         try:
             system_instructions = """You are a research assistant. Your task is to take a user-provided topic and create 
                 related search phrases that can be used to gather relevant, high-quality media and data. The phrases should be very concise (2 words or less), 
@@ -118,7 +118,7 @@ class OpenAIClient:
             user_message = {"role": "user", "content": user_query}
             messages = [system_message,user_message]
 
-            completion = self._openai.beta.chat.completions.parse(
+            completion = await self._openai.beta.chat.completions.parse(
                 model=self._openai_model_mini,
                 messages=messages,
                 response_format=QueryListResult
@@ -136,7 +136,7 @@ class OpenAIClient:
             pass
         return None
     
-    def create_queries_on_topic(self, topic_query):
+    async def create_queries_on_topic(self, topic_query):
         try:
             system_instructions = """You are a research assistant. Your task is to take a user-provided topic and create 
             related queries and questions that can be used to search for relevant media and data. The queries should be 
@@ -168,7 +168,7 @@ class OpenAIClient:
             user_message = {"role": "user", "content": user_query}
             messages = [system_message,user_message]
 
-            completion = self._openai.beta.chat.completions.parse(
+            completion = await self._openai.beta.chat.completions.parse(
                 model=self._openai_model_mini,
                 messages=messages,
                 response_format=QueryListResult
@@ -186,7 +186,7 @@ class OpenAIClient:
             pass
         return None
 
-    def summarize_youtube_data(self, youtube_data, topic_query):
+    async def summarize_youtube_data(self, youtube_data, topic_query):
         try:
             system_instructions = f"""You are a research assistant. 
             You are tasked with summarizing a youtube audio transcript based on a specific topic provided by the user.
@@ -215,7 +215,7 @@ class OpenAIClient:
             user_message = {"role": "user", "content": user_query}
             messages = [system_message,user_message]
 
-            completion = self._openai.chat.completions.create(
+            completion = await self._openai.chat.completions.create(
                 model=self._openai_model_mini,
                 messages=messages
             )
@@ -233,7 +233,7 @@ class OpenAIClient:
             pass
         return None
     
-    def summarize_web_page_data(self, web_page_data, topic_query):
+    async def summarize_web_page_data(self, web_page_data, topic_query):
         try:
             system_instructions = f"""You are a research assistant. 
             You are tasked with summarizing a web page based on a specific topic provided by the user. The web page contains both text and table data. 
@@ -268,7 +268,7 @@ class OpenAIClient:
             user_message = {"role": "user", "content": user_query}
             messages = [system_message,user_message]
 
-            completion = self._openai.chat.completions.create(
+            completion = await self._openai.chat.completions.create(
                 model=self._openai_model_mini,
                 messages=messages
             )
@@ -286,7 +286,7 @@ class OpenAIClient:
             pass
         return None
 
-    def bulletpoint_web_page_data(self, web_page_data, topic_query):
+    async def bulletpoint_web_page_data(self, web_page_data, topic_query):
         try:
             system_instructions = f"""You are a research assistant. 
             You are tasked with summarizing a web page based on a specific topic provided by the user. The web page contains both text and table data.
@@ -315,7 +315,7 @@ class OpenAIClient:
             user_message = {"role": "user", "content": user_query}
             messages = [system_message,user_message]
 
-            completion = self._openai.chat.completions.create(
+            completion = await self._openai.chat.completions.create(
                 model=self._openai_model_mini,
                 messages=messages
             )
@@ -333,7 +333,7 @@ class OpenAIClient:
             pass
         return None
 
-    def executive_summary_web_page_data(self, web_page_data, topic_query):
+    async def executive_summary_web_page_data(self, web_page_data, topic_query):
         try:
             system_instructions = f"""You are a research assistant. 
             You are tasked with creating a highly concise executive summary of a web page based on a specific topic provided by the user. The web page contains both text and table data.
@@ -367,7 +367,7 @@ class OpenAIClient:
             user_message = {"role": "user", "content": user_query}
             messages = [system_message,user_message]
 
-            completion = self._openai.chat.completions.create(
+            completion = await self._openai.chat.completions.create(
                 model=self._openai_model_mini,
                 messages=messages
             )
@@ -385,7 +385,7 @@ class OpenAIClient:
             pass
         return None
 
-    def key_figures_web_page_data(self, web_page_data, topic_query):
+    async def key_figures_web_page_data(self, web_page_data, topic_query):
         try:
             system_instructions = f"""You are a research assistant. 
             You are tasked with reviewing a web page based on a specific topic provided by the user. The web page contains both text and table data. 
@@ -420,7 +420,7 @@ class OpenAIClient:
             user_message = {"role": "user", "content": user_query}
             messages = [system_message,user_message]
 
-            completion = self._openai.chat.completions.create(
+            completion = await self._openai.chat.completions.create(
                 model=self._openai_model_mini,
                 messages=messages
             )
@@ -439,7 +439,7 @@ class OpenAIClient:
         return None
 
 
-    def is_web_page_data_usable(self, web_page_data, topic_query):
+    async def is_web_page_data_usable(self, web_page_data, topic_query):
         try:
             system_instructions = f"""You are a research assistant. 
             You are an assistant that evaluates web page data to determine if it is usable for generating a summary related to a specific topic. 
@@ -460,7 +460,7 @@ class OpenAIClient:
             user_message = {"role": "user", "content": user_query}
             messages = [system_message,user_message]
 
-            completion = self._openai.beta.chat.completions.parse(
+            completion = await self._openai.beta.chat.completions.parse(
                 model=self._openai_model_mini,
                 messages=messages,
                 response_format=IsWebPageUsable
@@ -483,7 +483,7 @@ class OpenAIClient:
     def get_order_status_tool(self, order_id: str) -> str:
         return "Your order is on the way!";
 
-    def get_order_status(self):
+    async def get_order_status(self):
         try:
             tools = [
                 {
@@ -512,7 +512,7 @@ class OpenAIClient:
             user_message = {"role": "user", "content": "What is my order status? order id = 1234"}
             messages = [system_message,user_message]
 
-            completion = self._openai.chat.completions.create(
+            completion = await self._openai.chat.completions.create(
                 model=self._openai_model_mini,
                 messages=messages,
                 tools=tools
@@ -525,7 +525,7 @@ class OpenAIClient:
             pass
         return None
     
-    def handle_completion_with_tools(self, completion, messages, tools):
+    async def handle_completion_with_tools(self, completion, messages, tools):
         response = completion
         requiresAction = True
         while requiresAction:
@@ -563,7 +563,7 @@ class OpenAIClient:
                 #return "Unexpected finish_reason: " + finish_reason
             
             if requiresAction:
-                response = self._openai.chat.completions.create( 
+                response = await self._openai.chat.completions.create( 
                     model=self._openai_model_mini,
                     messages=messages,
                     tools=tools
@@ -580,10 +580,10 @@ class OpenAIClient:
                     print(f"{msg.role}: {msg.content}")
         return None
 
-    def transcribe_audio_file(self, audio_file_path):
+    async def transcribe_audio_file(self, audio_file_path):
         try:
-            with open(audio_file_path, "rb") as audio_file:
-                transcription = self._openai.audio.transcriptions.create(
+            async with open(audio_file_path, "rb") as audio_file:
+                transcription = await self._openai.audio.transcriptions.create(
                     model="whisper-1",
                     file=audio_file
                 )
@@ -594,21 +594,52 @@ class OpenAIClient:
         return None
 
     
-    def transcribe_audio_file_chunks(self, audio_file_paths: List[str]) -> List[str]:
+    async def transcribe_audio_file_chunks(self, audio_file_paths: List[str]) -> List[str]:
         transcriptions = []
         for file_path in audio_file_paths:
-            transcription_text = self.transcribe_audio_file(file_path)
+            transcription_text = await self.transcribe_audio_file(file_path)
             if transcription_text:
                 transcriptions.append(transcription_text)
         return transcriptions
     
-if __name__ == "__main__":
+# Example usage:
+async def main():
     # Example usage:
     client = OpenAIClient()
 
-    audio_file_path = "audio_data/cefef2bd-973c-472b-96d4-cd9699c0987c/cefef2bd-973c-472b-96d4-cd9699c0987c_chunk_1.mp3"
-    transcription_text = client.transcribe_audio_file(audio_file_path)
-    print(transcription_text)
+    # audio_file_path = "audio_data/cefef2bd-973c-472b-96d4-cd9699c0987c/cefef2bd-973c-472b-96d4-cd9699c0987c_chunk_1.mp3"
+    # transcription_text = client.transcribe_audio_file(audio_file_path)
+    # print(transcription_text)
+
+    with open("results/Smart_Cities_and_Urban_Planning_results_with_summaries.json", "r") as json_file:
+        data = json.load(json_file)
+            
+    topic = "Smart Cities and Urban Planning"
+
+    for query_results in data["query_results"]:
+            print("Summarizing sources for query: " + query_results["query"])
+            for item in query_results["results"]:
+                web_page_data = item["content"]["data"]
+                # print("\tchecking if " + item["link"] + " is usable")
+                # Call the is_web_page_data_usable function
+                is_usable = await client.is_web_page_data_usable(web_page_data, topic)
+                print("\t" + item["url"] + " is usable: " + str(is_usable))
+                if is_usable:
+                    # Call the summarize_web_page_data function
+                    summary = await client.summarize_web_page_data(web_page_data, topic)
+                    print("summary:")
+                    print(summary[:200]+"...")
+
+if __name__ == "__main__":
+    asyncio.run(main())
+
+# if __name__ == "__main__":
+#     # Example usage:
+#     client = OpenAIClient()
+
+#     audio_file_path = "audio_data/cefef2bd-973c-472b-96d4-cd9699c0987c/cefef2bd-973c-472b-96d4-cd9699c0987c_chunk_1.mp3"
+#     transcription_text = client.transcribe_audio_file(audio_file_path)
+#     print(transcription_text)
 
     # with open("results.json", "r") as json_file:
     #         data = json.load(json_file)
