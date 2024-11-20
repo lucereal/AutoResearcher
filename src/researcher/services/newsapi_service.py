@@ -11,7 +11,7 @@ class NewsApiService:
         self.web_reader = WebPageReader()
         self.article_pull_limit = 2
 
-    def fetch_and_check_usability(self, query):
+    async def fetch_and_check_usability(self, query):
         # Fetch articles from NewsAPI
         articles_result = self.newsapi_client.get_all_articles_day_range(query)
         
@@ -24,21 +24,21 @@ class NewsApiService:
         processed_articles = []
         for article in articles:
             article_preview = {"title": article["title"], "description": article["description"], "rawContent": article["rawContent"]}
-            is_usable = self.openai_client.is_news_article_preview_usable(article_preview, query)
+            is_usable = await self.openai_client.is_news_article_preview_usable(article_preview, query)
             if is_usable:
                 processed_articles.append(article)
         return {"success": True, "articles": processed_articles}
     
-    def scrape_article_content(self, url):
-        return self.web_reader.extract_content(url)
+    async def scrape_article_content(self, url):
+        return await self.web_reader.extract_content(url)
 
-    def fetch_articles(self, query):
+    async def fetch_articles(self, query):
         try:
-            article_list = self.fetch_and_check_usability(query)
+            article_list = await self.fetch_and_check_usability(query)
             result_article_list = []
             if article_list["success"] == True:
                 for article in article_list["articles"][0:self.article_pull_limit]:
-                    article_content = self.scrape_article_content(article["url"])
+                    article_content = await self.scrape_article_content(article["url"])
                     article["content"] = article_content
                     result_article_list.append(article)
                 return {"success": True, "articles": result_article_list}
@@ -48,8 +48,11 @@ class NewsApiService:
             print(f"An error occurred while fetching articles: {e}")
             return {"success": False, "articles": []}
 
-if __name__ == "__main__":
+async def main():
     service = NewsApiService()
     query = "trending in music industry"
-    result = service.fetch_articles(query)
+    result = await service.fetch_and_check_usability(query)
     print(result)
+
+if __name__ == "__main__":
+    asyncio.run(main()) 

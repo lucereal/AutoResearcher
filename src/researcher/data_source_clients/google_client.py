@@ -1,7 +1,9 @@
+import asyncio
 import os
 from dotenv import load_dotenv
 import requests
 import json
+import httpx
 from researcher.models.standard_article import ArticleContent, StandardArticle
 from researcher.data_extraction_tools.web_page_reader import WebPageReader
 
@@ -29,40 +31,43 @@ class GoogleSearchClient():
         filterSites = "youtube.com"  # Filter out YouTube results
         return f"{self.api_url}?key={self.api_key}&cx={self.api_cx}&q={query}&dateRestrict=m1&siteSearch={filterSites}&siteSearchFilter=i"
 
-    def get_google_search_results(self, query):
+    async def get_google_search_results(self, query):
         request_url = self.get_request_url(query)
-        response = requests.get(request_url)
-        response.raise_for_status()
-        
-        return GoogleSearchResult.from_json(response.json())
+        async with httpx.AsyncClient() as client:
+            response = await client.get(request_url)
+            response.raise_for_status()
+            return GoogleSearchResult.from_json(response.json())
     
-    def get_search_result_articles(self, query):
+    
+    async def get_search_result_articles(self, query):
         try:
             request_url = self.get_request_url(query)
             response = requests.get(request_url)
-            response.raise_for_status()
-            googleSearchResult = GoogleSearchResult.from_json(response.json()) 
-            articles = []
-            for item in googleSearchResult.items[0:3]:
-                article_content = self.web_reader.extract_content(item.link)
-                if(article_content["success"]):
-                    article = StandardArticle(
-                        title=item.title,
-                        url=item.link,
-                        content=ArticleContent.from_dict(article_content["data"])
-                    )
-                    articles.append(article.to_dict())
-            return {"success": True, "articles": articles}
+            async with httpx.AsyncClient() as client:
+                response = await client.get(request_url)
+                response.raise_for_status()
+                googleSearchResult = GoogleSearchResult.from_json(response.json()) 
+                articles = []
+                for item in googleSearchResult.items[0:3]:
+                    article_content = await self.web_reader.extract_content(item.link)
+                    if(article_content["success"]):
+                        article = StandardArticle(
+                            title=item.title,
+                            url=item.link,
+                            content=ArticleContent.from_dict(article_content["data"])
+                        )
+                        articles.append(article.to_dict())
+                return {"success": True, "articles": articles}
         except Exception as e:
             print(f"An error occurred while fetching Google search results: {e}")
             return {"success": False, "articles": []}
         
-    def get_google_youtube_search_results(self, query):
+    async def get_google_youtube_search_results(self, query):
         request_url = self.get_request_url_with_youtube(query)
-        response = requests.get(request_url)
-        response.raise_for_status()
-        
-        return GoogleSearchResult.from_json(response.json())
+        async with httpx.AsyncClient() as client:
+            response = await client.get(request_url)
+            response.raise_for_status()
+            GoogleSearchResult.from_json(response.json())
 
 
 class GoogleSearchResult:
@@ -137,9 +142,13 @@ class GoogleSearchItem:
             # "pagemap": self.pagemap.to_dict() if self.pagemap else {}
         }
     
-if __name__ == "__main__":
+
+async def main():
     # Example usage:
     client = GoogleSearchClient()
-    results = client.get_search_result_articles("find the best restaurant in San Francisco")
+    results = await client.get_search_result_articles("find the best restaurant in San Francisco")
     # results.print_items()
     print(json.dumps(results, indent=2))
+
+if __name__ == "__main__":
+    asyncio.run(main())
