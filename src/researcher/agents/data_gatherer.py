@@ -1,11 +1,11 @@
 import json
-
-from data_source_clients.google_client import GoogleSearchClient
-from language_models.openai_client import OpenAIClient
-from data_extraction_tools.web_page_reader import WebPageReader
-from data_source_clients.youtube_client import YouTubeClient
-from data_source_clients.newsapi_client import CustomNewsApiClient
-from services.newsapi_service import NewsApiService
+import asyncio
+from researcher.data_source_clients.google_client import GoogleSearchClient
+from researcher.language_models.openai_client import OpenAIClient
+from researcher.data_extraction_tools.web_page_reader import WebPageReader
+from researcher.data_source_clients.youtube_client import YouTubeClient
+from researcher.data_source_clients.newsapi_client import CustomNewsApiClient
+from researcher.services.newsapi_service import NewsApiService
 
 class DataGatherer:
     def __init__(self):
@@ -24,16 +24,16 @@ class DataGatherer:
         audio_file_json = self.youtube_client.download_audio_json(url)
         return audio_file_json
     
-    def gather_google_data(self, search_query):
-        results = self.google_client.get_google_search_results(search_query)
+    async def gather_google_data(self, search_query):
+        results = await self.google_client.get_google_search_results(search_query)
         return results
     
-    def gather_google_articles(self, search_query):
-        results = self.google_client.get_search_result_articles(search_query)
+    async def gather_google_articles(self, search_query):
+        results = await self.google_client.get_search_result_articles(search_query)
         return results
     
-    def gather_newsapi_articles(self, search_query):
-        results = self.newsapi_service.fetch_articles(search_query)
+    async def gather_newsapi_articles(self, search_query):
+        results = await self.newsapi_service.fetch_articles(search_query)
         return results
 
 
@@ -48,8 +48,8 @@ class DataGatherer:
         
         return queries_and_sources
 
-    def gather_queries_and_sources(self, user_topic):
-        queryList = self.openai_client.create_queries_on_topic(user_topic)
+    async def gather_queries_and_sources(self, user_topic):
+        queryList = await self.openai_client.create_queries_on_topic(user_topic)
         queries_and_sources = {"queries": queryList, "query_results": []}
         
         for query in queryList[0:3]:
@@ -59,27 +59,27 @@ class DataGatherer:
         
         return queries_and_sources
 
-    def gather_queries_and_sources_newsapi(self, user_topic):
-        queryList = self.openai_client.create_queries_on_topic(user_topic)
-        phraseList = self.openai_client.create_phrases_on_topic(user_topic)
+    async def gather_queries_and_sources_newsapi(self, user_topic):
+        queryList = await self.openai_client.create_queries_on_topic(user_topic)
+        phraseList = await self.openai_client.create_phrases_on_topic(user_topic)
         queries_and_sources = {"queries": queryList, "phrases": phraseList, "query_results": []}
         truncated_topic = user_topic[:500]
-        user_topic_articles = self.gather_newsapi_articles(truncated_topic)
+        user_topic_articles = await self.gather_newsapi_articles(truncated_topic)
         if user_topic_articles["success"]:
             user_topic_articles_results = {"query": truncated_topic, "results": user_topic_articles["articles"]}
             queries_and_sources["query_results"].append(user_topic_articles_results)
 
         for phrase in phraseList[0:1]:
-            phrase_articles = self.gather_newsapi_articles(phrase)
+            phrase_articles = await self.gather_newsapi_articles(phrase)
             if phrase_articles["success"]:
                 query_result = {"query": phrase, "results": phrase_articles["articles"]}
                 queries_and_sources["query_results"].append(query_result)
         
         return queries_and_sources
 
-    def gather_web_page_data(self, url):
+    async def gather_web_page_data(self, url):
         reader = WebPageReader()
-        data = reader.extract_content(url)
+        data = await reader.extract_content(url)
         return data
 
     def gather_all_youtube_data(self, user_topic):
@@ -102,15 +102,15 @@ class DataGatherer:
         
         return topic_sources_data
 
-    def gather_all_data(self, user_topic):
+    async def gather_all_data(self, user_topic):
         print("\ngathering all data for user topic: ", user_topic)
-        queries_and_sources = self.gather_queries_and_sources(user_topic)
+        queries_and_sources = await self.gather_queries_and_sources(user_topic)
         return queries_and_sources
     
-    def gather_data_and_summarize_sources(self, user_topic):
+    async def gather_data_and_summarize_sources(self, user_topic):
         print(f"\nGathering data and summarizing sources for topic: {user_topic}")
 
-        data = self.gather_all_data(user_topic)
+        data = await self.gather_all_data(user_topic)
         for query_sources in data["query_results"]:
                 print("\tSummarizing sources for query: " + query_sources["query"])
                 if query_sources["results"]["success"]:
@@ -127,13 +127,13 @@ class DataGatherer:
                             print("\t\tsummary: " + summary.replace('\n\n', ' ').replace('\n', ' ')[:200]+"...")
         return data
 
-    def gather_newsapi_data_and_summarize_sources(self, user_topic):
+    async def gather_newsapi_data_and_summarize_sources(self, user_topic):
         print(f"\nGathering data and summarizing sources for topic: {user_topic}")
 
-        queries_and_sources = self.gather_queries_and_sources_newsapi(user_topic)
+        queries_and_sources = await self.gather_queries_and_sources_newsapi(user_topic)
         for query_sources in queries_and_sources["query_results"]:
                 print("\tSummarizing sources for query: " + query_sources["query"])
-                for item in query_sources["results"]:
+                for item in query_sources["results"][0:1]:
                     print("\t\tchecking if " + item["url"] + " is usable")
                     # Call the is_web_page_data_usable function
                     # is_usable = self.openai_client.is_web_page_data_usable(item["content"], user_topic)
@@ -142,13 +142,13 @@ class DataGatherer:
                     item["isUsable"] = is_usable
                     if is_usable:
                         # Call the summarize_web_page_data function
-                        summary = self.openai_client.summarize_web_page_data(item["content"], user_topic)
+                        summary = await self.openai_client.summarize_web_page_data(item["content"], user_topic)
                         item["summary"] = summary
-                        executive_summary = self.openai_client.executive_summary_web_page_data(item["content"], user_topic)
+                        executive_summary = await self.openai_client.executive_summary_web_page_data(item["content"], user_topic)
                         item["executive_summary"] = executive_summary
-                        bullet_points = self.openai_client.bulletpoint_web_page_data(item["content"], user_topic)
+                        bullet_points = await self.openai_client.bulletpoint_web_page_data(item["content"], user_topic)
                         item["bullet_points"] = bullet_points
-                        key_figures = self.openai_client.key_figures_web_page_data(item["content"], user_topic)
+                        key_figures = await self.openai_client.key_figures_web_page_data(item["content"], user_topic)
                         item["key_figures"] = key_figures
                         print("\t\tsummary: " + summary.replace('\n\n', ' ').replace('\n', ' ')[:200]+"...")
         return queries_and_sources
@@ -177,26 +177,41 @@ class DataGatherer:
         return data
 
 # Example usage:
-if __name__ == "__main__":
+async def main():
     data_gatherer = DataGatherer()
     user_topic = "Virtual Reality in Education"
     file_name = user_topic.replace(" ", "_") + "_results_with_summaries.json"
     print("in data_gatherer main")
-    # all_data = data_gatherer.gather_youtube_data_and_summarize(user_topic)
-    # print(all_data)
-    # # all_data = data_gatherer.gather_data_and_summarize_sources(user_topic)
-    # # # Save the results to a JSON file
-    # with open("results/"+file_name, "w") as json_file:
-    #     json.dump(all_data, json_file, indent=2)
-
-    # all_data = data_gatherer.gather_all_data(user_topic)
-    # # Save the results to a JSON file
-    # with open("results/"+file_name, "w") as json_file:
-    #     json.dump(all_data, json_file, indent=2)
-    
-    all_data = data_gatherer.gather_newsapi_data_and_summarize_sources(user_topic)
-    # Save the results to a JSON file
+    result = await data_gatherer.gather_newsapi_data_and_summarize_sources(user_topic)
     with open("results/"+file_name, "w") as json_file:
-        json.dump(all_data, json_file, indent=2)
+        json.dump(result, json_file, indent=2)
 
     print("Results have been saved to " + file_name)
+    print(result)
+
+if __name__ == "__main__":
+    asyncio.run(main())
+
+# if __name__ == "__main__":
+#     data_gatherer = DataGatherer()
+#     user_topic = "Virtual Reality in Education"
+#     file_name = user_topic.replace(" ", "_") + "_results_with_summaries.json"
+#     print("in data_gatherer main")
+#     # all_data = data_gatherer.gather_youtube_data_and_summarize(user_topic)
+#     # print(all_data)
+#     # # all_data = data_gatherer.gather_data_and_summarize_sources(user_topic)
+#     # # # Save the results to a JSON file
+#     # with open("results/"+file_name, "w") as json_file:
+#     #     json.dump(all_data, json_file, indent=2)
+
+#     # all_data = data_gatherer.gather_all_data(user_topic)
+#     # # Save the results to a JSON file
+#     # with open("results/"+file_name, "w") as json_file:
+#     #     json.dump(all_data, json_file, indent=2)
+    
+#     all_data = data_gatherer.gather_newsapi_data_and_summarize_sources(user_topic)
+#     # Save the results to a JSON file
+#     with open("results/"+file_name, "w") as json_file:
+#         json.dump(all_data, json_file, indent=2)
+
+#     print("Results have been saved to " + file_name)

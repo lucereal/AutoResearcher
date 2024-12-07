@@ -1,43 +1,49 @@
-import requests
+import asyncio
 from bs4 import BeautifulSoup
-from playwright.sync_api import sync_playwright
-from playwright_stealth import stealth_sync
+from playwright.async_api import async_playwright
+from playwright_stealth import stealth_async
 
 
 class WebPageReader:
     def __init__(self):
         pass
 
-    def read_web_page(self, url):
-        with sync_playwright() as p:
-            browser = p.chromium.launch(headless=True)
+    def handle_page_error(error):
+        print(f"JavaScript error on page: {error}")
+
+    async def read_web_page(self, url):
+        async with async_playwright() as p:
+            browser = await p.chromium.launch(headless=True)
             #page = browser.new_page()
-            context = browser.new_context(user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36")
+            context = await browser.new_context(user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36")
             # context = browser.new_context(
             #     user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
             #     ignore_https_errors=True,
             #     bypass_csp=True,
             #     extra_http_headers={"Upgrade-Insecure-Requests": "1"}
             # )
-            page = context.new_page()
-            stealth_sync(page)
+            page = await context.new_page()
+
+            await stealth_async(page)
+
             # page.set_user_agent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36")
 
             try:
-                page.goto(url, timeout=60000)  # Set a timeout of 60 seconds
-                page.wait_for_timeout(10000)  # Wait for 10 seconds to allow the page to load
+                # page.on('pageerror', self.handle_page_error)
+                await page.goto(url, timeout=60000)  # Set a timeout of 60 seconds
+                await page.wait_for_load_state('networkidle')  # Wait for the network to be idle
 
                 # Handle "accept cookies" pop-up
                 try:
-                    accept_button = page.query_selector("button:has-text('Accept')")
+                    accept_button = await page.query_selector("button:has-text('Accept')")
                     if accept_button:
-                        if accept_button.is_visible():
-                            accept_button.click()
-                            page.wait_for_timeout(2000)  # Wait for 2 seconds to allow the pop-up to close
+                        if await accept_button.is_visible():
+                            await accept_button.click()
+                            await page.wait_for_timeout(2000)  # Wait for 2 seconds to allow the pop-up to close
                 except Exception as e:
                     print(f"Error handling cookies pop-up: {e}")
 
-                content = page.content()
+                content = await page.content()
 
 
                 # Handle case where captcha appears and do not use that source
@@ -48,16 +54,16 @@ class WebPageReader:
 
             except Exception as e:
                 print(f"Error navigating to {url}: {e}")
-                browser.close()
+                await browser.close()
                 return None
 
 
-            browser.close()
+            await browser.close()
         soup = BeautifulSoup(content, 'html.parser')
         return soup
 
-    def extract_content(self, url):
-        soup = self.read_web_page(url)
+    async def extract_content(self, url):
+        soup = await self.read_web_page(url)
         if soup is None:
             return {
                 "success": False,
@@ -98,22 +104,26 @@ class WebPageReader:
                 "data": "No body tag found"
             }                    
     
-    def prettify_web_page(self, url):
-        soup = self.read_web_page(url)
+    async def prettify_web_page(self, url):
+        soup = await self.read_web_page(url)
         if soup:
             return soup.prettify()
         return "CAPTCHA detected, skipping this URL."
-
+    
 # Example usage:
-if __name__ == "__main__":
+
+async def main():
     reader = WebPageReader()
     # url = 'https://www.coingecko.com/en/highlights/high-volume'
-    # url = 'https://explodingtopics.com/blog/cryptocurrency-trends'
-    url = 'https://www.mckinsey.com/capabilities/quantumblack/our-insights/the-state-of-ai-in-2023-generative-ais-breakout-year'
-    result = reader.extract_important_data(url)
+    url = 'https://explodingtopics.com/blog/cryptocurrency-trends'
+    #url = 'https://www.mckinsey.com/capabilities/quantumblack/our-insights/the-state-of-ai-in-2023-generative-ais-breakout-year'
+    result = await reader.extract_content(url)
     if result["success"]:
         print("Page data extracted successfully:")
         print(result["data"])
     else:
         print("Failed to extract page data:")
         print(result["data"])
+
+if __name__ == "__main__":
+    asyncio.run(main())
