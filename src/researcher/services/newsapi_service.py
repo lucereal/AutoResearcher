@@ -9,7 +9,7 @@ class NewsApiService:
         self.newsapi_client = CustomNewsApiClient()
         self.openai_client = OpenAIClient()
         self.web_reader = WebPageReader()
-        self.article_pull_limit = 2
+        self.article_pull_limit = 1
 
     async def fetch_and_check_usability(self, query):
         # Fetch articles from NewsAPI
