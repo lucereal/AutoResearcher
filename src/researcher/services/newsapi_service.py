@@ -13,7 +13,7 @@ class NewsApiService:
 
     async def fetch_and_check_usability(self, query):
         # Fetch articles from NewsAPI
-        articles_result = self.newsapi_client.get_all_articles_day_range(query)
+        articles_result = await self.newsapi_client.get_all_articles_day_range_async(query)
         
         if not articles_result["success"]:
             return {"success": False, "message": "Failed to fetch articles from NewsAPI"}
