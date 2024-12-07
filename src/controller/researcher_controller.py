@@ -1,8 +1,11 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+from uvicorn import Config, Server
 from src.researcher.agents.data_gatherer import DataGatherer
 import json
+import os
+import asyncio
 
 app = FastAPI()
 
@@ -28,18 +31,43 @@ class TopicRequest(BaseModel):
     source: str = "default_source"
 
 @app.post("/gather_data")
-def gather_data(request: TopicRequest):
+async def gather_data(request: TopicRequest):
     if request.source in ["news", "youtube"]:
         raise HTTPException(status_code=400, detail=f"The source '{request.source}' is not implemented.")
     
     user_topic = request.topic
     if request.source == "default_source":
-        result = data_gatherer.gather_newsapi_data_and_summarize_sources(user_topic)
+        result = await data_gatherer.gather_newsapi_data_and_summarize_sources(user_topic)
     else:
         raise HTTPException(status_code=400, detail=f"Unknown source: {request.source}")
     
     return result
 
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+
+class ProactorServer(Server):
+    def run(self, sockets=None):
+        loop = asyncio.ProactorEventLoop()
+        asyncio.set_event_loop(loop) # since this is the default in Python 3.10, explicit selection can also be omitted
+        asyncio.run(self.serve(sockets=sockets))
+
+if __name__ == '__main__':
+    config = Config(app=app, host="0.0.0.0", port=8000, reload=True)
+    server = ProactorServer(config=config)
+    server.run()
+
+
+
+
+# if __name__ == "__main__":
+#     if os.name == "nt":
+#         loop = asyncio.ProactorEventLoop()
+#         asyncio.set_event_loop(loop)
+#         # asyncio.set_event_loop_policy(asyncio.WindowsProactorEventLoopPolicy())
+#     import uvicorn
+#     uvicorn.run(app, host="0.0.0.0", port=8000, reload=False)
+#     #     uvicorn.run(
+#     #     "test:app",
+#     #     host="0.0.0.0",
+#     #     reload=False,
+#     #     port=8002
+#     # )

@@ -50,8 +50,8 @@ class NewsApiService:
 
 async def main():
     service = NewsApiService()
-    query = "trending in music industry"
-    result = await service.fetch_and_check_usability(query)
+    query = "quantum cryptography"
+    result = await service.fetch_articles(query)
     print(result)
 
 if __name__ == "__main__":
