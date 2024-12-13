@@ -9,9 +9,8 @@ class NewsApiService:
         self.newsapi_client = CustomNewsApiClient()
         self.openai_client = OpenAIClient()
         self.web_reader = WebPageReader()
-        self.article_pull_limit = 1
 
-    async def fetch_and_check_usability(self, query):
+    async def fetch_and_check_usability(self, query, pull_target):
         # Fetch articles from NewsAPI
         articles_result = await self.newsapi_client.get_all_articles_day_range_async(query)
         
@@ -23,6 +22,8 @@ class NewsApiService:
         # Process articles using OpenAI
         processed_articles = []
         for article in articles:
+            if len(processed_articles) >= pull_target:
+                break
             article_preview = {"title": article["title"], "description": article["description"], "rawContent": article["rawContent"]}
             is_usable = await self.openai_client.is_news_article_preview_usable(article_preview, query)
             if is_usable:
@@ -32,12 +33,12 @@ class NewsApiService:
     async def scrape_article_content(self, url):
         return await self.web_reader.extract_content(url)
 
-    async def fetch_articles(self, query):
+    async def fetch_articles(self, query, pull_target=1):
         try:
-            article_list = await self.fetch_and_check_usability(query)
+            article_list = await self.fetch_and_check_usability(query, pull_target)
             result_article_list = []
             if article_list["success"] == True:
-                for article in article_list["articles"][0:self.article_pull_limit]:
+                for article in article_list["articles"]:
                     article_content = await self.scrape_article_content(article["url"])
                     article["content"] = article_content
                     result_article_list.append(article)
@@ -51,7 +52,7 @@ class NewsApiService:
 async def main():
     service = NewsApiService()
     query = "quantum cryptography"
-    result = await service.fetch_articles(query)
+    result = await service.fetch_articles(query, 5)
     print(result)
 
 if __name__ == "__main__":

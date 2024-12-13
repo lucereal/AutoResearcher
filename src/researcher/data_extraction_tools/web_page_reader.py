@@ -3,10 +3,17 @@ from bs4 import BeautifulSoup
 from playwright.async_api import async_playwright
 from playwright_stealth import stealth_async
 
-
 class WebPageReader:
     def __init__(self):
         pass
+        self.failed_urls_file = "webpage_reader_error_urls/failed_urls.txt"
+
+    async def log_failed_url(self, url):
+        await asyncio.to_thread(self._write_to_file, url)
+
+    def _write_to_file(self, url):
+        with open(self.failed_urls_file, mode='a') as file:
+            file.write(f"{url}\n")
 
     def handle_page_error(error):
         print(f"JavaScript error on page: {error}")
@@ -65,6 +72,7 @@ class WebPageReader:
     async def extract_content(self, url):
         soup = await self.read_web_page(url)
         if soup is None:
+            await self.log_failed_url(url)
             return {
                 "success": False,
                 "data": "couldn't read web page"
@@ -99,6 +107,7 @@ class WebPageReader:
                 }
             }
         else:
+            await self.log_failed_url(url)
             return {
                 "success": False,
                 "data": "No body tag found"
@@ -115,8 +124,8 @@ class WebPageReader:
 async def main():
     reader = WebPageReader()
     # url = 'https://www.coingecko.com/en/highlights/high-volume'
-    url = 'https://explodingtopics.com/blog/cryptocurrency-trends'
-    #url = 'https://www.mckinsey.com/capabilities/quantumblack/our-insights/the-state-of-ai-in-2023-generative-ais-breakout-year'
+    #url = 'https://explodingtopics.com/blog/cryptocurrency-trends'
+    url = 'https://www.mckinsey.com/capabilities/quantumblack/our-insights/the-state-of-ai-in-2023-generative-ais-breakout-year'
     result = await reader.extract_content(url)
     if result["success"]:
         print("Page data extracted successfully:")

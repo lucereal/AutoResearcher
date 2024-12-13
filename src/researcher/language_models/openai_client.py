@@ -301,6 +301,10 @@ class OpenAIClient:
             4. Keep the bullet points short—just a few words or one brief sentence for each point.
             5. Use a professional tone, suitable for clients who need quick, high-impact information.
             6. Format the list of bullet points in Markdown.
+            - # for title
+            - ## for section headings
+            - **Bold** for important points
+            - Bullet points for key takeaways or lists            
             7. Omit any redundant information or general context that does not provide immediate value.
 
             """
@@ -353,6 +357,7 @@ class OpenAIClient:
             - ## for section headings
             - **Bold** for important points
             - Bullet points for key takeaways or lists
+            - [Link](URL) format for links (if applicable)
             8. Omit redundant or overly detailed information, focusing only on the most impactful insights and actions.
 
             """
