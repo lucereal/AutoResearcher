@@ -55,12 +55,18 @@ class NewsApiAgent:
 
         phrase_results = await self.gather_news_api_data(user_topic, phrase_list[0:num_phrases], num_articles)
 
+        executive_summaries = []
+
         topic_result = {"queries": [], "phrases": phrase_list, "phrase_results": []}
         for result in phrase_results:
                 print("\tSummarizing sources for query: " + result["query"])
                 for item in result["results"][0:num_articles]:
                     result_data = await self.summarize_news_data(user_topic, item)
-                            
+                    executive_summaries.append(result_data["executive_summary"])
+
+
+
+        topic_result["full_summary"] = await self.openai_client.summarize_topic_summaries(user_topic, executive_summaries)                 
         topic_result["phrase_results"] = phrase_results
         return topic_result
     

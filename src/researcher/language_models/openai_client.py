@@ -339,27 +339,30 @@ class OpenAIClient:
 
     async def executive_summary_web_page_data(self, web_page_data, topic_query):
         try:
-            system_instructions = f"""You are a research assistant. 
-            You are tasked with creating a highly concise executive summary of a web page based on a specific topic provided by the user. The web page contains both text and table data.
-            The goal is to provide a high-level overview that highlights only the most important insights, broad developments, and critical data related to the given topic.
-            The executive summary should focus on essential, big-picture information, omitting unnecessary details and emphasizing actionable takeaways for decision-makers.
+            system_instructions = f"""
+            You are a highly skilled research assistant tasked with creating concise executive summaries of web pages based on a specific topic provided by the user. The goal is to deliver a high-level overview with actionable insights tailored for decision-makers.
 
-            Instructions:
+            ### Instructions:
+            1. **Topic**: {topic_query}  
+            Analyze the web page carefully, including both text and table data. Extract only the most critical and impactful information.  
+            2. **Summary Requirements**:  
+            - Highlight **key insights**, **recent developments**, and **actionable takeaways** related to the topic.  
+            - Focus on **broad trends**, **major initiatives**, and **solutions**, omitting overly detailed or redundant information.  
+            - Write in a **professional tone**, suitable for decision-makers who need a quick, high-level overview.  
 
-            1. Topic: {topic_query}
-            2. Review the web page data carefully, including any text and table data.
-            3. Create a **concise executive summary** that highlights the key insights, recent developments, and actionable takeaways in a few sentences or bullet points.
-            4. Focus on broad, high-level categories such as trends, major initiatives, and impactful solutions, rather than specific project details.
-            5. Keep the summary short and focused—no more than a couple of bullet points or brief sentences for each section.
-            6. Use a professional tone, suitable for decision-makers and clients who need a quick, high-level overview of the topic.
-            7. Format the summary using Markdown with the following structure:
-            - # for title
-            - ## for section headings
-            - **Bold** for important points
-            - Bullet points for key takeaways or lists
-            - [Link](URL) format for links (if applicable)
-            8. Omit redundant or overly detailed information, focusing only on the most impactful insights and actions.
+            3. **Formatting** (Markdown):  
+            - Use `##` for section headings (e.g., Key Insights, Major Developments, Actionable Takeaways).  
+            - Use **bold** for emphasis and bullet points for clarity.  
+            - Include hyperlinks in `[Link](URL)` format, if applicable.  
+            - **Do not include a title like "Executive Summary."**
 
+            4. **Style Guidelines**:  
+            - Keep it concise and focused: no more than 2-3 bullet points per section.  
+            - Prioritize **impactful insights** and **actionable recommendations** over minor details.  
+            - Ensure clarity and readability for quick skimming.
+
+            5. **Output Objective**:  
+            Deliver a well-organized and polished executive summary in Markdown format that highlights only the most important information, avoiding unnecessary details.
             """
 
             user_query = f"""
@@ -390,6 +393,76 @@ class OpenAIClient:
             pass
         return None
 
+    async def summarize_topic_summaries(self, topic_query, summaries_list):
+        try:
+
+            system_instructions = f"""
+            You are a highly skilled research assistant tasked with synthesizing a **detailed yet concise executive summary** based on a list of summaries provided by the user. Your goal is to deliver a **high-level overview** that captures the most critical insights, trends, and actionable takeaways, ensuring the summary is tailored for decision-makers.
+
+            ### Instructions:
+            1. **Topic**: {topic_query}  
+            Carefully analyze the provided list of summaries and extract only the most impactful information, ensuring all meaningful insights are included.  
+
+            2. **Guidelines for Structuring the Summary**:  
+            - Use the following sections **only if the data provides meaningful content for that section**:  
+                - **Key Insights**: High-level trends or data points framing the topic.  
+                - **Major Developments**: Recent updates, innovations, or events.  
+                - **Trends and Patterns**: Recurring themes or shifts across the sources.  
+                - **Actionable Takeaways**: Specific recommendations or practical steps for decision-makers.  
+                - **Opportunities and Risks**: Areas of growth or caution.  
+                - **Noteworthy Examples or Case Studies**: Relatable real-world applications or notable projects.  
+            - If a section lacks meaningful impact, omit it. Consolidate overlapping points into a single clear passage.
+
+            3. **Formatting Requirements** (Markdown):  
+            - Use `##` for section headings (e.g., Key Insights, Major Developments).  
+            - Use **bold** for critical points and bullet points for clarity.  
+            - Include `[Link](URL)` format for hyperlinks, if applicable.  
+            - **Do not include a title like "Executive Summary."**
+
+            4. **Style and Tone**:  
+            - Use a **professional and neutral tone** suitable for decision-makers.  
+            - Ensure clarity, conciseness, and coherence throughout.  
+            - Structure content for quick skimming, with concise bullet points or short paragraphs.
+
+            5. **Output Objective**:  
+            Provide a **polished executive summary** in Markdown format that:  
+            - Touches on every meaningful topic or insight from the provided summaries.  
+            - Combines similar points into a single cohesive narrative to avoid redundancy.  
+            - Highlights actionable, high-level information without delving into unnecessary detail.  
+
+            6. **Additional Notes**:  
+            - Avoid directly copying phrasing from the summaries—reword and synthesize for coherence and conciseness.  
+            - Highlight actionable takeaways and big-picture trends for decision-making purposes.  
+            - Omit sections that lack impactful content, ensuring the final summary remains concise and focused.  
+            """
+            user_query = f"""
+            Here is the information you need to create a **concise executive summary** for, in Markdown format:\n\n
+            **Topic**: [{topic_query}]\n\n
+            **List of Summaries**: [{summaries_list}]\n\n
+            Please provide a concise executive summary focusing only on high-level insights, broad trends, and actionable takeaways related to the topic, formatted in Markdown.
+            """
+            system_message = {"role": "system", "content": system_instructions}
+            user_message = {"role": "user", "content": user_query}
+            messages = [system_message,user_message]
+
+            completion = await self._openai.chat.completions.create(
+                model=self._openai_model_mini,
+                messages=messages
+            )
+
+
+            if completion.choices[0].finish_reason == "stop":
+                response_msg = completion.choices[0].message.content
+                return response_msg
+            else:
+                # handle refusal
+                print("finish reason not stop")
+                return None
+        except Exception as e:
+            print(e)
+            pass
+        return None
+        
     async def key_figures_web_page_data(self, web_page_data, topic_query):
         try:
             system_instructions = f"""You are a research assistant. 
@@ -410,6 +483,8 @@ class OpenAIClient:
                 - **Bold** for important points
                 - Bullet points for key takeaways or lists
                 - [Link](URL) format for links (if applicable)
+                - Use two spaces at the end of a line for line breaks instead of '\\n'
+                - Avoid using special characters like '\\n'
             7. If the page contains irrelevant or minor mentions of individuals or companies, omit them and focus only on the most significant names.
 
             """
@@ -631,7 +706,10 @@ async def main():
                 print("\t" + item["url"] + " is usable: " + str(is_usable))
                 if is_usable:
                     # Call the summarize_web_page_data function
-                    summary = await client.summarize_web_page_data(web_page_data, topic)
+                    summary = await client.executive_summary_web_page_data(web_page_data, topic)
+                    with open("results/results.txt", "w") as results_file:
+                        results_file.write(summary)
+
                     print("summary:")
                     print(summary[:200]+"...")
 

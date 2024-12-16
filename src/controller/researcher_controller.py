@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from uvicorn import Config, Server
 from src.researcher.agents.data_gatherer import DataGatherer
+from src.researcher.agents.newsapi_agent import NewsApiAgent
 import json
 import os
 import asyncio
@@ -26,6 +27,8 @@ app.add_middleware(
 # Initialize the DataGatherer service
 data_gatherer = DataGatherer()
 
+newsapi_agent = NewsApiAgent()
+
 class TopicRequest(BaseModel):
     topic: str
     source: str = "default_source"
@@ -37,7 +40,8 @@ async def gather_data(request: TopicRequest):
     
     user_topic = request.topic
     if request.source == "default_source":
-        result = await data_gatherer.gather_newsapi_data_and_summarize_sources(user_topic)
+        #result = await data_gatherer.gather_newsapi_data_and_summarize_sources(user_topic)
+        result = await newsapi_agent.gather_topic_summarization(user_topic, 1, 5)
     else:
         raise HTTPException(status_code=400, detail=f"Unknown source: {request.source}")
     
