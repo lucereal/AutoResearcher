@@ -48,6 +48,26 @@ class InstagramClient():
             else:
                 return {"error": response.text}
 
+    async def get_user_media(self, user_id, access_token):
+        url = f"{self.graph_url}/{user_id}/media?access_token={access_token}"
+        async with httpx.AsyncClient() as client:
+            response = await client.get(url)
+            if response.status_code == 200:
+                return response.json()
+            else:
+                return {"error": response.text}
+
+    async def get_media_details(self, media_id, access_token):
+        url = f"{self.graph_url}/{media_id}?access_token={access_token}&fields=media_url,media_type,permalink,caption"
+        async with httpx.AsyncClient() as client:
+            response = await client.get(url)
+            if response.status_code == 200:
+                return response.json()
+            else:
+                return {"error": response.text}
+
+
+
 # Example usage:
 async def main():
     instagram_client = InstagramClient()
@@ -55,6 +75,10 @@ async def main():
     if "access_token" in access_token_response:
         user_info = await instagram_client.get_user_info(access_token_response["access_token"])
         print(user_info)
+        user_media = await instagram_client.get_user_media(user_info["user_id"], access_token_response["access_token"])
+        print(user_media) 
+        media_details = await instagram_client.get_media_details(user_media["data"][0]["id"], access_token_response["access_token"])
+        print(media_details)       
     else:
         print("Error obtaining access token:", access_token_response["error"])
 

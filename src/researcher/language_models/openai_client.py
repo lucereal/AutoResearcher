@@ -682,8 +682,73 @@ class OpenAIClient:
                 transcriptions.append(transcription_text)
         return transcriptions
     
-# Example usage:
-async def main():
+
+    async def query_images(self, query_text, image_urls):
+        try:
+            user_query = {"type": "text", "text": query_text}
+            user_images = [{"type": "image_url", "image_url": {"url": image_url}} for image_url in image_urls]
+            user_message = {"role": "user", "content": [user_query] + user_images}
+            messages = [user_message]
+
+            completion = await self._openai.chat.completions.create(
+                model=self._openai_model_mini,
+                messages=messages
+            )
+
+            if completion.choices[0].finish_reason == "stop":
+                response_msg = completion.choices[0].message.content
+                return response_msg
+            else:
+                # handle refusal
+                print("finish reason not stop")
+                return None
+        except Exception as e:
+            print(e)
+            pass
+        return None
+
+    async def build_user_character_on_image(self, image_urls):
+        system_query = """
+        You are a character analyst assistant specializing in analyzing images. Your task is to extract insightful and accurate observations from a user's profile image to help infer their character traits. 
+
+        Instructions:
+        1. **Image Analysis**:
+        - Carefully analyze the provided images to identify:
+            - The setting, objects, and activities depicted.
+            - The facial expression, pose, attire, and visible emotions of the person.
+            - Any contextual clues that suggest the person's personality traits, interests, or behaviors.
+        - Avoid making unsupported assumptions or generalizations.
+
+        2. **Character Traits**:
+        - Infer possible character traits based on the images (e.g., sociability, creativity, adventurousness).
+        - Use the visual evidence to support your observations.
+
+        3. **Ethical Considerations**:
+        - Only base your analysis on visible, factual details in the images.
+        - Avoid speculative conclusions not supported by the images.
+        - Ensure privacy and avoid including sensitive or speculative information.
+        - Maintain a neutral, professional tone and avoid stereotypes.
+
+        Your goal is to provide a clear and insightful summary of the person's character based on the images provided.
+
+        """
+
+        # user_query = """
+        # Please analyze the following data and provide a character summary in Markdown format.
+
+        # **Images**:
+        # [Upload or describe the images here]
+
+        # **Comments**:
+        # [Include user comments here]
+
+        # Focus on identifying character traits, emotional cues, and any observable patterns. Combine insights from both the images and comments for a comprehensive description. Format the response with headings, bold key points, and bullet points for clarity.
+        # """
+
+        result = await self.query_images(system_query, image_urls)
+        return result
+    
+async def run_web_page_data_example():
     # Example usage:
     client = OpenAIClient()
 
@@ -712,6 +777,23 @@ async def main():
 
                     print("summary:")
                     print(summary[:200]+"...")
+
+# Example usage:
+async def main():
+    # Example usage:
+    client = OpenAIClient()
+    image_url_1 = "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/Gfp-wisconsin-madison-the-nature-boardwalk.jpg/2560px-Gfp-wisconsin-madison-the-nature-boardwalk.jpg"
+    image_url_2 = "https://scontent-dfw5-1.cdninstagram.com/v/t51.29350-15/470461632_1322703858909267_8052317554819076319_n.jpg?stp=dst-jpg_e35_tt6&_nc_cat=101&ccb=1-7&_nc_sid=18de74&_nc_ohc=vlclYeC-LpkQ7kNvgHFyxFw&_nc_zt=23&_nc_ht=scontent-dfw5-1.cdninstagram.com&edm=ANQ71j8EAAAA&_nc_gid=AVQ2UFqyw-8eQWzpJ6f1-JY&oh=00_AYAaUxNYUZJTvZReFFFyc53_S0N1Z4BDb290D_DaRo1kDw&oe=6768FDAB"
+    image_url_3 = "https://scontent-dfw5-1.cdninstagram.com/v/t51.29350-15/470473773_1262689361644407_6324166405197155981_n.jpg?stp=dst-jpg_e35_tt6&_nc_cat=101&ccb=1-7&_nc_sid=18de74&_nc_ohc=jfAn-8WSCP8Q7kNvgGgbQc_&_nc_zt=23&_nc_ht=scontent-dfw5-1.cdninstagram.com&edm=ANQ71j8EAAAA&_nc_gid=AmtEIPO5Vk_qxBhz3MXWEm1&oh=00_AYBPK5E3SbpL7-iqVHV39jWNBqTVSEMr7v2uDLyahC3_Mg&oe=6768F5C6"
+    image_url_4 = "https://scontent-dfw5-1.cdninstagram.com/v/t51.29350-15/470726453_937668675182054_4739961380761145078_n.jpg?stp=dst-jpg_e35_tt6&_nc_cat=105&ccb=1-7&_nc_sid=18de74&_nc_ohc=VIgL_cfX9SEQ7kNvgFYP0Mz&_nc_zt=23&_nc_ht=scontent-dfw5-1.cdninstagram.com&edm=ANQ71j8EAAAA&_nc_gid=Amm96Rx-65xv1mHNUDc51Ro&oh=00_AYBI032AbQ1_PCV88dIcSe3lkY0AyiRdjxXb3DUtADMFJQ&oe=6768E789"
+    image_url_5 = "https://scontent-dfw5-2.cdninstagram.com/v/t51.29350-15/470352611_611116558115507_3414044199832226079_n.jpg?stp=dst-jpg_e35_tt6&_nc_cat=102&ccb=1-7&_nc_sid=18de74&_nc_ohc=DwzUw4pPNWcQ7kNvgHsmW5N&_nc_zt=23&_nc_ht=scontent-dfw5-2.cdninstagram.com&edm=ANQ71j8EAAAA&_nc_gid=A5OJa2vi7RZWuPirmz8KPD7&oh=00_AYA04OndsUxgjmBMQc_qWElhqDL3P8hKxFxZgltwYfFSJA&oe=67690968"
+    image_url_6 = "https://scontent-dfw5-1.cdninstagram.com/v/t51.29350-15/470347395_1779171625954831_449535914185449904_n.jpg?stp=dst-jpg_e35_tt6&_nc_cat=109&ccb=1-7&_nc_sid=18de74&_nc_ohc=y_C-qJw5VEEQ7kNvgG_tE9X&_nc_zt=23&_nc_ht=scontent-dfw5-1.cdninstagram.com&edm=ANQ71j8EAAAA&_nc_gid=A5fkaKMBTqXWn5_R3h-mA69&oh=00_AYAv_G2CcNKFn4ky84q6iJvsm-Q9wl8GkGwfU1hxCIvcMQ&oe=67691092"
+    image_url_7 = "https://cdn.outsideonline.com/wp-content/uploads/2019/09/18/man-backpacking-thru-hike_s.jpg"
+    
+    image_urls = [image_url_1, image_url_2, image_url_3, image_url_4, image_url_5, image_url_6, image_url_7]
+    query_text = "What’s in this image?"
+    result = await client.build_user_character_on_image(image_urls)
+    print(result)
 
 if __name__ == "__main__":
     asyncio.run(main())
