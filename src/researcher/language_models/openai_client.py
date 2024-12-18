@@ -707,7 +707,7 @@ class OpenAIClient:
             pass
         return None
 
-    async def build_user_character_on_image(self, image_urls):
+    async def build_user_character_on_images(self, image_urls):
         system_query = """
         You are a character analyst assistant specializing in analyzing images. Your task is to extract insightful and accurate observations from a user's profile image to help infer their character traits. 
 
@@ -792,7 +792,7 @@ async def main():
     
     image_urls = [image_url_1, image_url_2, image_url_3, image_url_4, image_url_5, image_url_6, image_url_7]
     query_text = "What’s in this image?"
-    result = await client.build_user_character_on_image(image_urls)
+    result = await client.build_user_character_on_images(image_urls)
     print(result)
 
 if __name__ == "__main__":
