@@ -2,6 +2,7 @@ import asyncio
 import json
 import os
 from openai import AsyncOpenAI
+from openai import OpenAI
 from dotenv import load_dotenv 
 from pydantic import BaseModel
 from typing import List
@@ -33,6 +34,7 @@ class OpenAIClient:
         self._openai = AsyncOpenAI(api_key=self.api_key)
         self._openai_model = "gpt-4o"
         self._openai_model_mini = "gpt-4o-mini"
+        self._openai_model_dalle3 = "dall-e-3"
   
 
     async def is_news_article_preview_usable(self, article_preview, topic_query):
@@ -707,6 +709,27 @@ class OpenAIClient:
             pass
         return None
 
+    async def create_image(self, query_text):
+        try:
+            response = await self._openai.images.generate(
+                model=self._openai_model_dalle3,
+                prompt=query_text,
+                size="1024x1024",
+                quality="standard",
+                n=1,
+            )
+            if response.data:
+                response_url = response.data[0].url
+                return response_url
+            else:
+                # handle refusal
+                print("finish reason not stop")
+                return None
+        except Exception as e:
+            print(e)
+            pass
+        return None
+
     async def build_user_character_on_images(self, image_urls):
         system_query = """
         You are a character analyst assistant specializing in analyzing images. Your task is to extract insightful and accurate observations from a user's profile image to help infer their character traits. 
@@ -748,6 +771,8 @@ class OpenAIClient:
         result = await self.query_images(system_query, image_urls)
         return result
     
+
+    
 async def run_web_page_data_example():
     # Example usage:
     client = OpenAIClient()
@@ -778,9 +803,7 @@ async def run_web_page_data_example():
                     print("summary:")
                     print(summary[:200]+"...")
 
-# Example usage:
-async def main():
-    # Example usage:
+async def run_image_analysis_example():
     client = OpenAIClient()
     image_url_1 = "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/Gfp-wisconsin-madison-the-nature-boardwalk.jpg/2560px-Gfp-wisconsin-madison-the-nature-boardwalk.jpg"
     image_url_2 = "https://scontent-dfw5-1.cdninstagram.com/v/t51.29350-15/470461632_1322703858909267_8052317554819076319_n.jpg?stp=dst-jpg_e35_tt6&_nc_cat=101&ccb=1-7&_nc_sid=18de74&_nc_ohc=vlclYeC-LpkQ7kNvgHFyxFw&_nc_zt=23&_nc_ht=scontent-dfw5-1.cdninstagram.com&edm=ANQ71j8EAAAA&_nc_gid=AVQ2UFqyw-8eQWzpJ6f1-JY&oh=00_AYAaUxNYUZJTvZReFFFyc53_S0N1Z4BDb290D_DaRo1kDw&oe=6768FDAB"
@@ -791,8 +814,62 @@ async def main():
     image_url_7 = "https://cdn.outsideonline.com/wp-content/uploads/2019/09/18/man-backpacking-thru-hike_s.jpg"
     
     image_urls = [image_url_1, image_url_2, image_url_3, image_url_4, image_url_5, image_url_6, image_url_7]
-    query_text = "What’s in this image?"
     result = await client.build_user_character_on_images(image_urls)
+    print(result)
+    return result
+
+# Example usage:
+async def main():
+    # Example usage:
+    client = OpenAIClient()
+    query = "a red siamese cat"
+    # query_prompt = await run_image_analysis_example()
+    artistic_styles = ["impressionism", "surrealism", "abstract", "cubism", "minimalism", "pop art", "expressionism", "realism"]
+    include_artistic_styles=["minimalism"]
+    query_prompt = f"""
+    Character Description:
+    Name: Luna Everly
+    Profession: Jazz Musician and Songwriter
+    Traits and Personality:
+    Creative Soul: Luna sees music as a language of emotions and the core of her existence. Her songs often blend elements of traditional jazz with modern experimental sounds, reflecting her ability to think outside the box.
+    Urban Dreamer: Living in NYC, she thrives in the city's chaos, drawing inspiration from the subway's rhythm, the hum of distant sirens, and the whispers of late-night diners.
+    Resilient and Ambitious: Despite the competitive music scene, Luna maintains an unwavering belief in her artistry. She often plays at intimate jazz clubs in Greenwich Village and dreams of one day performing at Carnegie Hall.
+    Appearance:
+    Luna has curly auburn hair that she often styles into a messy bun or lets flow naturally. Her expressive green eyes seem to reflect the city's lights, full of curiosity and depth.
+    She dresses in a mix of vintage and bohemian styles, favoring flowy dresses, leather jackets, and ankle boots. Her signature accessory is a silver charm bracelet gifted by her grandmother.
+    Lifestyle:
+    Luna spends her mornings practicing on her antique upright piano, a gift from a neighbor who heard her singing through thin apartment walls.
+    Afternoons are for exploration: walking through Central Park, visiting art galleries, or people-watching from a café in the East Village.
+    Her evenings are dedicated to performances, collaborations, and jam sessions, where she feels most alive.
+    On her rare days off, she loves to cook Creole dishes, a comforting reminder of home.
+    Hobbies and Interests:
+    When not immersed in music, Luna enjoys photography, capturing candid moments of city life.
+    She's an avid reader, favoring novels about human resilience and poetry collections that inspire her songwriting.
+    Luna also volunteers at a local music school, teaching underprivileged kids the basics of playing instruments.
+    Philosophy: Luna believes that life is like a jazz improvisation — imperfect, unpredictable, and beautiful when you embrace its chaos. She lives by the mantra, "Play the notes you feel, not the ones you think are expected."
+    """
+    query_prompt_final = f"""
+    Generate a unique and visually abstract image of a character inspired by the following traits. 
+    The image should blend artistic interpretation and metaphorical representation of the traits. 
+    Avoid including any text, words, or captions in the image. 
+    Focus on creating a visually striking and imaginative depiction that captures the essence of the character in a surreal or symbolic way.
+
+    Character Description:
+    {query_prompt}
+
+    **Artistic Styles**:
+    {include_artistic_styles}
+
+    **Additional Notes for the Image**:
+    - Use symbolic elements or abstract forms to represent personality traits (e.g., vibrant colors, textures, or unique environments that reflect character traits).
+    - Create a setting in a way that feels fluid and dreamlike.
+    - Infuse artistic aesthetics that evoke introspection and creativity.
+    - Avoid literal depictions; lean into surreal, artistic, and emotionally resonant imagery.
+
+    The final image should feel like a harmonious blend of the traits, conveying the character's essence through a unique and abstract artistic lens.
+    The final image sould not contain any text, words, or captions.
+    """
+    result = await client.create_image(query_prompt_final)
     print(result)
 
 if __name__ == "__main__":

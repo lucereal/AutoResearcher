@@ -22,8 +22,10 @@ class InstaPersonaService:
         return media_urls
         
     async def create_persona(self, user_media_urls):
-        
         return await self.openai_client.build_user_character_on_images(user_media_urls)
+    
+    async def create_persona_visual(self, persona_result):
+        return await self.openai_client.build_user_character_on_images(persona_result)
 
 async def main():
     service = InstaPersonaService()
