@@ -19,11 +19,14 @@ class IsNewsPreviewUsable(BaseModel):
 
 class QueryListResult(BaseModel):
     queryList: List[str]
-    
+
     def print_query_list(self):
         print("Query List:")
         for index, query in enumerate(self.queryList, start=1):
             print(f"{index}. {query}")
+
+class IdentifiedObjects(BaseModel):
+    objectList: List[str]
 
 class OpenAIClient:
     _openai_model = None
@@ -685,6 +688,38 @@ class OpenAIClient:
         return transcriptions
     
 
+    async def query_images_for_list(self, query_text, image_urls):
+        try:
+            user_query = {"type": "text", "text": query_text}
+            user_images = [{"type": "image_url", "image_url": {"url": image_url}} for image_url in image_urls]
+            user_message = {"role": "user", "content": [user_query] + user_images}
+            messages = [user_message]
+
+            completion = await self._openai.beta.chat.completions.parse(
+                model=self._openai_model_mini,
+                messages=messages,
+                response_format=IdentifiedObjects
+            )
+
+            
+            if completion.choices[0].finish_reason == "stop":
+                response_msg = completion.choices[0].message
+                if response_msg.parsed:
+                    return response_msg.parsed.objectList
+                elif response_msg.refusal:
+                    # handle refusal
+                    print("structured response not possible")
+                # response_msg = completion.choices[0].message.content
+                # return response_msg
+            else:
+                # handle refusal
+                print("finish reason not stop")
+                return None
+        except Exception as e:
+            print(e)
+            pass
+        return None
+
     async def query_images(self, query_text, image_urls):
         try:
             user_query = {"type": "text", "text": query_text}
@@ -708,7 +743,7 @@ class OpenAIClient:
             print(e)
             pass
         return None
-
+    
     async def create_image(self, query_text):
         try:
             response = await self._openai.images.generate(
@@ -732,46 +767,63 @@ class OpenAIClient:
 
     async def build_user_character_on_images(self, image_urls):
         system_query = """
-        You are a character analyst assistant specializing in analyzing images. Your task is to extract insightful and accurate observations from a user's profile image to help infer their character traits. 
+        You are a character story creator specializing in analyzing and interpreting images. Your task is to carefully examine a series of images to craft a unique, engaging, and insightful narrative about the person who owns them. Your goal is to combine observations of objects, settings, traits, emotions, and activities in the images to create a cohesive and compelling story about the individual.  
 
-        Instructions:
-        1. **Image Analysis**:
-        - Carefully analyze the provided images to identify:
-            - The setting, objects, and activities depicted.
-            - The facial expression, pose, attire, and visible emotions of the person.
-            - Any contextual clues that suggest the person's personality traits, interests, or behaviors.
-        - Avoid making unsupported assumptions or generalizations.
+        #### Instructions:
 
-        2. **Character Traits**:
-        - Infer possible character traits based on the images (e.g., sociability, creativity, adventurousness).
-        - Use the visual evidence to support your observations.
+        1. **Image Analysis**:  
+        - Analyze the provided images to identify visible details, including:  
+            - **Settings and Environments**: Note locations, backdrops, and recurring themes (e.g., nature, urban, cultural).  
+            - **Objects and Activities**: Identify any significant objects, hobbies, or actions depicted.  
+            - **Person’s Appearance and Emotions**: Observe attire, poses, expressions, and the mood conveyed.  
+            - **Interactions**: Recognize relationships, group dynamics, or moments of solitude.  
 
-        3. **Ethical Considerations**:
-        - Only base your analysis on visible, factual details in the images.
-        - Avoid speculative conclusions not supported by the images.
-        - Ensure privacy and avoid including sensitive or speculative information.
-        - Maintain a neutral, professional tone and avoid stereotypes.
+        2. **Story Creation**:  
+        - Use your analysis to **infer the personality, lifestyle, and character traits** of the individual in a way that feels personal and imaginative.  
+        - Combine the observations into a single paragraph that weaves together their personality, values, interests, and emotional tone.  
+        - Use **evocative language** and metaphors where appropriate to make the description feel vivid and authentic.  
 
-        Your goal is to provide a clear and insightful summary of the person's character based on the images provided.
+        3. **Output Format**:  
+        - Write a single paragraph that reads like a story, blending insights into the individual’s character with the settings and activities depicted in their images.  
+        - The paragraph should feel like a thoughtful and balanced narrative, highlighting their personality and essence.  
 
+        #### Example:  
+        If the images show a person hiking in vibrant landscapes, reading in a cozy café, and smiling with friends at an art gallery, your description might read:  
+        "Anna is a free-spirited explorer with a deep appreciation for life’s quiet beauty and vibrant connections. Her love for nature and adventure is evident in the winding trails she conquers, while her time spent tucked away in cozy corners with a book reveals her introspective side. Surrounded by friends in lively art galleries, she radiates warmth and creativity, balancing her adventurous soul with a thoughtful, grounded approach to life."
+
+        Focus on crafting a story that captures the essence of the person based on their visual narrative.
         """
-
-        # user_query = """
-        # Please analyze the following data and provide a character summary in Markdown format.
-
-        # **Images**:
-        # [Upload or describe the images here]
-
-        # **Comments**:
-        # [Include user comments here]
-
-        # Focus on identifying character traits, emotional cues, and any observable patterns. Combine insights from both the images and comments for a comprehensive description. Format the response with headings, bold key points, and bullet points for clarity.
-        # """
 
         result = await self.query_images(system_query, image_urls)
         return result
     
+    async def identify_image_objects(self, image_urls):
+        query_prompt = """
+        You are an advanced image analysis assistant. Your task is to identify every object, feature, or detail visible in a given image and output a **list of one-word strings**, where each string represents a single object or feature.
+        ### Instructions:
+        1. **What to Identify**:
+        - **Objects**: Every visible object (e.g., "chair", "tree", "bottle").
+        - **People**: Represent people as "person" or "group" (if multiple individuals are present).
+        - **Brands/Logos**: Include any identifiable brand names or logos as a single word (e.g., "Nike", "Apple").
+        - **Background Features**: Identify environmental elements (e.g., "mountain", "building", "river", "sky").
+        - **Activities**: Use a single noun to describe the action if applicable (e.g., "reading", "climbing").
+        - **Places**: Include names of recognizable landmarks or regions (e.g., "park", "beach").
+        2. **Output Format**:
+        - Provide the output as a **Python-style list of one-word strings**.
+        - Each string should represent a unique object, feature, or element in the image.
+        - Avoid duplicating words unless they represent distinct instances of the same object.
+        3. **Example Output**:
+        If analyzing an image of a person sitting on a park bench with a dog, the output should look like this:
+        ["person", "bench", "dog", "tree", "grass", "sky", "book"]
 
+        ### Task:
+        Carefully analyze the image and provide a **list of one-word strings** that represent every identifiable object, feature, or detail visible in the image.
+        
+        """
+
+        result = await self.query_images_for_list(query_prompt, image_urls)
+        return result
+    
     
 async def run_web_page_data_example():
     # Example usage:
@@ -818,58 +870,51 @@ async def run_image_analysis_example():
     print(result)
     return result
 
-# Example usage:
-async def main():
-    # Example usage:
+async def run_image_generation_example():
     client = OpenAIClient()
     query = "a red siamese cat"
     # query_prompt = await run_image_analysis_example()
     artistic_styles = ["impressionism", "surrealism", "abstract", "cubism", "minimalism", "pop art", "expressionism", "realism"]
-    include_artistic_styles=["minimalism"]
+    include_artistic_styles=["abstract"]
     query_prompt = f"""
-    Character Description:
-    Name: Luna Everly
-    Profession: Jazz Musician and Songwriter
-    Traits and Personality:
-    Creative Soul: Luna sees music as a language of emotions and the core of her existence. Her songs often blend elements of traditional jazz with modern experimental sounds, reflecting her ability to think outside the box.
-    Urban Dreamer: Living in NYC, she thrives in the city's chaos, drawing inspiration from the subway's rhythm, the hum of distant sirens, and the whispers of late-night diners.
-    Resilient and Ambitious: Despite the competitive music scene, Luna maintains an unwavering belief in her artistry. She often plays at intimate jazz clubs in Greenwich Village and dreams of one day performing at Carnegie Hall.
-    Appearance:
-    Luna has curly auburn hair that she often styles into a messy bun or lets flow naturally. Her expressive green eyes seem to reflect the city's lights, full of curiosity and depth.
-    She dresses in a mix of vintage and bohemian styles, favoring flowy dresses, leather jackets, and ankle boots. Her signature accessory is a silver charm bracelet gifted by her grandmother.
-    Lifestyle:
-    Luna spends her mornings practicing on her antique upright piano, a gift from a neighbor who heard her singing through thin apartment walls.
-    Afternoons are for exploration: walking through Central Park, visiting art galleries, or people-watching from a café in the East Village.
-    Her evenings are dedicated to performances, collaborations, and jam sessions, where she feels most alive.
-    On her rare days off, she loves to cook Creole dishes, a comforting reminder of home.
-    Hobbies and Interests:
-    When not immersed in music, Luna enjoys photography, capturing candid moments of city life.
-    She's an avid reader, favoring novels about human resilience and poetry collections that inspire her songwriting.
-    Luna also volunteers at a local music school, teaching underprivileged kids the basics of playing instruments.
-    Philosophy: Luna believes that life is like a jazz improvisation — imperfect, unpredictable, and beautiful when you embrace its chaos. She lives by the mantra, "Play the notes you feel, not the ones you think are expected."
+    Character Description
+    Name: Alex Rivera
+    In a vibrant tapestry of life, Alex emerges as a soul steeped in adventure and a fondness for community. His weekends are marked by excursions to food festivals, where the enticing aroma of dumplings fills the air, reflecting his love for culinary exploration. He finds solace in leisurely moments shared with friends, lounging under strings of twinkling lights, embracing relaxed conversations and laughter. Yet, beneath this easy-going demeanor lies a spirited determination, showcased during spirited rock climbing sessions, where he encourages others as he skillfully scales boulders. His eclectic tastes flow seamlessly from savoring gourmet tacos adorned with edible flowers to relishing the thrill of a stunning city view from a hilltop, each experience adding a brush stroke to his canvas of memories. Intensely creative and unapologetically passionate, Alex balances his love for the thrill with an appreciation for the tranquil, as shown in quiet sunsets viewed from his modern perch. Through every photo, he weaves a story of connection, resilience, and joy, celebrating life's flavors with an open heart.
     """
     query_prompt_final = f"""
-    Generate a unique and visually abstract image of a character inspired by the following traits. 
+    Generate a unique and visually abstract image inspired by the following traits. 
     The image should blend artistic interpretation and metaphorical representation of the traits. 
     Avoid including any text, words, or captions in the image. 
-    Focus on creating a visually striking and imaginative depiction that captures the essence of the character in a surreal or symbolic way.
+    Focus on creating a visually striking and imaginative depiction that captures the essence in a surreal or symbolic way.
 
-    Character Description:
+    Description:
     {query_prompt}
 
     **Artistic Styles**:
     {include_artistic_styles}
 
     **Additional Notes for the Image**:
-    - Use symbolic elements or abstract forms to represent personality traits (e.g., vibrant colors, textures, or unique environments that reflect character traits).
+    - Use symbolic elements or abstract forms to represent personality traits (e.g., vibrant colors, textures, or unique environments that reflect traits).
     - Create a setting in a way that feels fluid and dreamlike.
     - Infuse artistic aesthetics that evoke introspection and creativity.
     - Avoid literal depictions; lean into surreal, artistic, and emotionally resonant imagery.
 
-    The final image should feel like a harmonious blend of the traits, conveying the character's essence through a unique and abstract artistic lens.
+    The final image should feel like a harmonious blend of the traits, conveying the essence through a unique and abstract artistic lens.
     The final image sould not contain any text, words, or captions.
     """
     result = await client.create_image(query_prompt_final)
+    return result
+
+# Example usage:
+async def main():
+    # Example usage:
+    client = OpenAIClient()
+    query = ""  
+    image_url_6 = "https://scontent-dfw5-1.cdninstagram.com/v/t51.29350-15/470347395_1779171625954831_449535914185449904_n.jpg?stp=dst-jpg_e35_tt6&_nc_cat=109&ccb=1-7&_nc_sid=18de74&_nc_ohc=y_C-qJw5VEEQ7kNvgG_tE9X&_nc_zt=23&_nc_ht=scontent-dfw5-1.cdninstagram.com&edm=ANQ71j8EAAAA&_nc_gid=A5fkaKMBTqXWn5_R3h-mA69&oh=00_AYAv_G2CcNKFn4ky84q6iJvsm-Q9wl8GkGwfU1hxCIvcMQ&oe=67691092"
+    image_url_7 = "https://cdn.outsideonline.com/wp-content/uploads/2019/09/18/man-backpacking-thru-hike_s.jpg"
+
+    result = await client.identify_image_objects([image_url_6])
+
     print(result)
 
 if __name__ == "__main__":

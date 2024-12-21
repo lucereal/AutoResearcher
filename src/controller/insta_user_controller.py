@@ -4,6 +4,7 @@ from pydantic import BaseModel
 from dotenv import load_dotenv
 import os
 import httpx
+from src.researcher.services.insta_persona_service import InstaPersonaService
 
 load_dotenv()
 
@@ -45,3 +46,14 @@ async def gather_data(request: CodeRequest):
                     return response.json()
                 else:
                     raise HTTPException(status_code=response.status_code, detail=response.text)
+
+@router.get("/user_object_graph")
+async def user_object_graph():
+    service = InstaPersonaService()
+    try:
+        result = await service.fetch_user_media()
+        object_graph = await service.profile_object_graph(result)
+        graph_json = await service.graph_to_json(object_graph)
+        return {"graph": graph_json}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
