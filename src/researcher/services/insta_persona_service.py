@@ -4,6 +4,7 @@ import asyncio
 from researcher.language_models.openai_client import OpenAIClient
 from researcher.data_source_clients.instagram_client import InstagramClient
 import networkx as nx
+import numpy as np
 
 class InstaPersonaService:
     def __init__(self):
@@ -26,7 +27,7 @@ class InstaPersonaService:
     async def create_persona(self, user_media_urls):
         return await self.openai_client.build_user_character_on_images(user_media_urls)
     
-    async def profile_object_graph(self, user_media_urls):
+    async def create_profile_object_graph(self, user_media_urls):
         G = nx.Graph()
         for image_url in user_media_urls:
             try:
@@ -56,13 +57,26 @@ class InstaPersonaService:
     async def graph_to_json(self, G):
         data = nx.node_link_data(G, edges="edges")
         return data
+    
+    async def add_pos_to_json(self, object_graph, graph_json):
+        pos = nx.spring_layout(object_graph)
+        for node in graph_json["nodes"]:
+            node["pos"] = [float(coord) for coord in pos[node["id"]].tolist()]
+            node["posx"] = node["pos"][0]
+            node["posy"] = node["pos"][1]
+        return graph_json
  
+    async def get_profile_object_graph(self, user_media_urls):
+        object_graph = await self.create_profile_object_graph(user_media_urls[0:1])
+        graph_json = await self.graph_to_json(object_graph)
+        graph_json_pos = await self.add_pos_to_json(object_graph, graph_json)
+        return graph_json_pos
 
 async def main():
     service = InstaPersonaService()
     result = await service.fetch_user_media()
-    object_graph = await service.profile_object_graph(result[0:1])
-    graph_json = await service.graph_to_json(object_graph)
+    graph_json = await service.get_profile_object_graph(result)
+
     print(json.dumps(graph_json, indent=4))
     # await service.print_graph(object_graph)
 
