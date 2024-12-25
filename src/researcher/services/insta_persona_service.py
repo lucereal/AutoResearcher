@@ -59,7 +59,9 @@ class InstaPersonaService:
         return data
     
     async def add_pos_to_json(self, object_graph, graph_json):
-        pos = nx.spring_layout(object_graph)
+        #pos = nx.spring_layout(object_graph)
+        #pos = nx.kamada_kawai_layout(object_graph)
+        pos = nx.arf_layout(object_graph, a=3)
         for node in graph_json["nodes"]:
             node["pos"] = [float(coord) for coord in pos[node["id"]].tolist()]
             node["posx"] = node["pos"][0]
@@ -67,7 +69,7 @@ class InstaPersonaService:
         return graph_json
  
     async def get_profile_object_graph(self, user_media_urls):
-        object_graph = await self.create_profile_object_graph(user_media_urls[0:1])
+        object_graph = await self.create_profile_object_graph(user_media_urls[0:10])
         graph_json = await self.graph_to_json(object_graph)
         graph_json_pos = await self.add_pos_to_json(object_graph, graph_json)
         return graph_json_pos

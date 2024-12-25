@@ -52,7 +52,7 @@ async def user_object_graph():
     service = InstaPersonaService()
     try:
         result = await service.fetch_user_media()
-        graph_json = await service.get_profile_object_graph(result[0:7])
+        graph_json = await service.get_profile_object_graph(result[0:10])
         return {"graph": graph_json}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
