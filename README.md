@@ -1,5 +1,5 @@
 # AutoResearcher :robot:
-Automated Data Collection with LLM, Google Custom Search, Video Transcription, and Web Scraping
+Automated Data Collection with LLM, Google Custom Search, Video Transcription, Web Scraping, Instagram API, OpenAI Vision, and OpenAI Whisper.
 
 This Python project automates data collection on user provided topics. 
 
