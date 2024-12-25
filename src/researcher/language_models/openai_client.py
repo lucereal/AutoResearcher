@@ -2,6 +2,7 @@ import asyncio
 import json
 import os
 from openai import AsyncOpenAI
+from openai import OpenAI
 from dotenv import load_dotenv 
 from pydantic import BaseModel
 from typing import List
@@ -18,11 +19,14 @@ class IsNewsPreviewUsable(BaseModel):
 
 class QueryListResult(BaseModel):
     queryList: List[str]
-    
+
     def print_query_list(self):
         print("Query List:")
         for index, query in enumerate(self.queryList, start=1):
             print(f"{index}. {query}")
+
+class IdentifiedObjects(BaseModel):
+    objectList: List[str]
 
 class OpenAIClient:
     _openai_model = None
@@ -33,6 +37,7 @@ class OpenAIClient:
         self._openai = AsyncOpenAI(api_key=self.api_key)
         self._openai_model = "gpt-4o"
         self._openai_model_mini = "gpt-4o-mini"
+        self._openai_model_dalle3 = "dall-e-3"
   
 
     async def is_news_article_preview_usable(self, article_preview, topic_query):
@@ -301,6 +306,10 @@ class OpenAIClient:
             4. Keep the bullet points short—just a few words or one brief sentence for each point.
             5. Use a professional tone, suitable for clients who need quick, high-impact information.
             6. Format the list of bullet points in Markdown.
+            - # for title
+            - ## for section headings
+            - **Bold** for important points
+            - Bullet points for key takeaways or lists            
             7. Omit any redundant information or general context that does not provide immediate value.
 
             """
@@ -335,26 +344,30 @@ class OpenAIClient:
 
     async def executive_summary_web_page_data(self, web_page_data, topic_query):
         try:
-            system_instructions = f"""You are a research assistant. 
-            You are tasked with creating a highly concise executive summary of a web page based on a specific topic provided by the user. The web page contains both text and table data.
-            The goal is to provide a high-level overview that highlights only the most important insights, broad developments, and critical data related to the given topic.
-            The executive summary should focus on essential, big-picture information, omitting unnecessary details and emphasizing actionable takeaways for decision-makers.
+            system_instructions = f"""
+            You are a highly skilled research assistant tasked with creating concise executive summaries of web pages based on a specific topic provided by the user. The goal is to deliver a high-level overview with actionable insights tailored for decision-makers.
 
-            Instructions:
+            ### Instructions:
+            1. **Topic**: {topic_query}  
+            Analyze the web page carefully, including both text and table data. Extract only the most critical and impactful information.  
+            2. **Summary Requirements**:  
+            - Highlight **key insights**, **recent developments**, and **actionable takeaways** related to the topic.  
+            - Focus on **broad trends**, **major initiatives**, and **solutions**, omitting overly detailed or redundant information.  
+            - Write in a **professional tone**, suitable for decision-makers who need a quick, high-level overview.  
 
-            1. Topic: {topic_query}
-            2. Review the web page data carefully, including any text and table data.
-            3. Create a **concise executive summary** that highlights the key insights, recent developments, and actionable takeaways in a few sentences or bullet points.
-            4. Focus on broad, high-level categories such as trends, major initiatives, and impactful solutions, rather than specific project details.
-            5. Keep the summary short and focused—no more than a couple of bullet points or brief sentences for each section.
-            6. Use a professional tone, suitable for decision-makers and clients who need a quick, high-level overview of the topic.
-            7. Format the summary using Markdown with the following structure:
-            - # for title
-            - ## for section headings
-            - **Bold** for important points
-            - Bullet points for key takeaways or lists
-            8. Omit redundant or overly detailed information, focusing only on the most impactful insights and actions.
+            3. **Formatting** (Markdown):  
+            - Use `##` for section headings (e.g., Key Insights, Major Developments, Actionable Takeaways).  
+            - Use **bold** for emphasis and bullet points for clarity.  
+            - Include hyperlinks in `[Link](URL)` format, if applicable.  
+            - **Do not include a title like "Executive Summary."**
 
+            4. **Style Guidelines**:  
+            - Keep it concise and focused: no more than 2-3 bullet points per section.  
+            - Prioritize **impactful insights** and **actionable recommendations** over minor details.  
+            - Ensure clarity and readability for quick skimming.
+
+            5. **Output Objective**:  
+            Deliver a well-organized and polished executive summary in Markdown format that highlights only the most important information, avoiding unnecessary details.
             """
 
             user_query = f"""
@@ -385,6 +398,76 @@ class OpenAIClient:
             pass
         return None
 
+    async def summarize_topic_summaries(self, topic_query, summaries_list):
+        try:
+
+            system_instructions = f"""
+            You are a highly skilled research assistant tasked with synthesizing a **detailed yet concise executive summary** based on a list of summaries provided by the user. Your goal is to deliver a **high-level overview** that captures the most critical insights, trends, and actionable takeaways, ensuring the summary is tailored for decision-makers.
+
+            ### Instructions:
+            1. **Topic**: {topic_query}  
+            Carefully analyze the provided list of summaries and extract only the most impactful information, ensuring all meaningful insights are included.  
+
+            2. **Guidelines for Structuring the Summary**:  
+            - Use the following sections **only if the data provides meaningful content for that section**:  
+                - **Key Insights**: High-level trends or data points framing the topic.  
+                - **Major Developments**: Recent updates, innovations, or events.  
+                - **Trends and Patterns**: Recurring themes or shifts across the sources.  
+                - **Actionable Takeaways**: Specific recommendations or practical steps for decision-makers.  
+                - **Opportunities and Risks**: Areas of growth or caution.  
+                - **Noteworthy Examples or Case Studies**: Relatable real-world applications or notable projects.  
+            - If a section lacks meaningful impact, omit it. Consolidate overlapping points into a single clear passage.
+
+            3. **Formatting Requirements** (Markdown):  
+            - Use `##` for section headings (e.g., Key Insights, Major Developments).  
+            - Use **bold** for critical points and bullet points for clarity.  
+            - Include `[Link](URL)` format for hyperlinks, if applicable.  
+            - **Do not include a title like "Executive Summary."**
+
+            4. **Style and Tone**:  
+            - Use a **professional and neutral tone** suitable for decision-makers.  
+            - Ensure clarity, conciseness, and coherence throughout.  
+            - Structure content for quick skimming, with concise bullet points or short paragraphs.
+
+            5. **Output Objective**:  
+            Provide a **polished executive summary** in Markdown format that:  
+            - Touches on every meaningful topic or insight from the provided summaries.  
+            - Combines similar points into a single cohesive narrative to avoid redundancy.  
+            - Highlights actionable, high-level information without delving into unnecessary detail.  
+
+            6. **Additional Notes**:  
+            - Avoid directly copying phrasing from the summaries—reword and synthesize for coherence and conciseness.  
+            - Highlight actionable takeaways and big-picture trends for decision-making purposes.  
+            - Omit sections that lack impactful content, ensuring the final summary remains concise and focused.  
+            """
+            user_query = f"""
+            Here is the information you need to create a **concise executive summary** for, in Markdown format:\n\n
+            **Topic**: [{topic_query}]\n\n
+            **List of Summaries**: [{summaries_list}]\n\n
+            Please provide a concise executive summary focusing only on high-level insights, broad trends, and actionable takeaways related to the topic, formatted in Markdown.
+            """
+            system_message = {"role": "system", "content": system_instructions}
+            user_message = {"role": "user", "content": user_query}
+            messages = [system_message,user_message]
+
+            completion = await self._openai.chat.completions.create(
+                model=self._openai_model_mini,
+                messages=messages
+            )
+
+
+            if completion.choices[0].finish_reason == "stop":
+                response_msg = completion.choices[0].message.content
+                return response_msg
+            else:
+                # handle refusal
+                print("finish reason not stop")
+                return None
+        except Exception as e:
+            print(e)
+            pass
+        return None
+        
     async def key_figures_web_page_data(self, web_page_data, topic_query):
         try:
             system_instructions = f"""You are a research assistant. 
@@ -405,6 +488,8 @@ class OpenAIClient:
                 - **Bold** for important points
                 - Bullet points for key takeaways or lists
                 - [Link](URL) format for links (if applicable)
+                - Use two spaces at the end of a line for line breaks instead of '\\n'
+                - Avoid using special characters like '\\n'
             7. If the page contains irrelevant or minor mentions of individuals or companies, omit them and focus only on the most significant names.
 
             """
@@ -602,8 +687,145 @@ class OpenAIClient:
                 transcriptions.append(transcription_text)
         return transcriptions
     
-# Example usage:
-async def main():
+
+    async def query_images_for_list(self, query_text, image_urls):
+        try:
+            user_query = {"type": "text", "text": query_text}
+            user_images = [{"type": "image_url", "image_url": {"url": image_url}} for image_url in image_urls]
+            user_message = {"role": "user", "content": [user_query] + user_images}
+            messages = [user_message]
+
+            completion = await self._openai.beta.chat.completions.parse(
+                model=self._openai_model_mini,
+                messages=messages,
+                response_format=IdentifiedObjects
+            )
+
+            
+            if completion.choices[0].finish_reason == "stop":
+                response_msg = completion.choices[0].message
+                if response_msg.parsed:
+                    return response_msg.parsed.objectList
+                elif response_msg.refusal:
+                    # handle refusal
+                    print("structured response not possible")
+                # response_msg = completion.choices[0].message.content
+                # return response_msg
+            else:
+                # handle refusal
+                print("finish reason not stop")
+                return None
+        except Exception as e:
+            print(e)
+            pass
+        return None
+
+    async def query_images(self, query_text, image_urls):
+        try:
+            user_query = {"type": "text", "text": query_text}
+            user_images = [{"type": "image_url", "image_url": {"url": image_url}} for image_url in image_urls]
+            user_message = {"role": "user", "content": [user_query] + user_images}
+            messages = [user_message]
+
+            completion = await self._openai.chat.completions.create(
+                model=self._openai_model_mini,
+                messages=messages
+            )
+
+            if completion.choices[0].finish_reason == "stop":
+                response_msg = completion.choices[0].message.content
+                return response_msg
+            else:
+                # handle refusal
+                print("finish reason not stop")
+                return None
+        except Exception as e:
+            print(e)
+            pass
+        return None
+    
+    async def create_image(self, query_text):
+        try:
+            response = await self._openai.images.generate(
+                model=self._openai_model_dalle3,
+                prompt=query_text,
+                size="1024x1024",
+                quality="standard",
+                n=1,
+            )
+            if response.data:
+                response_url = response.data[0].url
+                return response_url
+            else:
+                # handle refusal
+                print("finish reason not stop")
+                return None
+        except Exception as e:
+            print(e)
+            pass
+        return None
+
+    async def build_user_character_on_images(self, image_urls):
+        system_query = """
+        You are a character story creator specializing in analyzing and interpreting images. Your task is to carefully examine a series of images to craft a unique, engaging, and insightful narrative about the person who owns them. Your goal is to combine observations of objects, settings, traits, emotions, and activities in the images to create a cohesive and compelling story about the individual.  
+
+        #### Instructions:
+
+        1. **Image Analysis**:  
+        - Analyze the provided images to identify visible details, including:  
+            - **Settings and Environments**: Note locations, backdrops, and recurring themes (e.g., nature, urban, cultural).  
+            - **Objects and Activities**: Identify any significant objects, hobbies, or actions depicted.  
+            - **Person’s Appearance and Emotions**: Observe attire, poses, expressions, and the mood conveyed.  
+            - **Interactions**: Recognize relationships, group dynamics, or moments of solitude.  
+
+        2. **Story Creation**:  
+        - Use your analysis to **infer the personality, lifestyle, and character traits** of the individual in a way that feels personal and imaginative.  
+        - Combine the observations into a single paragraph that weaves together their personality, values, interests, and emotional tone.  
+        - Use **evocative language** and metaphors where appropriate to make the description feel vivid and authentic.  
+
+        3. **Output Format**:  
+        - Write a single paragraph that reads like a story, blending insights into the individual’s character with the settings and activities depicted in their images.  
+        - The paragraph should feel like a thoughtful and balanced narrative, highlighting their personality and essence.  
+
+        #### Example:  
+        If the images show a person hiking in vibrant landscapes, reading in a cozy café, and smiling with friends at an art gallery, your description might read:  
+        "Anna is a free-spirited explorer with a deep appreciation for life’s quiet beauty and vibrant connections. Her love for nature and adventure is evident in the winding trails she conquers, while her time spent tucked away in cozy corners with a book reveals her introspective side. Surrounded by friends in lively art galleries, she radiates warmth and creativity, balancing her adventurous soul with a thoughtful, grounded approach to life."
+
+        Focus on crafting a story that captures the essence of the person based on their visual narrative.
+        """
+
+        result = await self.query_images(system_query, image_urls)
+        return result
+    
+    async def identify_image_objects(self, image_urls):
+        query_prompt = """
+        You are an advanced image analysis assistant. Your task is to identify every object, feature, or detail visible in a given image and output a **list of one-word strings**, where each string represents a single object or feature.
+        ### Instructions:
+        1. **What to Identify**:
+        - **Objects**: Every visible object (e.g., "chair", "tree", "bottle").
+        - **People**: Represent people as "person" or "group" (if multiple individuals are present).
+        - **Brands/Logos**: Include any identifiable brand names or logos as a single word (e.g., "Nike", "Apple").
+        - **Background Features**: Identify environmental elements (e.g., "mountain", "building", "river", "sky").
+        - **Activities**: Use a single noun to describe the action if applicable (e.g., "reading", "climbing").
+        - **Places**: Include names of recognizable landmarks or regions (e.g., "park", "beach").
+        2. **Output Format**:
+        - Provide the output as a **Python-style list of one-word strings**.
+        - Each string should represent a unique object, feature, or element in the image.
+        - Avoid duplicating words unless they represent distinct instances of the same object.
+        3. **Example Output**:
+        If analyzing an image of a person sitting on a park bench with a dog, the output should look like this:
+        ["person", "bench", "dog", "tree", "grass", "sky", "book"]
+
+        ### Task:
+        Carefully analyze the image and provide a **list of one-word strings** that represent every identifiable object, feature, or detail visible in the image.
+        
+        """
+
+        result = await self.query_images_for_list(query_prompt, image_urls)
+        return result
+    
+    
+async def run_web_page_data_example():
     # Example usage:
     client = OpenAIClient()
 
@@ -626,9 +848,74 @@ async def main():
                 print("\t" + item["url"] + " is usable: " + str(is_usable))
                 if is_usable:
                     # Call the summarize_web_page_data function
-                    summary = await client.summarize_web_page_data(web_page_data, topic)
+                    summary = await client.executive_summary_web_page_data(web_page_data, topic)
+                    with open("results/results.txt", "w") as results_file:
+                        results_file.write(summary)
+
                     print("summary:")
                     print(summary[:200]+"...")
+
+async def run_image_analysis_example():
+    client = OpenAIClient()
+    image_url_1 = "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/Gfp-wisconsin-madison-the-nature-boardwalk.jpg/2560px-Gfp-wisconsin-madison-the-nature-boardwalk.jpg"
+    image_url_2 = "https://scontent-dfw5-1.cdninstagram.com/v/t51.29350-15/470461632_1322703858909267_8052317554819076319_n.jpg?stp=dst-jpg_e35_tt6&_nc_cat=101&ccb=1-7&_nc_sid=18de74&_nc_ohc=vlclYeC-LpkQ7kNvgHFyxFw&_nc_zt=23&_nc_ht=scontent-dfw5-1.cdninstagram.com&edm=ANQ71j8EAAAA&_nc_gid=AVQ2UFqyw-8eQWzpJ6f1-JY&oh=00_AYAaUxNYUZJTvZReFFFyc53_S0N1Z4BDb290D_DaRo1kDw&oe=6768FDAB"
+    image_url_3 = "https://scontent-dfw5-1.cdninstagram.com/v/t51.29350-15/470473773_1262689361644407_6324166405197155981_n.jpg?stp=dst-jpg_e35_tt6&_nc_cat=101&ccb=1-7&_nc_sid=18de74&_nc_ohc=jfAn-8WSCP8Q7kNvgGgbQc_&_nc_zt=23&_nc_ht=scontent-dfw5-1.cdninstagram.com&edm=ANQ71j8EAAAA&_nc_gid=AmtEIPO5Vk_qxBhz3MXWEm1&oh=00_AYBPK5E3SbpL7-iqVHV39jWNBqTVSEMr7v2uDLyahC3_Mg&oe=6768F5C6"
+    image_url_4 = "https://scontent-dfw5-1.cdninstagram.com/v/t51.29350-15/470726453_937668675182054_4739961380761145078_n.jpg?stp=dst-jpg_e35_tt6&_nc_cat=105&ccb=1-7&_nc_sid=18de74&_nc_ohc=VIgL_cfX9SEQ7kNvgFYP0Mz&_nc_zt=23&_nc_ht=scontent-dfw5-1.cdninstagram.com&edm=ANQ71j8EAAAA&_nc_gid=Amm96Rx-65xv1mHNUDc51Ro&oh=00_AYBI032AbQ1_PCV88dIcSe3lkY0AyiRdjxXb3DUtADMFJQ&oe=6768E789"
+    image_url_5 = "https://scontent-dfw5-2.cdninstagram.com/v/t51.29350-15/470352611_611116558115507_3414044199832226079_n.jpg?stp=dst-jpg_e35_tt6&_nc_cat=102&ccb=1-7&_nc_sid=18de74&_nc_ohc=DwzUw4pPNWcQ7kNvgHsmW5N&_nc_zt=23&_nc_ht=scontent-dfw5-2.cdninstagram.com&edm=ANQ71j8EAAAA&_nc_gid=A5OJa2vi7RZWuPirmz8KPD7&oh=00_AYA04OndsUxgjmBMQc_qWElhqDL3P8hKxFxZgltwYfFSJA&oe=67690968"
+    image_url_6 = "https://scontent-dfw5-1.cdninstagram.com/v/t51.29350-15/470347395_1779171625954831_449535914185449904_n.jpg?stp=dst-jpg_e35_tt6&_nc_cat=109&ccb=1-7&_nc_sid=18de74&_nc_ohc=y_C-qJw5VEEQ7kNvgG_tE9X&_nc_zt=23&_nc_ht=scontent-dfw5-1.cdninstagram.com&edm=ANQ71j8EAAAA&_nc_gid=A5fkaKMBTqXWn5_R3h-mA69&oh=00_AYAv_G2CcNKFn4ky84q6iJvsm-Q9wl8GkGwfU1hxCIvcMQ&oe=67691092"
+    image_url_7 = "https://cdn.outsideonline.com/wp-content/uploads/2019/09/18/man-backpacking-thru-hike_s.jpg"
+    
+    image_urls = [image_url_1, image_url_2, image_url_3, image_url_4, image_url_5, image_url_6, image_url_7]
+    result = await client.build_user_character_on_images(image_urls)
+    print(result)
+    return result
+
+async def run_image_generation_example():
+    client = OpenAIClient()
+    query = "a red siamese cat"
+    # query_prompt = await run_image_analysis_example()
+    artistic_styles = ["impressionism", "surrealism", "abstract", "cubism", "minimalism", "pop art", "expressionism", "realism"]
+    include_artistic_styles=["abstract"]
+    query_prompt = f"""
+    Character Description
+    Name: Alex Rivera
+    In a vibrant tapestry of life, Alex emerges as a soul steeped in adventure and a fondness for community. His weekends are marked by excursions to food festivals, where the enticing aroma of dumplings fills the air, reflecting his love for culinary exploration. He finds solace in leisurely moments shared with friends, lounging under strings of twinkling lights, embracing relaxed conversations and laughter. Yet, beneath this easy-going demeanor lies a spirited determination, showcased during spirited rock climbing sessions, where he encourages others as he skillfully scales boulders. His eclectic tastes flow seamlessly from savoring gourmet tacos adorned with edible flowers to relishing the thrill of a stunning city view from a hilltop, each experience adding a brush stroke to his canvas of memories. Intensely creative and unapologetically passionate, Alex balances his love for the thrill with an appreciation for the tranquil, as shown in quiet sunsets viewed from his modern perch. Through every photo, he weaves a story of connection, resilience, and joy, celebrating life's flavors with an open heart.
+    """
+    query_prompt_final = f"""
+    Generate a unique and visually abstract image inspired by the following traits. 
+    The image should blend artistic interpretation and metaphorical representation of the traits. 
+    Avoid including any text, words, or captions in the image. 
+    Focus on creating a visually striking and imaginative depiction that captures the essence in a surreal or symbolic way.
+
+    Description:
+    {query_prompt}
+
+    **Artistic Styles**:
+    {include_artistic_styles}
+
+    **Additional Notes for the Image**:
+    - Use symbolic elements or abstract forms to represent personality traits (e.g., vibrant colors, textures, or unique environments that reflect traits).
+    - Create a setting in a way that feels fluid and dreamlike.
+    - Infuse artistic aesthetics that evoke introspection and creativity.
+    - Avoid literal depictions; lean into surreal, artistic, and emotionally resonant imagery.
+
+    The final image should feel like a harmonious blend of the traits, conveying the essence through a unique and abstract artistic lens.
+    The final image sould not contain any text, words, or captions.
+    """
+    result = await client.create_image(query_prompt_final)
+    return result
+
+# Example usage:
+async def main():
+    # Example usage:
+    client = OpenAIClient()
+    query = ""  
+    image_url_6 = "https://scontent-dfw5-1.cdninstagram.com/v/t51.29350-15/470347395_1779171625954831_449535914185449904_n.jpg?stp=dst-jpg_e35_tt6&_nc_cat=109&ccb=1-7&_nc_sid=18de74&_nc_ohc=y_C-qJw5VEEQ7kNvgG_tE9X&_nc_zt=23&_nc_ht=scontent-dfw5-1.cdninstagram.com&edm=ANQ71j8EAAAA&_nc_gid=A5fkaKMBTqXWn5_R3h-mA69&oh=00_AYAv_G2CcNKFn4ky84q6iJvsm-Q9wl8GkGwfU1hxCIvcMQ&oe=67691092"
+    image_url_7 = "https://cdn.outsideonline.com/wp-content/uploads/2019/09/18/man-backpacking-thru-hike_s.jpg"
+
+    result = await client.identify_image_objects([image_url_6])
+
+    print(result)
 
 if __name__ == "__main__":
     asyncio.run(main())
