@@ -823,7 +823,87 @@ class OpenAIClient:
 
         result = await self.query_images_for_list(query_prompt, image_urls)
         return result
+
+    async def read_chat_history(self, file_path):
+        try:
+            with open(file_path, 'r') as file:
+                chat_history = json.load(file)
+            return chat_history
+        except Exception as e:
+            print(f"Error reading chat history from file: {e}")
+            return None
     
+    async def write_chat_history(self, file_path, user_id, new_message):
+        try:
+            chat_history = await self.read_chat_history(file_path)
+            if chat_history is None:
+                chat_history = {}
+            
+            if user_id not in chat_history:
+                chat_history[user_id] = []
+
+            chat_history[user_id].append(new_message)
+
+            with open(file_path, 'w') as file:
+                json.dump(chat_history, file, indent=4)
+            return chat_history
+        except Exception as e:
+            print(f"Error writing chat history to file: {e}")
+
+    async def read_user_chat_history(self, user_id):
+        try:
+            chat_history = await self.read_chat_history("chat_history/chat_history.json")
+            if chat_history is None:
+                chat_history = {}
+            
+            if user_id not in chat_history:
+                return []
+            else:
+                return chat_history[user_id]
+
+        except Exception as e:
+            print(f"Error reading user chat history: {e}")
+            return None
+
+    async def chat(self, user_id, user_message):
+        try:
+            # file_name = user_id + "_chat_history.json"
+            chat_history = await self.read_chat_history("chat_history/chat_history.json")
+
+
+            # Ensure user chat history exists
+            if user_id not in chat_history:
+                chat_history[user_id] = []
+
+            # Append the user message to the chat history
+            #chat_history[user_id].append({"role": "user", "content": user_message})
+            chat_history = await self.write_chat_history("chat_history/chat_history.json", user_id, {"role": "user", "content": user_message})
+
+            # Construct the full message chain to send to OpenAI
+            messages = [{"role": "system", "content": "You are a friendly and insightful character chatbot. Respond as the described character."}]
+            messages += chat_history[user_id]
+
+            completion = await self._openai.chat.completions.create(
+                model=self._openai_model_mini,
+                messages=messages
+            )
+
+
+            if completion.choices[0].finish_reason == "stop":
+                response_msg = completion.choices[0].message.content
+                #chat_history[user_id].append({"role": "assistant", "content": response_msg})
+                await self.write_chat_history("chat_history/chat_history.json", user_id, {"role": "assistant", "content": response_msg})
+
+                return {"response": response_msg}
+            else:
+                # handle refusal
+                print("finish reason not stop")
+                return None
+        except Exception as e:
+            print(e)
+            pass
+        return None
+  
     
 async def run_web_page_data_example():
     # Example usage:

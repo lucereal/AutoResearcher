@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 import os
 import httpx
 from src.researcher.services.insta_persona_service import InstaPersonaService
+from src.researcher.language_models.openai_client import OpenAIClient
 
 load_dotenv()
 
@@ -17,6 +18,10 @@ class CodeRequest(BaseModel):
 class TopicRequest(BaseModel):
     topic: str
     source: str = "default_source"
+
+class ChatRequest(BaseModel):
+    user_message: str
+    user_id: str
 
 @router.post("/get-user")
 async def gather_data(request: CodeRequest):
@@ -57,4 +62,20 @@ async def user_object_graph():
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     
+@router.post("/chat")
+async def chat(request: ChatRequest):
+    service = OpenAIClient()
+    try:
+        result = await service.chat(request.user_id, request.user_message)
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
+@router.get("/chat-history/{user_id}")
+async def chat_history(user_id: str):
+    service = OpenAIClient()
+    try:
+        result = await service.read_user_chat_history(user_id)
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
