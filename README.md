@@ -17,25 +17,6 @@ This Python project automates data collection on user provided topics.
     - Summarize picture settings and subjects.
     - Summarize the user's Instagram in total.
 
-## Features
-
-1. **Data Gathering**:
-    - Gather data from news, Google, YouTube, and Instagram.
-    - Use Playwright and BeautifulSoup for web scraping.
-    - Use MoviePY for video transcription.
-
-2. **Data Processing**:
-    - Summarize scraped content using advanced language models including OpenAI Text Generation model.
-    - Generate search queries based on input topics.
-
-3. **Instagram Integration**:
-    - Read a user's Instagram.
-    - Process pictures using OpenAI vision.
-    - Create an object-weighted graph based on object occurrences in the pictures.
-    - Summarize picture settings and subjects.
-    - Summarize the user's Instagram in total.
-
-
 ## Technologies
 
 - **Python**, **OpenAI API**, **Google Custom Search API**
