@@ -865,11 +865,13 @@ class OpenAIClient:
             print(f"Error reading user chat history: {e}")
             return None
 
-    async def chat(self, user_id, user_message):
+    async def chat(self, user_id, user_message, system_prompt):
         try:
             # file_name = user_id + "_chat_history.json"
             chat_history = await self.read_chat_history("chat_history/chat_history.json")
 
+            if chat_history is None:
+                chat_history = {}
 
             # Ensure user chat history exists
             if user_id not in chat_history:
@@ -880,7 +882,7 @@ class OpenAIClient:
             chat_history = await self.write_chat_history("chat_history/chat_history.json", user_id, {"role": "user", "content": user_message})
 
             # Construct the full message chain to send to OpenAI
-            messages = [{"role": "system", "content": "You are a friendly and insightful character chatbot. Respond as the described character."}]
+            messages = [{"role": "system", "content": system_prompt}]
             messages += chat_history[user_id]
 
             completion = await self._openai.chat.completions.create(
@@ -903,6 +905,7 @@ class OpenAIClient:
             print(e)
             pass
         return None
+  
   
     
 async def run_web_page_data_example():

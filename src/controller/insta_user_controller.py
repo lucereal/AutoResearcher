@@ -66,7 +66,16 @@ async def user_object_graph():
 async def chat(request: ChatRequest):
     service = OpenAIClient()
     try:
-        result = await service.chat(request.user_id, request.user_message)
+        result = await service.chat(request.user_id, request.user_message, "You are a friendly and insightful character chatbot.")
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/chat-persona")
+async def chat(request: ChatRequest):
+    service = InstaPersonaService()
+    try:
+        result = await service.chat_with_character(request.user_id, request.user_message)
         return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
