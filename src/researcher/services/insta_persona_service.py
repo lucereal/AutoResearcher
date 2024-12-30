@@ -155,6 +155,7 @@ class InstaPersonaService:
         Whether scaling a climbing wall with determined passion or savoring picturesque city views, their adventurous spirit is unwavering. 
         The essence of this individual dances like the neon words on a vibrant wall—alive with color, charm, and an infectious zest for life, grounded by the simple joys and profound connections that they cultivate along the way.
         If ther are some, use these media descriptions to influence your response to the user message: {related_media_descriptions}
+        **Note:** Keep your responses simple, balanced, and natural. Avoid overly elaborate or exaggerated expressions. Focus on being relatable and subtle, ensuring your tone feels conversational and authentic to a human interaction.
         """
 
         # will have to buld database for each user instagram. json object with a element for each image. each image will have a list of topics
