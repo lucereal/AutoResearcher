@@ -16,6 +16,10 @@ This Python project automates data collection on user provided topics.
     - Create an object-weighted graph based on object occurrences in the pictures.
     - Summarize picture settings and subjects.
     - Summarize the user's Instagram in total.
+7. **Chat Functionality**:
+    - Chat with LLM
+    - Build character from instagram images
+    - Chat with instagram character
 
 ## Technologies
 
