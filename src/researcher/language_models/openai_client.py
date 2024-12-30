@@ -28,6 +28,10 @@ class QueryListResult(BaseModel):
 class IdentifiedObjects(BaseModel):
     objectList: List[str]
 
+class ImageDescription(BaseModel):
+    keywords: List[str]
+    description: str
+
 class OpenAIClient:
     _openai_model = None
     _openai_model_mini = None
@@ -720,6 +724,42 @@ class OpenAIClient:
             pass
         return None
 
+    async def query_image_for_description_keywords(self, image_urls):
+        try:
+            query_text = """You are a vision and language model capable of analyzing and understanding the content of images. Please analyze the image provided and return the following:
+                Description: Write a detailed and coherent paragraph describing the image. Include information about the primary objects, actions, scene setting, emotions, and any noticeable details that provide context. Avoid overly technical terms.
+                Keywords: Provide a concise list of keywords summarizing the main elements in the image. These keywords should quickly indicate what is depicted in the image, focusing on objects, actions, and themes."""
+
+            user_query = {"type": "text", "text": query_text}
+            user_images = [{"type": "image_url", "image_url": {"url": image_url}} for image_url in image_urls]
+            user_message = {"role": "user", "content": [user_query] + user_images}
+            messages = [user_message]
+
+            completion = await self._openai.beta.chat.completions.parse(
+                model=self._openai_model_mini,
+                messages=messages,
+                response_format=ImageDescription
+            )
+
+            
+            if completion.choices[0].finish_reason == "stop":
+                response_msg = completion.choices[0].message
+                if response_msg.parsed:
+                    return response_msg.parsed
+                elif response_msg.refusal:
+                    # handle refusal
+                    print("structured response not possible")
+                # response_msg = completion.choices[0].message.content
+                # return response_msg
+            else:
+                # handle refusal
+                print("finish reason not stop")
+                return None
+        except Exception as e:
+            print(e)
+            pass
+        return None
+    
     async def query_images(self, query_text, image_urls):
         try:
             user_query = {"type": "text", "text": query_text}
@@ -906,7 +946,7 @@ class OpenAIClient:
             pass
         return None
   
-  
+
     
 async def run_web_page_data_example():
     # Example usage:
@@ -993,10 +1033,10 @@ async def main():
     # Example usage:
     client = OpenAIClient()
     query = ""  
-    image_url_6 = "https://scontent-dfw5-1.cdninstagram.com/v/t51.29350-15/470347395_1779171625954831_449535914185449904_n.jpg?stp=dst-jpg_e35_tt6&_nc_cat=109&ccb=1-7&_nc_sid=18de74&_nc_ohc=y_C-qJw5VEEQ7kNvgG_tE9X&_nc_zt=23&_nc_ht=scontent-dfw5-1.cdninstagram.com&edm=ANQ71j8EAAAA&_nc_gid=A5fkaKMBTqXWn5_R3h-mA69&oh=00_AYAv_G2CcNKFn4ky84q6iJvsm-Q9wl8GkGwfU1hxCIvcMQ&oe=67691092"
+    image_url_6 = "https://scontent-dfw5-1.cdninstagram.com/v/t51.29350-15/471520708_963803575846491_9186902143060625019_n.jpg?stp=dst-jpg_e35_tt6&_nc_cat=103&ccb=1-7&_nc_sid=18de74&_nc_ohc=PNNVNi8Yc74Q7kNvgG7mVM0&_nc_zt=23&_nc_ht=scontent-dfw5-1.cdninstagram.com&edm=ANQ71j8EAAAA&_nc_gid=Anz6BBgwPfxjTwC42p_8iLn&oh=00_AYDziP_JYBJCymVO-6s0qK6lrkJJugocC7LQbkmedZ-0dA&oe=6777C464"
     image_url_7 = "https://cdn.outsideonline.com/wp-content/uploads/2019/09/18/man-backpacking-thru-hike_s.jpg"
 
-    result = await client.identify_image_objects([image_url_6])
+    result = await client.query_image_for_description_keywords([image_url_6])
 
     print(result)
 

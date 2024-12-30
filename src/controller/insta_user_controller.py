@@ -56,7 +56,7 @@ async def gather_data(request: CodeRequest):
 async def user_object_graph():
     service = InstaPersonaService()
     try:
-        result = await service.fetch_user_media()
+        result = await service.fetch_user_media_urls()
         graph_json = await service.get_profile_object_graph(result[0:10])
         return {"graph": graph_json}
     except Exception as e:
