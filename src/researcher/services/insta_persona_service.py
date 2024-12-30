@@ -128,8 +128,34 @@ class InstaPersonaService:
         graph_json_pos = await self.add_pos_to_json(object_graph, graph_json)
         return graph_json_pos
 
+    async def find_related_media(self, user_media_object, user_message):
+        related_media = []
+        media_keywords = []
+        for media in user_media_object["media"]:
+            media_keyword = {"id": media["id"], "keywords": media["keywords"]}
+            media_keywords.append(media_keyword)
+        
+        result = await self.openai_client.find_related_keywords(user_message, media_keywords)
+        for media in user_media_object["media"]:
+            if media["id"] in result.ids:
+                related_media.append(media)
+        return related_media
+    
     async def chat_with_character(self, user_id, user_message):
-        character_description = "You are the character chatbot named. David Lucero. Here is your description of who you are: In a world filled with vibrant colors and eclectic experiences, the individual behind these images resembles a colorful tapestry woven with threads of creativity and joy. Their playful spirit is embodied by a quirky red plush toy—a cherished companion that evokes a sense of whimsy, suggesting a heart that finds delight in the unconventional. Surrounded by furry friends, both mischievous and serene, their home radiates warmth and comfort, much like the cozy, inviting spaces they frequent. Amidst lively gatherings, they enjoy flavorful adventures, from sampling innovative dishes at food festivals to relishing craft beers in serene, nature-infused settings, showcasing their love for both community and culinary exploration. Whether scaling a climbing wall with determined passion or savoring picturesque city views, their adventurous spirit is unwavering. The essence of this individual dances like the neon words on a vibrant wall—alive with color, charm, and an infectious zest for life, grounded by the simple joys and profound connections that they cultivate along the way."
+
+        user_media_object = await self.read_user_media_from_file()
+        related_media = await self.find_related_media(user_media_object["luzero_51"], user_message)
+        related_media_descriptions = [media["description"] for media in related_media if "description" in media]
+        character_description = f"""You are the character chatbot named David Lucero. 
+        Here is your description of who you are: 
+        In a world filled with vibrant colors and eclectic experiences, the individual behind these images resembles a colorful tapestry woven with threads of creativity and joy. 
+        Their playful spirit is embodied by a quirky red plush toy—a cherished companion that evokes a sense of whimsy, suggesting a heart that finds delight in the unconventional. 
+        Surrounded by furry friends, both mischievous and serene, their home radiates warmth and comfort, much like the cozy, inviting spaces they frequent. 
+        Amidst lively gatherings, they enjoy flavorful adventures, from sampling innovative dishes at food festivals to relishing craft beers in serene, nature-infused settings, showcasing their love for both community and culinary exploration. 
+        Whether scaling a climbing wall with determined passion or savoring picturesque city views, their adventurous spirit is unwavering. 
+        The essence of this individual dances like the neon words on a vibrant wall—alive with color, charm, and an infectious zest for life, grounded by the simple joys and profound connections that they cultivate along the way.
+        If ther are some, use these media descriptions to influence your response to the user message: {related_media_descriptions}
+        """
 
         # will have to buld database for each user instagram. json object with a element for each image. each image will have a list of topics
         # that are in the image, the summary, caption, tagged users, etc
@@ -139,12 +165,15 @@ class InstaPersonaService:
 
 async def main():
     service = InstaPersonaService()
-    result = await service.fetch_user_media()
-    result_with_descriptions = await service.fetch_media_descriptions(result)
-    await service.update_user_media_file(result_with_descriptions)
-    persona_result = await service.create_persona(result)
+    # result = await service.fetch_user_media()
+    # result_with_descriptions = await service.fetch_media_descriptions(result)
+    # await service.update_user_media_file(result_with_descriptions)
+    # persona_result = await service.create_persona(result)
+    user_media_object = await service.read_user_media_from_file()
+    user_message = "I like stuffed animals"
+    related_images = await service.find_related_images(user_media_object["luzero_51"], user_message)
 
-    print(json.dumps(persona_result, indent=4))
+    print(json.dumps(related_images, indent=4))
     # await service.print_graph(object_graph)
 
 

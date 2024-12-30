@@ -32,6 +32,9 @@ class ImageDescription(BaseModel):
     keywords: List[str]
     description: str
 
+class IdsOfRelatedKeywords(BaseModel):
+    ids: List[str]
+
 class OpenAIClient:
     _openai_model = None
     _openai_model_mini = None
@@ -760,6 +763,70 @@ class OpenAIClient:
             pass
         return None
     
+    async def find_related_keywords(self, user_message, keywords):
+        try:
+            system_instructions = f"""
+            You are a highly analytical assistant designed to strictly match keywords between a user's message and a provided array of image metadata.
+            Input Details:
+            You will be provided an array of objects in the following format: [{{ "id": "1", "keywords": ["a", "b", ...] }}, ...]. Each object represents an image and its associated keywords.
+            You will also receive a user message.
+            Objective:
+            Your task is to return a list of IDs from the array that are strictly relevant to the user's message based on keyword matching.
+            Only select an ID if at least one keyword in its associated list clearly and directly relates to the user message. Avoid broad or overly general matches.
+            Do not return random IDs or IDs with weak or tangential matches.
+            Output Format:
+            Return only the list of matching IDs. If no keywords are relevant, return an empty list.
+            Selection Rules:
+            Relevance: Ensure the keywords relate directly to the main subject or intent of the user's message. Avoid including loosely connected items.
+            Specificity: Be strict and selective. Choose only IDs with highly relevant keywords to keep the list concise.
+            No random IDs: Only use IDs present in the array.
+            Example Inputs and Outputs:
+            Example 1:
+            User message: "I love sunsets on the beach."
+            Array: [{{"id":"1", "keywords":["sunset","ocean","beach"]}}, {{"id":"2", "keywords":["mountain","hiking"]}}]
+            Output: ["1"]
+            Example 2:
+            User message: "Tell me about forests and wildlife."
+            Array: [{{"id":"1", "keywords":["sunset","ocean","beach"]}}, {{"id":"2", "keywords":["forest","wildlife","nature"]}}]
+            Output: ["2"]
+            Example 3:
+            User message: "I want to know about cities."
+            Array: [{{"id":"1", "keywords":["sunset","ocean","beach"]}}, {{"id":"2", "keywords":["forest","wildlife","nature"]}}]
+            Output: []
+            Follow these rules strictly to ensure the output is precise and useful.
+            """
+
+            user_query = f"""User message: {user_message}
+            Keywords: {keywords}"""
+
+            system_message = {"role": "system", "content": system_instructions}
+            user_message = {"role": "user", "content": user_query}
+            messages = [system_message,user_message]
+
+            completion = await self._openai.beta.chat.completions.parse(
+                model=self._openai_model_mini,
+                messages=messages,
+                response_format=IdsOfRelatedKeywords
+            )
+
+            
+            if completion.choices[0].finish_reason == "stop":
+                response_msg = completion.choices[0].message
+                if response_msg.parsed:
+                    return response_msg.parsed
+                elif response_msg.refusal:
+                    # handle refusal
+                    print("structured response not possible")
+
+            else:
+                # handle refusal
+                print("finish reason not stop")
+                return None
+        except Exception as e:
+            print(e)
+            pass
+        return None
+
     async def query_images(self, query_text, image_urls):
         try:
             user_query = {"type": "text", "text": query_text}
