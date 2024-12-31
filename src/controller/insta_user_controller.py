@@ -52,6 +52,15 @@ async def gather_data(request: CodeRequest):
                 else:
                     raise HTTPException(status_code=response.status_code, detail=response.text)
 
+@router.post("/get-user-fb")
+async def gather_data(request: CodeRequest):
+    
+    if request.source == "local":
+        response = {"status": "received code", "source": "local"}
+        return response
+    else:
+        response = {"status": "received code", "source": "external"}
+                
 @router.get("/user_object_graph")
 async def user_object_graph():
     service = InstaPersonaService()
