@@ -1066,28 +1066,60 @@ class OpenAIClient:
                     }, "strict" : True
                 }
             },
-             {
+            # {
+            #     "type": "function",
+            #     "function": {
+            #         "name": "add_persona_memory",
+            #         "description": "Add a memory to the user storage. Call this whenever you need to add a new memory, for example when a user says something like 'I remember I went to this place', 'I have a memory of a beach', etc.",
+            #         "parameters": {
+            #             "type": "object",
+            #             "properties": {
+            #                 "memory_subject": {
+            #                     "type": "string",
+            #                     "description": "Main memory subject. The thing the memory is about.",
+            #                 },
+            #                  "memory_description": {
+            #                     "type": "string",
+            #                     "description": "Full description of the memory.",
+            #                 },
+            #                 "memory_date": {
+            #                     "type": "string",
+            #                     "description": "Date of the memory.",
+            #                 }
+            #             },
+            #             "required": ["memory_subject"],
+            #             "additionalProperties": True,
+            #         }, 
+            #         "strict" : False
+            #     }
+            # }
+            # ,
+                        {
                 "type": "function",
                 "function": {
-                    "name": "add_persona_memory",
-                    "description": "Add a memory to the user storage. Call this whenever you need to add a new memory, for example when a user says something like 'I remember I went to this place', 'I have a memory of a beach', etc.",
+                    "name": "add_user_milestone",
+                    "description": "Add a user milestone to the user storage. Call this whenever you need to add a new user milestone, for example when a user says something like 'I remember I went to this place', 'I have a memory of a beach', etc.",
                     "parameters": {
                         "type": "object",
                         "properties": {
-                            "memory_subject": {
+                            "milestone_title": {
                                 "type": "string",
-                                "description": "Main memory subject. The thing the memory is about.",
+                                "description": "A short, descriptive name for the milestone.",
                             },
-                             "memory_description": {
+                             "milestone_description": {
                                 "type": "string",
-                                "description": "Full description of the memory.",
+                                "description": "A brief narrative about the event or experience.",
                             },
-                            "memory_date": {
+                            "milestone_date": {
                                 "type": "string",
                                 "description": "Date of the memory.",
+                            },
+                            "milestone_significance": {
+                                "type": "string",
+                                "description": "The importance of the milestone as rated by the user (e.g., life-changing, pivotal, challenging, etc.).",
                             }
                         },
-                        "required": ["memory_subject"],
+                        "required": ["milestone_title"],
                         "additionalProperties": True,
                     }, 
                     "strict" : False
@@ -1129,33 +1161,31 @@ class OpenAIClient:
                     messages.append(assistant_message.to_dict())
                     messages.append(function_call_result_message)
                     requiresAction = True
-                if tool_call.function.name == "add_persona_memory":
-                    memory_subject = arguments.get('memory_subject')
-                    memory_description = arguments.get('memory_description') 
-                    memory_date = arguments.get('memory_date')   
-                    if memory_date is None or memory_date == "":
-                        # Ask the user for the date if it is not provided
-                        date_request_msg = {"role": "assistant", "content": "Please provide the date of the memory."} 
-
+                if tool_call.function.name == "add_user_milestone":
+                    milestone_title = arguments.get('milestone_title')
+                    milestone_description = arguments.get('milestone_description') 
+                    milestone_date = arguments.get('milestone_date')   
+                    milestone_significance = arguments.get('milestone_significance')   
+                    if milestone_date is None or milestone_date == "":
+                        date_request_msg = {"role": "assistant", "content": "Please provide the date of the milestone."} 
                         await self.write_chat_history("chat_history/chat_history.json", user_id, date_request_msg)
                         messages.append(date_request_msg)
                         return messages
-                    if memory_description is None or memory_description == "":
-                        # Ask the user for the description if it is not provided
-                        description_request_msg = {"role": "assistant", "content": "Please provide a description of the memory."} 
-
+                    if milestone_description is None or milestone_description == "":
+                        description_request_msg = {"role": "assistant", "content": "Please provide a description of the milestone."} 
                         await self.write_chat_history("chat_history/chat_history.json", user_id, description_request_msg)
                         messages.append(description_request_msg)
                         return messages
                     
-                    await self.add_persona_memory(user_id, memory_subject, memory_description, memory_date)
+                    await self.add_user_milestone(user_id, milestone_title, milestone_description, milestone_date, milestone_significance)
                     function_call_result_message = {
                         "role": "tool",
                         "content": json.dumps({
                             "user_id": user_id,
-                            "memory_subject": memory_subject,
-                            "memory_description": memory_description,
-                            "memory_date": memory_date
+                            "milestone_title": milestone_title,
+                            "milestone_description": milestone_description,
+                            "milestone_date": milestone_date,
+                            "milestone_significance": milestone_significance
                         }),
                         "tool_call_id": tool_call.id
                     }
@@ -1185,8 +1215,8 @@ class OpenAIClient:
     async def get_persona_memory_count(self, user_id):
         return 5
 
-    async def add_persona_memory(self, user_id, memory_subject, memory_description, memory_date):
-        memory = {"subject": memory_subject, "description": memory_description, "date": memory_date}
+    async def add_user_milestone(self, user_id, milestone_title, milestone_description, milestone_date, milestone_significance):
+        milestone = {"title": milestone_title, "description": milestone_description, "date": milestone_date, "significance": milestone_significance}
         return True
 
 async def run_web_page_data_example():
