@@ -88,6 +88,8 @@ async def chat(request: ChatRequest):
         return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+    
+
 
 @router.get("/chat-history/{user_id}")
 async def chat_history(user_id: str):

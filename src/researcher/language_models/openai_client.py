@@ -1012,9 +1012,117 @@ class OpenAIClient:
             print(e)
             pass
         return None
-  
-
     
+    async def chat_with_tools(self, user_id, user_message, system_prompt):
+        try:
+            tools = await self.get_persona_chat_tools()
+
+            # file_name = user_id + "_chat_history.json"
+            chat_history = await self.read_chat_history("chat_history/chat_history.json")
+
+            if chat_history is None:
+                chat_history = {}
+
+            # Ensure user chat history exists
+            if user_id not in chat_history:
+                chat_history[user_id] = []
+
+            # Append the user message to the chat history
+            #chat_history[user_id].append({"role": "user", "content": user_message})
+            chat_history = await self.write_chat_history("chat_history/chat_history.json", user_id, {"role": "user", "content": user_message})
+
+            # Construct the full message chain to send to OpenAI
+            messages = [{"role": "system", "content": system_prompt}]
+            messages += chat_history[user_id]
+
+            completion = await self._openai.chat.completions.create(
+                model=self._openai_model_mini,
+                messages=messages,
+                tools=tools
+            )
+
+            response_msgs = await self.handle_user_chat_with_tools(user_id, completion, messages, tools)
+            
+            response_msg = response_msgs[-1]["content"]
+            return {"response": response_msg}
+
+        except Exception as e:
+            print(e)
+            pass
+        return None
+  
+    async def get_persona_chat_tools(self):
+        tools = [
+            {
+                "type": "function",
+                "function": {
+                    "name": "get_persona_memory_count",
+                    "description": "Get the number of memories stored for a user. Call this whenever you need to know the number of user memories, for example when a user asks something like 'How many memories do you have?' or 'How many images do you have?'",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {},
+                        "required": [],
+                        "additionalProperties": False,
+                    }, "strict" : True
+                }
+            }
+        ]
+        return tools
+
+    async def handle_user_chat_with_tools(self, user_id, completion, messages, tools):
+        response = completion
+        requiresAction = True
+        while requiresAction:
+            requiresAction = False
+            finish_reason = response.choices[0].finish_reason
+            if finish_reason == "length":
+                requiresAction = False
+                #return "The conversation was too long for the context window."
+            elif finish_reason == "content_filter":
+                requiresAction = False
+                #return "The content was filtered due to policy violations."
+            elif finish_reason == "tool_calls":
+                tool_call = response.choices[0].message.tool_calls[0]
+                arguments = json.loads(tool_call.function.arguments)
+                #check if the tool call is for getting the number of memories
+                if tool_call.function.name == "get_persona_memory_count":
+                    # user_id = arguments.get('user_id')
+                    memory_count = await self.get_persona_memory_count(user_id)
+                    function_call_result_message = {
+                        "role": "tool",
+                        "content": json.dumps({
+                            "user_id": user_id,
+                            "memory_count": memory_count
+                        }),
+                        "tool_call_id": tool_call.id
+                    }
+                    assistant_message = response.choices[0].message
+                    await self.write_chat_history("chat_history/chat_history.json", user_id, assistant_message.to_dict())
+                    await self.write_chat_history("chat_history/chat_history.json", user_id, function_call_result_message)
+                    messages.append(assistant_message.to_dict())
+                    messages.append(function_call_result_message)
+                    requiresAction = True
+        
+            elif finish_reason == "stop":
+                assistant_message = response.choices[0].message
+                await self.write_chat_history("chat_history/chat_history.json", user_id, assistant_message.to_dict())
+                messages.append(assistant_message.to_dict())
+                requiresAction = False
+            else:
+                requiresAction = False
+                #return "Unexpected finish_reason: " + finish_reason
+            
+            if requiresAction:
+                response = await self._openai.chat.completions.create( 
+                    model=self._openai_model_mini,
+                    messages=messages,
+                    tools=tools
+                    )
+        return messages  
+
+    async def get_persona_memory_count(self, user_id):
+        return 5
+
 async def run_web_page_data_example():
     # Example usage:
     client = OpenAIClient()

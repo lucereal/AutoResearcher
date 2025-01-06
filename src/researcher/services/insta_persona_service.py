@@ -162,7 +162,7 @@ class InstaPersonaService:
         # that are in the image, the summary, caption, tagged users, etc
         # the first prompt will gather images that relate the user message and the second prompt will be to 
         # response to the user using the images gathered
-        return await self.openai_client.chat(user_id, user_message, character_description)
+        return await self.openai_client.chat_with_tools(user_id, user_message, character_description)
 
 async def main():
     service = InstaPersonaService()
