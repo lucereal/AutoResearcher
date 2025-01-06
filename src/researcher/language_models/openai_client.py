@@ -1065,6 +1065,33 @@ class OpenAIClient:
                         "additionalProperties": False,
                     }, "strict" : True
                 }
+            },
+             {
+                "type": "function",
+                "function": {
+                    "name": "add_persona_memory",
+                    "description": "Add a memeory to the user storage. Call this whenever you need to add a new memory, for example when a user says something like 'I remember I went to this place', 'I have a memory of a beach', etc.",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "memory_subject": {
+                                "type": "string",
+                                "description": "Main memory subject. The thing the memory is about.",
+                            },
+                             "memory_description": {
+                                "type": "string",
+                                "description": "Full description of the memory.",
+                            },
+                            "memory_date": {
+                                "type": "string",
+                                "description": "Date of the memory.",
+                            }
+                        },
+                        "required": ["memory_subject", "memory_description", "memory_date"],
+                        "additionalProperties": False,
+                    }, 
+                    "strict" : True
+                }
             }
         ]
         return tools
@@ -1102,7 +1129,27 @@ class OpenAIClient:
                     messages.append(assistant_message.to_dict())
                     messages.append(function_call_result_message)
                     requiresAction = True
-        
+                if tool_call.function.name == "add_persona_memory":
+                    memory_subject = arguments.get('memory_subject')
+                    memory_description = arguments.get('memory_description') 
+                    memory_date = arguments.get('memory_date')   
+                    await self.add_persona_memory(user_id, memory_subject, memory_description, memory_date)
+                    function_call_result_message = {
+                        "role": "tool",
+                        "content": json.dumps({
+                            "user_id": user_id,
+                            "memory_subject": memory_subject,
+                            "memory_description": memory_description,
+                            "memory_date": memory_date
+                        }),
+                        "tool_call_id": tool_call.id
+                    }
+                    assistant_message = response.choices[0].message
+                    await self.write_chat_history("chat_history/chat_history.json", user_id, assistant_message.to_dict())
+                    await self.write_chat_history("chat_history/chat_history.json", user_id, function_call_result_message)
+                    messages.append(assistant_message.to_dict())
+                    messages.append(function_call_result_message)
+                    requiresAction = True
             elif finish_reason == "stop":
                 assistant_message = response.choices[0].message
                 await self.write_chat_history("chat_history/chat_history.json", user_id, assistant_message.to_dict())
@@ -1122,6 +1169,10 @@ class OpenAIClient:
 
     async def get_persona_memory_count(self, user_id):
         return 5
+
+    async def add_persona_memory(self, user_id, memory_subject, memory_description, memory_date):
+        memory = {"subject": memory_subject, "description": memory_description, "date": memory_date}
+        return True
 
 async def run_web_page_data_example():
     # Example usage:
