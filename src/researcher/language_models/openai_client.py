@@ -1070,7 +1070,7 @@ class OpenAIClient:
                 "type": "function",
                 "function": {
                     "name": "add_persona_memory",
-                    "description": "Add a memeory to the user storage. Call this whenever you need to add a new memory, for example when a user says something like 'I remember I went to this place', 'I have a memory of a beach', etc.",
+                    "description": "Add a memory to the user storage. Call this whenever you need to add a new memory, for example when a user says something like 'I remember I went to this place', 'I have a memory of a beach', etc.",
                     "parameters": {
                         "type": "object",
                         "properties": {
@@ -1087,10 +1087,10 @@ class OpenAIClient:
                                 "description": "Date of the memory.",
                             }
                         },
-                        "required": ["memory_subject", "memory_description", "memory_date"],
-                        "additionalProperties": False,
+                        "required": ["memory_subject", "memory_description"],
+                        "additionalProperties": True,
                     }, 
-                    "strict" : True
+                    "strict" : False
                 }
             }
         ]
