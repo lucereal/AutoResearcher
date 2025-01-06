@@ -1127,6 +1127,33 @@ class OpenAIClient:
                     }, 
                     "strict" : False
                 }
+            },
+            {
+                "type": "function",
+                "function": {
+                    "name": "find_user_milestone",
+                    "description": "Find a user milestone in the user storage. Call this whenever you need to find a user milestone, for example when a user says something like 'Can you find that memory of the beach?', 'I remember a memory about a sunset', etc.",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "milestone_title": {
+                                "type": "string",
+                                "description": "A short, descriptive name for the milestone.",
+                            },
+                             "milestone_description": {
+                                "type": "string",
+                                "description": "A brief narrative about the event or experience.",
+                            },
+                            "milestone_date": {
+                                "type": "string",
+                                "description": "Date of the memory.",
+                            }
+                        },
+                        "required": [],
+                        "additionalProperties": True,
+                    }, 
+                    "strict" : False
+                }
             }
         ]
         return tools
@@ -1146,7 +1173,28 @@ class OpenAIClient:
             elif finish_reason == "tool_calls":
                 tool_call = response.choices[0].message.tool_calls[0]
                 arguments = json.loads(tool_call.function.arguments)
-                
+                if tool_call.function.name == "find_user_milestone":
+                    milestone_title = arguments.get('milestone_title')
+                    milestone_description = arguments.get('milestone_description') 
+                    milestone_date = arguments.get('milestone_date') 
+                    await self.find_user_milestone(user_id, milestone_title, milestone_description, milestone_date)
+
+                    function_call_result_message = {
+                        "role": "tool",
+                        "content": json.dumps({
+                            "user_id": user_id,
+                            "milestone_title": milestone_title,
+                            "milestone_description": milestone_description,
+                            "milestone_date": milestone_date
+                        }),
+                        "tool_call_id": tool_call.id
+                    }
+                    assistant_message = response.choices[0].message
+                    await self.write_chat_history("chat_history/chat_history.json", user_id, assistant_message.to_dict())
+                    await self.write_chat_history("chat_history/chat_history.json", user_id, function_call_result_message)
+                    messages.append(assistant_message.to_dict())
+                    messages.append(function_call_result_message)
+                    requiresAction = True
                 if tool_call.function.name == "add_user_milestone":
                     milestone_title = arguments.get('milestone_title')
                     milestone_description = arguments.get('milestone_description') 
@@ -1163,16 +1211,10 @@ class OpenAIClient:
                         messages.append(description_request_msg)
                         return messages
                     
-                    await self.add_user_milestone(user_id, milestone_title, milestone_description, milestone_date, milestone_significance)
+                    find_result = await self.add_user_milestone(user_id, milestone_title, milestone_description, milestone_date, milestone_significance)
                     function_call_result_message = {
                         "role": "tool",
-                        "content": json.dumps({
-                            "user_id": user_id,
-                            "milestone_title": milestone_title,
-                            "milestone_description": milestone_description,
-                            "milestone_date": milestone_date,
-                            "milestone_significance": milestone_significance
-                        }),
+                        "content": json.dumps(find_result),
                         "tool_call_id": tool_call.id
                     }
                     assistant_message = response.choices[0].message
@@ -1270,8 +1312,11 @@ class OpenAIClient:
             print(f"Error writing user milestones to file: {e}")
 
     async def add_user_milestone(self, user_id, milestone_title, milestone_description, milestone_date, milestone_significance):
-        milestone = {"title": milestone_title, "description": milestone_description, "date": milestone_date, "significance": milestone_significance}
+        
         try:
+            user_milestones = await self.read_user_milestones(user_id)
+            num_milestones = len(user_milestones["milestones"])
+            milestone = {"id": num_milestones,"title": milestone_title, "description": milestone_description, "date": milestone_date, "significance": milestone_significance}
             await self.write_user_milestones(user_id, milestone)
 
             return await self.read_user_milestones(user_id)
@@ -1291,6 +1336,62 @@ class OpenAIClient:
             pass
         return True
 
+    async def find_user_milestone(self, user_id, milestone_title, milestone_description, milestone_date):
+        
+        class MileStoneIds(BaseModel):
+            ids: List[int]
+
+        try:
+            user_milestones = await self.read_user_milestones(user_id)
+            found_milestones_ids = []
+            if user_milestones is not None:
+                milestones = user_milestones["milestones"]
+                batch_size = 10
+                for i in range(0, len(milestones), batch_size):
+                    batch = milestones[i:i + batch_size]
+                
+                    prompt = f"""
+                    You are an assistant that helps users find their milestones. The user has provider all or some of these values: 
+                    milestone_title: "{milestone_title}", milestone_description: "{milestone_description}", milestone_date: "{milestone_date}".
+                    Here are the user's milestones:
+                    {json.dumps(batch, indent=4)}
+                    Based on the user input, find the most relevant milestones ids and return them in a list.
+                    If no matching milestones are found, return an empty list. 
+                    Be strict when determining if milestones are matching since we do not want to find false positives.
+                    """
+                    messages=[{"role": "system", "content": prompt}]
+                    completion = await self._openai.beta.chat.completions.parse(
+                        model=self._openai_model_mini,
+                        messages=messages,
+                        response_format=MileStoneIds
+                    )
+
+                    if completion.choices[0].finish_reason == "stop":
+                        response_msg = completion.choices[0].message
+                        if response_msg.parsed:
+                            found_milestones_ids += response_msg.parsed.ids
+                        elif response_msg.refusal:
+                            # handle refusal
+                            print("structured response not possible")
+                            return {"success":False,"message": "Encountered refusal while looking for milestones", "milestone_ids": None}
+                    else:
+                        # handle refusal
+                        print("finish reason not stop")
+                        return {"success":False,"message": "Finish reason not stop", "milestone_ids": None}
+
+            found_milestones = []
+            if len(found_milestones_ids) > 0:
+                #find milestones in user_milestones["milestones"] with matching ids
+                for milestone in user_milestones["milestones"]:
+                    if milestone["id"] in found_milestones_ids:
+                        found_milestones.append(milestone)
+            return {"success":True,"message": "Milestones found.", "milestone_ids": found_milestones_ids, "milestones": found_milestones}
+        
+        except Exception as e:
+            print(e)
+            pass
+        return {"success":False,"message": "Milestones not found.", "milestone_ids": None}
+    
 async def run_web_page_data_example():
     # Example usage:
     client = OpenAIClient()
