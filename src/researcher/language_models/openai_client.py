@@ -1066,39 +1066,42 @@ class OpenAIClient:
                     }, "strict" : True
                 }
             },
-            # {
-            #     "type": "function",
-            #     "function": {
-            #         "name": "add_persona_memory",
-            #         "description": "Add a memory to the user storage. Call this whenever you need to add a new memory, for example when a user says something like 'I remember I went to this place', 'I have a memory of a beach', etc.",
-            #         "parameters": {
-            #             "type": "object",
-            #             "properties": {
-            #                 "memory_subject": {
-            #                     "type": "string",
-            #                     "description": "Main memory subject. The thing the memory is about.",
-            #                 },
-            #                  "memory_description": {
-            #                     "type": "string",
-            #                     "description": "Full description of the memory.",
-            #                 },
-            #                 "memory_date": {
-            #                     "type": "string",
-            #                     "description": "Date of the memory.",
-            #                 }
-            #             },
-            #             "required": ["memory_subject"],
-            #             "additionalProperties": True,
-            #         }, 
-            #         "strict" : False
-            #     }
-            # }
-            # ,
-                        {
+            {
                 "type": "function",
                 "function": {
                     "name": "add_user_milestone",
                     "description": "Add a user milestone to the user storage. Call this whenever you need to add a new user milestone, for example when a user says something like 'I remember I went to this place', 'I have a memory of a beach', etc.",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "milestone_title": {
+                                "type": "string",
+                                "description": "A short, descriptive name for the milestone.",
+                            },
+                             "milestone_description": {
+                                "type": "string",
+                                "description": "A brief narrative about the event or experience.",
+                            },
+                            "milestone_date": {
+                                "type": "string",
+                                "description": "Date of the memory.",
+                            },
+                            "milestone_significance": {
+                                "type": "string",
+                                "description": "The importance of the milestone as rated by the user (e.g., life-changing, pivotal, challenging, etc.).",
+                            }
+                        },
+                        "required": ["milestone_title"],
+                        "additionalProperties": True,
+                    }, 
+                    "strict" : False
+                }
+            },
+            {
+                "type": "function",
+                "function": {
+                    "name": "update_user_milestone",
+                    "description": "Update an existing user milestone in the user storage. Call this whenever you need to update user milestone, for example when a user says something like 'Can we change that one memory or milestone?', 'Actually that memory was like this', etc.",
                     "parameters": {
                         "type": "object",
                         "properties": {
@@ -1143,24 +1146,7 @@ class OpenAIClient:
             elif finish_reason == "tool_calls":
                 tool_call = response.choices[0].message.tool_calls[0]
                 arguments = json.loads(tool_call.function.arguments)
-                #check if the tool call is for getting the number of memories
-                if tool_call.function.name == "get_persona_memory_count":
-                    # user_id = arguments.get('user_id')
-                    memory_count = await self.get_persona_memory_count(user_id)
-                    function_call_result_message = {
-                        "role": "tool",
-                        "content": json.dumps({
-                            "user_id": user_id,
-                            "memory_count": memory_count
-                        }),
-                        "tool_call_id": tool_call.id
-                    }
-                    assistant_message = response.choices[0].message
-                    await self.write_chat_history("chat_history/chat_history.json", user_id, assistant_message.to_dict())
-                    await self.write_chat_history("chat_history/chat_history.json", user_id, function_call_result_message)
-                    messages.append(assistant_message.to_dict())
-                    messages.append(function_call_result_message)
-                    requiresAction = True
+                
                 if tool_call.function.name == "add_user_milestone":
                     milestone_title = arguments.get('milestone_title')
                     milestone_description = arguments.get('milestone_description') 
@@ -1212,11 +1198,97 @@ class OpenAIClient:
                     )
         return messages  
 
-    async def get_persona_memory_count(self, user_id):
-        return 5
+    async def read_user_milestones(self, user_id):
+        file_path = f"user_timeline/user_timeline.json"
+        try:
+            with open(file_path, 'r') as file:
+                user_milestones = json.load(file)
+            if user_id in user_milestones:
+                return user_milestones[user_id]
+            else:
+                return None
+        except Exception as e:
+            print(f"Error reading user milestones from file: {e}")
+            return None
+    
+    async def write_user_milestones(self, user_id, user_milestones):
+        file_path = f"user_timeline/user_timeline.json"
+        try:
+            # Ensure the file exists and contains valid JSON
+            if not os.path.exists(file_path) or os.path.getsize(file_path) == 0:
+                with open(file_path, 'w') as file:
+                    json.dump({}, file)
+
+            with open(file_path, 'r') as file:
+                user_timeline = json.load(file)
+            if user_timeline is None:
+                user_timeline = {}
+            
+            if user_id not in user_timeline:
+                user_timeline[user_id] = {"milestones": []}
+            
+            user_timeline[user_id]["milestones"].append(user_milestones)
+
+            with open(file_path, 'w') as file:
+                json.dump(user_timeline, file, indent=4)
+            return user_timeline
+        except Exception as e:
+            print(f"Error writing user milestones to file: {e}")
+
+    async def update_user_milestones(self, user_id, user_milestones):
+        file_path = f"user_timeline/user_timeline.json"
+        try:
+            # Ensure the file exists and contains valid JSON
+            if not os.path.exists(file_path) or os.path.getsize(file_path) == 0:
+                with open(file_path, 'w') as file:
+                    json.dump({}, file)
+
+            with open(file_path, 'r') as file:
+                user_timeline = json.load(file)
+            if user_timeline is None:
+                user_timeline = {}
+            
+            if user_id not in user_timeline:
+                user_timeline[user_id] = {"milestones": []}
+            
+            found_milestone = False
+            #find user milestone with matching user_milestone["title"] and update it
+            for milestone in user_timeline[user_id]["milestones"]:
+                if milestone["title"] == user_milestones["title"]:
+                    milestone = user_milestones
+                    found_milestone = True
+                    break
+            
+            if not found_milestone:
+                user_timeline[user_id]["milestones"].append(user_milestones)
+                return {"message": "Milestone not found. Added new milestone."}
+
+            with open(file_path, 'w') as file:
+                json.dump(user_timeline, file, indent=4)
+            return user_timeline
+        except Exception as e:
+            print(f"Error writing user milestones to file: {e}")
 
     async def add_user_milestone(self, user_id, milestone_title, milestone_description, milestone_date, milestone_significance):
         milestone = {"title": milestone_title, "description": milestone_description, "date": milestone_date, "significance": milestone_significance}
+        try:
+            await self.write_user_milestones(user_id, milestone)
+
+            return await self.read_user_milestones(user_id)
+        except Exception as e:
+            print(e)
+            pass
+        return True
+    
+    async def update_user_milestone(self, user_id, milestone_title, milestone_description, milestone_date, milestone_significance):
+        milestone = {"title": milestone_title, "description": milestone_description, "date": milestone_date, "significance": milestone_significance}
+        try:
+            await self.write_user_milestones(user_id, milestone)
+
+            return await self.read_user_milestones(user_id)
+        except Exception as e:
+            print(e)
+            pass
         return True
 
 async def run_web_page_data_example():
