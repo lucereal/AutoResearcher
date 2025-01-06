@@ -88,7 +88,15 @@ async def chat(request: ChatRequest):
         return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-    
+
+@router.post("/chat-timeline")
+async def chat(request: ChatRequest):
+    service = InstaPersonaService()
+    try:
+        result = await service.chat_with_timeline_builder(request.user_id, request.user_message)
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.get("/chat-history/{user_id}")

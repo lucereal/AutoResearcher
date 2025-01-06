@@ -1087,7 +1087,7 @@ class OpenAIClient:
                                 "description": "Date of the memory.",
                             }
                         },
-                        "required": ["memory_subject", "memory_description"],
+                        "required": ["memory_subject"],
                         "additionalProperties": True,
                     }, 
                     "strict" : False
@@ -1140,6 +1140,14 @@ class OpenAIClient:
                         await self.write_chat_history("chat_history/chat_history.json", user_id, date_request_msg)
                         messages.append(date_request_msg)
                         return messages
+                    if memory_description is None or memory_description == "":
+                        # Ask the user for the description if it is not provided
+                        description_request_msg = {"role": "assistant", "content": "Please provide a description of the memory."} 
+
+                        await self.write_chat_history("chat_history/chat_history.json", user_id, description_request_msg)
+                        messages.append(description_request_msg)
+                        return messages
+                    
                     await self.add_persona_memory(user_id, memory_subject, memory_description, memory_date)
                     function_call_result_message = {
                         "role": "tool",
