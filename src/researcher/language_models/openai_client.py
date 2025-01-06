@@ -1133,6 +1133,13 @@ class OpenAIClient:
                     memory_subject = arguments.get('memory_subject')
                     memory_description = arguments.get('memory_description') 
                     memory_date = arguments.get('memory_date')   
+                    if memory_date is None or memory_date == "":
+                        # Ask the user for the date if it is not provided
+                        date_request_msg = {"role": "assistant", "content": "Please provide the date of the memory."} 
+
+                        await self.write_chat_history("chat_history/chat_history.json", user_id, date_request_msg)
+                        messages.append(date_request_msg)
+                        return messages
                     await self.add_persona_memory(user_id, memory_subject, memory_description, memory_date)
                     function_call_result_message = {
                         "role": "tool",
