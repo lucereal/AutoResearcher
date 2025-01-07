@@ -52,6 +52,15 @@ async def gather_data(request: CodeRequest):
                 else:
                     raise HTTPException(status_code=response.status_code, detail=response.text)
 
+@router.post("/get-user-fb")
+async def gather_data(request: CodeRequest):
+    
+    if request.source == "local":
+        response = {"status": "received code", "source": "local"}
+        return response
+    else:
+        response = {"status": "received code", "source": "external"}
+                
 @router.get("/user_object_graph")
 async def user_object_graph():
     service = InstaPersonaService()
@@ -79,6 +88,16 @@ async def chat(request: ChatRequest):
         return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/chat-timeline")
+async def chat(request: ChatRequest):
+    service = InstaPersonaService()
+    try:
+        result = await service.chat_with_timeline_builder(request.user_id, request.user_message)
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 
 @router.get("/chat-history/{user_id}")
 async def chat_history(user_id: str):

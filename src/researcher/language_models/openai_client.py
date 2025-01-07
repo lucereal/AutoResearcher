@@ -1,3 +1,4 @@
+from datetime import datetime
 import asyncio
 import json
 import os
@@ -1012,9 +1013,567 @@ class OpenAIClient:
             print(e)
             pass
         return None
-  
-
     
+    async def chat_with_tools(self, user_id, user_message, system_prompt):
+        try:
+            tools = await self.get_persona_chat_tools()
+
+            # file_name = user_id + "_chat_history.json"
+            chat_history = await self.read_chat_history("chat_history/chat_history.json")
+
+            if chat_history is None:
+                chat_history = {}
+
+            # Ensure user chat history exists
+            if user_id not in chat_history:
+                chat_history[user_id] = []
+
+            # Append the user message to the chat history
+            #chat_history[user_id].append({"role": "user", "content": user_message})
+            chat_history = await self.write_chat_history("chat_history/chat_history.json", user_id, {"role": "user", "content": user_message})
+
+            # Construct the full message chain to send to OpenAI
+            messages = [{"role": "system", "content": system_prompt}]
+            messages += chat_history[user_id]
+
+            completion = await self._openai.chat.completions.create(
+                model=self._openai_model_mini,
+                messages=messages,
+                tools=tools
+            )
+
+            response_msgs = await self.handle_user_chat_with_tools(user_id, completion, messages, tools)
+            
+            response_msg = response_msgs[-1]["content"]
+            return {"response": response_msg}
+
+        except Exception as e:
+            print(e)
+            pass
+        return None
+  
+    async def get_persona_chat_tools(self):
+        tools = [
+            {
+                "type": "function",
+                "function": {
+                    "name": "get_persona_memory_count",
+                    "description": "Get the number of memories stored for a user. Call this whenever you need to know the number of user memories, for example when a user asks something like 'How many memories do you have?' or 'How many images do you have?'",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {},
+                        "required": [],
+                        "additionalProperties": False,
+                    }, "strict" : True
+                }
+            },
+            {
+                "type": "function",
+                "function": {
+                    "name": "add_user_milestone",
+                    "description": "Add a user milestone to the user storage. Call this whenever you need to add a new user milestone, for example when a user says something like 'I remember I went to this place', 'I have a memory of a beach', etc.",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "milestone_title": {
+                                "type": "string",
+                                "description": "A short, descriptive name for the milestone.",
+                            },
+                             "milestone_description": {
+                                "type": "string",
+                                "description": "A brief narrative about the event or experience.",
+                            },
+                            "milestone_date": {
+                                "type": "string",
+                                "format": "date",
+                                "description": "Date of the milestone in the format yyyy-mm-dd. If the day is not provided, default to '01'. If the month is not provided, default to '01'."
+                            },
+                            "milestone_significance": {
+                                "type": "string",
+                                "description": "The importance of the milestone as rated by the user (e.g., life-changing, pivotal, challenging, etc.).",
+                            }
+                        },
+                        "required": ["milestone_title"],
+                        "additionalProperties": True,
+                    }, 
+                    "strict" : False
+                }
+            },
+            {
+                "type": "function",
+                "function": {
+                    "name": "update_user_milestone",
+                    "description": "Update an existing user milestone in the user storage. Call this whenever you need to update user milestone, for example when a user says something like 'Can we change that one memory or milestone?', 'Actually that memory was like this', etc.",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "milestone_id": {
+                                "type": "string",
+                                "description": "id of the milestone to update. can be obtained from the find_user_milestone function.",
+                            },
+                            "milestone_title": {
+                                "type": "string",
+                                "description": "A short, descriptive name for the milestone.",
+                            },
+                             "milestone_description": {
+                                "type": "string",
+                                "description": "A brief narrative about the event or experience.",
+                            },
+                            "milestone_date": {
+                                "type": "string",
+                                "format": "date",
+                                "description": "Date of the milestone in the format yyyy-mm-dd. If the day is not provided, default to '01'. If the month is not provided, default to '01'."
+                            },
+                            "milestone_significance": {
+                                "type": "string",
+                                "description": "The importance of the milestone as rated by the user (e.g., life-changing, pivotal, challenging, etc.).",
+                            }
+                        },
+                        "required": ["milestone_id"],
+                        "additionalProperties": True,
+                    }, 
+                    "strict" : False
+                }
+            },
+            {
+                "type": "function",
+                "function": {
+                    "name": "find_user_milestone",
+                    "description": "Find a user milestone in the user storage. You can find user milestone id, title, description, and date. Call this whenever you need to find a user milestone, for example when a user says something like 'Can you find that memory of the beach?', 'I remember a memory about a sunset', etc.",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "milestone_title": {
+                                "type": "string",
+                                "description": "A short, descriptive name for the milestone.",
+                            },
+                             "milestone_description": {
+                                "type": "string",
+                                "description": "A brief narrative about the event or experience.",
+                            },
+                            "milestone_date": {
+                                "type": "string",
+                                "description": "Date of the memory.",
+                            }
+                        },
+                        "required": [],
+                        "additionalProperties": True,
+                    }, 
+                    "strict" : False
+                }
+            },
+            {
+                "type": "function",
+                "function": {
+                    "name": "get_milestone_topic_suggestions",
+                    "description": "Get topic suggestions based on the user's milestones. Call this whenever you finish a milestone addition for the user and want to add a new milestone. Call this whenever you need to suggest topics based on the user's memories, for example when a user asks 'What can we talk about?' or 'Can you suggest a topic?'",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {},
+                        "required": [],
+                        "additionalProperties": True,
+                    }, 
+                    "strict" : False
+                }
+            }
+        ]
+        return tools
+
+    async def handle_user_chat_with_tools(self, user_id, completion, messages, tools):
+        response = completion
+        requiresAction = True
+        while requiresAction:
+            requiresAction = False
+            finish_reason = response.choices[0].finish_reason
+            if finish_reason == "length":
+                requiresAction = False
+                #return "The conversation was too long for the context window."
+            elif finish_reason == "content_filter":
+                requiresAction = False
+                #return "The content was filtered due to policy violations."
+            elif finish_reason == "tool_calls":
+                tool_call = response.choices[0].message.tool_calls[0]
+                arguments = json.loads(tool_call.function.arguments)
+                
+                if tool_call.function.name == "get_milestone_topic_suggestions":
+                    suggestions = await self.get_milestone_topic_suggestions(user_id)
+                    function_call_result_message = {
+                        "role": "tool",
+                        "content": json.dumps(suggestions),
+                        "tool_call_id": tool_call.id
+                    }
+                    assistant_message = response.choices[0].message
+                    await self.write_chat_history("chat_history/chat_history.json", user_id, assistant_message.to_dict())
+                    await self.write_chat_history("chat_history/chat_history.json", user_id, function_call_result_message)
+                    messages.append(assistant_message.to_dict())
+                    messages.append(function_call_result_message)
+                    requiresAction = True
+                if tool_call.function.name == "update_user_milestone":
+                    milestone_id = arguments.get('milestone_id')
+                    milestone_title = arguments.get('milestone_title')
+                    milestone_description = arguments.get('milestone_description') 
+                    milestone_date = arguments.get('milestone_date')   
+                    milestone_significance = arguments.get('milestone_significance') 
+                    find_result = await self.update_user_milestone(user_id, milestone_id, milestone_title, milestone_description, milestone_date)
+                    function_call_result_message = {
+                        "role": "tool",
+                        "content": json.dumps(find_result),
+                        "tool_call_id": tool_call.id
+                    }
+                    assistant_message = response.choices[0].message
+                    await self.write_chat_history("chat_history/chat_history.json", user_id, assistant_message.to_dict())
+                    await self.write_chat_history("chat_history/chat_history.json", user_id, function_call_result_message)
+                    messages.append(assistant_message.to_dict())
+                    messages.append(function_call_result_message)
+                    requiresAction = True
+                if tool_call.function.name == "find_user_milestone":
+                    milestone_title = arguments.get('milestone_title')
+                    milestone_description = arguments.get('milestone_description') 
+                    milestone_date = arguments.get('milestone_date') 
+                    find_result = await self.find_user_milestone(user_id, milestone_title, milestone_description, milestone_date)
+
+                    function_call_result_message = {
+                        "role": "tool",
+                        "content": json.dumps(find_result),
+                        "tool_call_id": tool_call.id
+                    }
+                    assistant_message = response.choices[0].message
+                    await self.write_chat_history("chat_history/chat_history.json", user_id, assistant_message.to_dict())
+                    await self.write_chat_history("chat_history/chat_history.json", user_id, function_call_result_message)
+                    messages.append(assistant_message.to_dict())
+                    messages.append(function_call_result_message)
+                    requiresAction = True
+                if tool_call.function.name == "add_user_milestone":
+                    milestone_title = arguments.get('milestone_title')
+                    milestone_description = arguments.get('milestone_description') 
+                    milestone_date = arguments.get('milestone_date')   
+                    milestone_significance = arguments.get('milestone_significance')   
+                    if milestone_date is None or milestone_date == "":
+                        date_request_msg = {"role": "assistant", "content": "Please provide the date of the milestone."} 
+                        await self.write_chat_history("chat_history/chat_history.json", user_id, date_request_msg)
+                        messages.append(date_request_msg)
+                        return messages
+                    if milestone_description is None or milestone_description == "":
+                        description_request_msg = {"role": "assistant", "content": "Please provide a description of the milestone."} 
+                        await self.write_chat_history("chat_history/chat_history.json", user_id, description_request_msg)
+                        messages.append(description_request_msg)
+                        return messages
+                    
+                    await self.add_user_milestone(user_id, milestone_title, milestone_description, milestone_date, milestone_significance)
+                    function_call_result_message = {
+                        "role": "tool",
+                        "content": json.dumps({
+                            "user_id": user_id,
+                            "milestone_title": milestone_title,
+                            "milestone_description": milestone_description,
+                            "milestone_date": milestone_date,
+                            "milestone_significance": milestone_significance
+                        }),
+                        "tool_call_id": tool_call.id
+                    }
+                    assistant_message = response.choices[0].message
+                    await self.write_chat_history("chat_history/chat_history.json", user_id, assistant_message.to_dict())
+                    await self.write_chat_history("chat_history/chat_history.json", user_id, function_call_result_message)
+                    messages.append(assistant_message.to_dict())
+                    messages.append(function_call_result_message)
+                    requiresAction = True
+            elif finish_reason == "stop":
+                assistant_message = response.choices[0].message
+                await self.write_chat_history("chat_history/chat_history.json", user_id, assistant_message.to_dict())
+                messages.append(assistant_message.to_dict())
+                requiresAction = False
+            else:
+                requiresAction = False
+                #return "Unexpected finish_reason: " + finish_reason
+            
+            if requiresAction:
+                response = await self._openai.chat.completions.create( 
+                    model=self._openai_model_mini,
+                    messages=messages,
+                    tools=tools
+                    )
+        return messages  
+
+    async def read_user_milestones(self, user_id):
+        file_path = f"user_timeline/user_timeline.json"
+        try:
+            with open(file_path, 'r') as file:
+                user_milestones = json.load(file)
+            if user_id in user_milestones:
+                return user_milestones[user_id]
+            else:
+                return None
+        except Exception as e:
+            print(f"Error reading user milestones from file: {e}")
+            return None
+    
+    async def write_user_milestones(self, user_id, user_milestones):
+        file_path = f"user_timeline/user_timeline.json"
+        try:
+            # Ensure the file exists and contains valid JSON
+            if not os.path.exists(file_path) or os.path.getsize(file_path) == 0:
+                with open(file_path, 'w') as file:
+                    json.dump({}, file)
+
+            with open(file_path, 'r') as file:
+                user_timeline = json.load(file)
+            if user_timeline is None:
+                user_timeline = {}
+            
+            if user_id not in user_timeline:
+                user_timeline[user_id] = {"milestones": []}
+            
+            user_timeline[user_id]["milestones"].append(user_milestones)
+
+            with open(file_path, 'w') as file:
+                json.dump(user_timeline, file, indent=4)
+            return user_timeline
+        except Exception as e:
+            print(f"Error writing user milestones to file: {e}")
+
+    async def update_user_milestone_store(self, user_id, user_milestone):
+        file_path = f"user_timeline/user_timeline.json"
+        try:
+            # Ensure the file exists and contains valid JSON
+            if not os.path.exists(file_path) or os.path.getsize(file_path) == 0:
+                with open(file_path, 'w') as file:
+                    json.dump({}, file)
+
+            with open(file_path, 'r') as file:
+                user_timeline = json.load(file)
+            if user_timeline is None:
+                user_timeline = {}
+            
+            if user_id not in user_timeline:
+                return {"success":False, "message": "User not found."}
+            
+     
+            # Find user milestone with matching user_milestone["id"] and update it
+            for i, milestone in enumerate(user_timeline[user_id]["milestones"]):
+                if str(milestone["id"]) == str(user_milestone["id"]):
+                    user_timeline[user_id]["milestones"][i] = user_milestone
+                    break
+            
+            with open(file_path, 'w') as file:
+                json.dump(user_timeline, file, indent=4)
+            return user_timeline
+        except Exception as e:
+            print(f"Error writing user milestones to file: {e}")
+
+    async def add_user_milestone(self, user_id, milestone_title, milestone_description, milestone_date, milestone_significance):
+        
+        try:
+            user_milestones = await self.read_user_milestones(user_id)
+            num_milestones = len(user_milestones["milestones"])
+            milestone = {"id": num_milestones,"title": milestone_title, "description": milestone_description, "date": self.parse_date(milestone_date), "significance": milestone_significance}
+            await self.write_user_milestones(user_id, milestone)
+
+            return await self.read_user_milestones(user_id)
+        except Exception as e:
+            print(e)
+            pass
+        return True
+    
+    async def update_user_milestone(self, user_id, milestone_id, milestone_title=None, milestone_description=None, milestone_date=None, milestone_significance=None):
+        try:
+            user_milestones = await self.read_user_milestones(user_id)
+            updated_milestone = {}
+            found = False
+            for milestone in user_milestones["milestones"]:
+                if milestone["id"] == int(milestone_id):
+                    found = True
+                    if milestone_title:
+                        milestone["title"] = milestone_title
+                    if milestone_description:
+                        milestone["description"] = milestone_description
+                    if milestone_date:
+                        milestone["date"] = self.parse_date(milestone_date)
+                    if milestone_significance:
+                        milestone["significance"] = milestone_significance
+                    updated_milestone = milestone
+                    break
+            
+            if found:
+                await self.update_user_milestone_store(user_id, updated_milestone)
+                return {"success":True,"message": "Milestone updated.", "milestone": updated_milestone}
+            else:
+                return {"success":False,"message": "Milestone not found."}
+        except Exception as e:
+            print(e)
+            pass
+        return True
+
+    async def find_user_milestone(self, user_id, milestone_title, milestone_description, milestone_date):
+        
+        class MileStoneIds(BaseModel):
+            ids: List[int]
+
+        try:
+            user_milestones = await self.read_user_milestones(user_id)
+            found_milestones_ids = []
+            if user_milestones is not None:
+                milestones = user_milestones["milestones"]
+                batch_size = 10
+                for i in range(0, len(milestones), batch_size):
+                    batch = milestones[i:i + batch_size]
+                
+                    prompt = f"""
+                    You are an assistant that helps users find their milestones. The user has provider all or some of these values: 
+                    milestone_title: "{milestone_title}", milestone_description: "{milestone_description}", milestone_date: "{milestone_date}".
+                    Here are the user's milestones:
+                    {json.dumps(batch, indent=4)}
+                    Based on the user input, find the most relevant milestones ids and return them in a list.
+                    If no matching milestones are found, return an empty list. 
+                    Be strict when determining if milestones are matching since we do not want to find false positives.
+                    """
+                    messages=[{"role": "system", "content": prompt}]
+                    completion = await self._openai.beta.chat.completions.parse(
+                        model=self._openai_model_mini,
+                        messages=messages,
+                        response_format=MileStoneIds
+                    )
+
+                    if completion.choices[0].finish_reason == "stop":
+                        response_msg = completion.choices[0].message
+                        if response_msg.parsed:
+                            found_milestones_ids += response_msg.parsed.ids
+                        elif response_msg.refusal:
+                            # handle refusal
+                            print("structured response not possible")
+                            return {"success":False,"message": "Encountered refusal while looking for milestones", "milestone_ids": None}
+                    else:
+                        # handle refusal
+                        print("finish reason not stop")
+                        return {"success":False,"message": "Finish reason not stop", "milestone_ids": None}
+
+            found_milestones = []
+            if len(found_milestones_ids) > 0:
+                #find milestones in user_milestones["milestones"] with matching ids
+                for milestone in user_milestones["milestones"]:
+                    if milestone["id"] in found_milestones_ids:
+                        found_milestones.append(milestone)
+            return {"success":True,"message": "Milestones found.", "milestone_ids": found_milestones_ids, "milestones": found_milestones}
+        
+        except Exception as e:
+            print(e)
+            pass
+        return {"success":False,"message": "Milestones not found.", "milestone_ids": None}
+    
+    async def get_milestone_topic_suggestions(self, user_id):
+        
+        class MileStoneTopics(BaseModel):
+            topics: List[str]
+
+        try:
+            user_milestones = await self.read_user_milestones(user_id)
+            milestones_trimmed = []
+            for milestone in user_milestones["milestones"]:
+                milestones_trimmed.append({"title": milestone["title"], "description": milestone["description"]})
+                
+            system_instructions = f"""
+            You are an assistant that help that helps to find new topics that a user can create milestones or memories for on their timeline. 
+            The user has provided a list of their existing milestones.
+            Here are the user's milestones: {json.dumps(milestones_trimmed, indent=4)}
+            Based on the user's existing milestones, generate a list of new topics that the user can create milestones or memories for.
+            Only select a few topics. Limit the list size to 5 topics that you choose. Choose a good variety. 
+            Here are some topics that you can choose from:
+            Personal Milestones
+            Birth: The beginning of their timeline.
+            Childhood Memories: First memory, favorite toy, first pet, or memorable family traditions.
+            First Friendship: Meeting a best friend or forming a significant relationship.
+            Coming of Age: A moment that made them feel more grown-up or independent.
+            Personal Discovery: Realizing a unique talent, interest, or aspect of their personality.
+            Educational Milestones
+            First Day of School: Starting formal education.
+            Graduation: Completing significant educational milestones like high school, college, or a specialized program.
+            Favorite Teacher/Mentor: Someone who inspired or influenced them.
+            Major Achievement: Winning an academic award, excelling in a subject, or completing a big project.
+            Transition Periods: Moving to a new school or starting higher education.
+            Career Milestones
+            First Job: Landing their first part-time or full-time job.
+            Career Achievement: A big promotion, recognition, or completing a major professional goal.
+            Changing Careers: Transitioning to a new field or role.
+            Starting a Business: Founding a company, freelance journey, or entrepreneurial ventures.
+            Retirement: Acknowledging the end of a professional career.
+            Relationship Milestones
+            First Love: Falling in love for the first time.
+            Marriage/Partnership: Celebrating a significant union.
+            First Child: Welcoming a child into the family.
+            Significant Friendships: Building lifelong or impactful friendships.
+            Family Moments: Key family gatherings, holidays, or events that stood out.
+            Health and Wellbeing Milestones
+            Major Health Event: Overcoming an illness or health challenge.
+            Fitness Achievement: Running a marathon, losing weight, or adopting a healthy lifestyle.
+            Mental Health Journey: Moments of personal growth, healing, or transformation.
+            Travel and Exploration
+            First Trip: First memorable travel experience.
+            Life-Changing Journey: A trip that shaped their perspective or opened their world.
+            Living Abroad: Relocating to a new city or country.
+            Challenges and Growth
+            Overcoming Obstacles: Facing and conquering a major challenge or adversity.
+            Loss: Dealing with the death of a loved one or an important separation.
+            Resilience: A time when they persevered despite hardships.
+            Cultural and Personal Growth
+            Creative Achievements: Publishing a book, creating art, or pursuing a passion project.
+            Religious/Spiritual Milestones: Discovering or deepening a faith or belief.
+            Community Contribution: Volunteering or contributing to a cause they care about.
+            Celebrations and Joy
+            Special Birthdays: A particularly memorable birthday celebration.
+            Major Purchases: Buying their first car, home, or other significant item.
+            Holidays and Festivals: Celebrating traditions or unforgettable holidays.
+            Transitions and Changes
+            Moving Homes: Relocating to a new place.
+            Life-Defining Decisions: Choosing a new direction, like leaving a job, ending a relationship, or starting fresh.
+            """
+            system_message = {"role": "system", "content": system_instructions}
+            
+            messages = [system_message]
+
+            completion = await self._openai.beta.chat.completions.parse(
+                model=self._openai_model_mini,
+                messages=messages,
+                response_format=MileStoneTopics
+            )
+
+            milestone_topics = []
+            if completion.choices[0].finish_reason == "stop":
+                response_msg = completion.choices[0].message
+                if response_msg.parsed:
+                    milestone_topics += response_msg.parsed.topics
+                    return {"success":True,"message": "Milestone topics found.", "milestone_topics": milestone_topics}
+                elif response_msg.refusal:
+                    # handle refusal
+                    print("structured response not possible")
+                    return {"success":False,"message": "Encountered refusal while looking for mileston topics", "milestone_topics": None}
+            else:
+                # handle refusal
+                print("finish reason not stop")
+                return {"success":False,"message": "Finish reason not stop", "milestone_topics": None}
+    
+
+        except Exception as e:
+            print(e)
+            pass
+        return True
+    
+    def parse_date(self, input_date):
+        try:
+            # Split the date into parts
+            parts = input_date.split('-')
+            year = parts[0]
+            month = parts[1] if len(parts) > 1 else '01'
+            day = parts[2] if len(parts) > 2 else '01'
+            
+            # Construct the full date string
+            full_date = f"{year}-{month}-{day}"
+            
+            # Validate and format the date
+            formatted_date = datetime.strptime(full_date, "%Y-%m-%d").date()
+            return formatted_date.isoformat()  # Return in yyyy-mm-dd format
+        except ValueError:
+            raise ValueError("Invalid date format. Please use yyyy-mm-dd.")
+        
+
 async def run_web_page_data_example():
     # Example usage:
     client = OpenAIClient()
