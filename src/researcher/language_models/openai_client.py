@@ -1161,6 +1161,20 @@ class OpenAIClient:
                     }, 
                     "strict" : False
                 }
+            },
+            {
+                "type": "function",
+                "function": {
+                    "name": "get_milestone_topic_suggestions",
+                    "description": "Get topic suggestions based on the user's milestones. Call this whenever you finish a milestone addition for the user and want to add a new milestone. Call this whenever you need to suggest topics based on the user's memories, for example when a user asks 'What can we talk about?' or 'Can you suggest a topic?'",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {},
+                        "required": [],
+                        "additionalProperties": True,
+                    }, 
+                    "strict" : False
+                }
             }
         ]
         return tools
@@ -1181,6 +1195,19 @@ class OpenAIClient:
                 tool_call = response.choices[0].message.tool_calls[0]
                 arguments = json.loads(tool_call.function.arguments)
                 
+                if tool_call.function.name == "get_milestone_topic_suggestions":
+                    suggestions = await self.get_milestone_topic_suggestions(user_id)
+                    function_call_result_message = {
+                        "role": "tool",
+                        "content": json.dumps(suggestions),
+                        "tool_call_id": tool_call.id
+                    }
+                    assistant_message = response.choices[0].message
+                    await self.write_chat_history("chat_history/chat_history.json", user_id, assistant_message.to_dict())
+                    await self.write_chat_history("chat_history/chat_history.json", user_id, function_call_result_message)
+                    messages.append(assistant_message.to_dict())
+                    messages.append(function_call_result_message)
+                    requiresAction = True
                 if tool_call.function.name == "update_user_milestone":
                     milestone_id = arguments.get('milestone_id')
                     milestone_title = arguments.get('milestone_title')
@@ -1431,6 +1458,103 @@ class OpenAIClient:
             print(e)
             pass
         return {"success":False,"message": "Milestones not found.", "milestone_ids": None}
+    
+    async def get_milestone_topic_suggestions(self, user_id):
+        
+        class MileStoneTopics(BaseModel):
+            topics: List[str]
+
+        try:
+            user_milestones = await self.read_user_milestones(user_id)
+            milestones_trimmed = []
+            for milestone in user_milestones["milestones"]:
+                milestones_trimmed.append({"title": milestone["title"], "description": milestone["description"]})
+                
+            system_instructions = f"""
+            You are an assistant that help that helps to find new topics that a user can create milestones or memories for on their timeline. 
+            The user has provided a list of their existing milestones.
+            Here are the user's milestones: {json.dumps(milestones_trimmed, indent=4)}
+            Based on the user's existing milestones, generate a list of new topics that the user can create milestones or memories for.
+            Only select a few topics. Limit the list size to 5 topics that you choose. Choose a good variety. 
+            Here are some topics that you can choose from:
+            Personal Milestones
+            Birth: The beginning of their timeline.
+            Childhood Memories: First memory, favorite toy, first pet, or memorable family traditions.
+            First Friendship: Meeting a best friend or forming a significant relationship.
+            Coming of Age: A moment that made them feel more grown-up or independent.
+            Personal Discovery: Realizing a unique talent, interest, or aspect of their personality.
+            Educational Milestones
+            First Day of School: Starting formal education.
+            Graduation: Completing significant educational milestones like high school, college, or a specialized program.
+            Favorite Teacher/Mentor: Someone who inspired or influenced them.
+            Major Achievement: Winning an academic award, excelling in a subject, or completing a big project.
+            Transition Periods: Moving to a new school or starting higher education.
+            Career Milestones
+            First Job: Landing their first part-time or full-time job.
+            Career Achievement: A big promotion, recognition, or completing a major professional goal.
+            Changing Careers: Transitioning to a new field or role.
+            Starting a Business: Founding a company, freelance journey, or entrepreneurial ventures.
+            Retirement: Acknowledging the end of a professional career.
+            Relationship Milestones
+            First Love: Falling in love for the first time.
+            Marriage/Partnership: Celebrating a significant union.
+            First Child: Welcoming a child into the family.
+            Significant Friendships: Building lifelong or impactful friendships.
+            Family Moments: Key family gatherings, holidays, or events that stood out.
+            Health and Wellbeing Milestones
+            Major Health Event: Overcoming an illness or health challenge.
+            Fitness Achievement: Running a marathon, losing weight, or adopting a healthy lifestyle.
+            Mental Health Journey: Moments of personal growth, healing, or transformation.
+            Travel and Exploration
+            First Trip: First memorable travel experience.
+            Life-Changing Journey: A trip that shaped their perspective or opened their world.
+            Living Abroad: Relocating to a new city or country.
+            Challenges and Growth
+            Overcoming Obstacles: Facing and conquering a major challenge or adversity.
+            Loss: Dealing with the death of a loved one or an important separation.
+            Resilience: A time when they persevered despite hardships.
+            Cultural and Personal Growth
+            Creative Achievements: Publishing a book, creating art, or pursuing a passion project.
+            Religious/Spiritual Milestones: Discovering or deepening a faith or belief.
+            Community Contribution: Volunteering or contributing to a cause they care about.
+            Celebrations and Joy
+            Special Birthdays: A particularly memorable birthday celebration.
+            Major Purchases: Buying their first car, home, or other significant item.
+            Holidays and Festivals: Celebrating traditions or unforgettable holidays.
+            Transitions and Changes
+            Moving Homes: Relocating to a new place.
+            Life-Defining Decisions: Choosing a new direction, like leaving a job, ending a relationship, or starting fresh.
+            """
+            system_message = {"role": "system", "content": system_instructions}
+            
+            messages = [system_message]
+
+            completion = await self._openai.beta.chat.completions.parse(
+                model=self._openai_model_mini,
+                messages=messages,
+                response_format=MileStoneTopics
+            )
+
+            milestone_topics = []
+            if completion.choices[0].finish_reason == "stop":
+                response_msg = completion.choices[0].message
+                if response_msg.parsed:
+                    milestone_topics += response_msg.parsed.topics
+                    return {"success":True,"message": "Milestone topics found.", "milestone_topics": milestone_topics}
+                elif response_msg.refusal:
+                    # handle refusal
+                    print("structured response not possible")
+                    return {"success":False,"message": "Encountered refusal while looking for mileston topics", "milestone_topics": None}
+            else:
+                # handle refusal
+                print("finish reason not stop")
+                return {"success":False,"message": "Finish reason not stop", "milestone_topics": None}
+    
+
+        except Exception as e:
+            print(e)
+            pass
+        return True
     
     def parse_date(self, input_date):
         try:
