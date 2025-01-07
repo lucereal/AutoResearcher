@@ -1105,6 +1105,10 @@ class OpenAIClient:
                     "parameters": {
                         "type": "object",
                         "properties": {
+                            "milestone_id": {
+                                "type": "string",
+                                "description": "id of the milestone to update. can be obtained from the find_user_milestone function.",
+                            },
                             "milestone_title": {
                                 "type": "string",
                                 "description": "A short, descriptive name for the milestone.",
@@ -1122,7 +1126,7 @@ class OpenAIClient:
                                 "description": "The importance of the milestone as rated by the user (e.g., life-changing, pivotal, challenging, etc.).",
                             }
                         },
-                        "required": ["milestone_title"],
+                        "required": ["milestone_id"],
                         "additionalProperties": True,
                     }, 
                     "strict" : False
@@ -1132,7 +1136,7 @@ class OpenAIClient:
                 "type": "function",
                 "function": {
                     "name": "find_user_milestone",
-                    "description": "Find a user milestone in the user storage. Call this whenever you need to find a user milestone, for example when a user says something like 'Can you find that memory of the beach?', 'I remember a memory about a sunset', etc.",
+                    "description": "Find a user milestone in the user storage. You can find user milestone id, title, description, and date. Call this whenever you need to find a user milestone, for example when a user says something like 'Can you find that memory of the beach?', 'I remember a memory about a sunset', etc.",
                     "parameters": {
                         "type": "object",
                         "properties": {
@@ -1173,20 +1177,34 @@ class OpenAIClient:
             elif finish_reason == "tool_calls":
                 tool_call = response.choices[0].message.tool_calls[0]
                 arguments = json.loads(tool_call.function.arguments)
+                
+                if tool_call.function.name == "update_user_milestone":
+                    milestone_id = arguments.get('milestone_id')
+                    milestone_title = arguments.get('milestone_title')
+                    milestone_description = arguments.get('milestone_description') 
+                    milestone_date = arguments.get('milestone_date')   
+                    milestone_significance = arguments.get('milestone_significance') 
+                    find_result = await self.update_user_milestone(user_id, milestone_id, milestone_title, milestone_description, milestone_date)
+                    function_call_result_message = {
+                        "role": "tool",
+                        "content": json.dumps(find_result),
+                        "tool_call_id": tool_call.id
+                    }
+                    assistant_message = response.choices[0].message
+                    await self.write_chat_history("chat_history/chat_history.json", user_id, assistant_message.to_dict())
+                    await self.write_chat_history("chat_history/chat_history.json", user_id, function_call_result_message)
+                    messages.append(assistant_message.to_dict())
+                    messages.append(function_call_result_message)
+                    requiresAction = True
                 if tool_call.function.name == "find_user_milestone":
                     milestone_title = arguments.get('milestone_title')
                     milestone_description = arguments.get('milestone_description') 
                     milestone_date = arguments.get('milestone_date') 
-                    await self.find_user_milestone(user_id, milestone_title, milestone_description, milestone_date)
+                    find_result = await self.find_user_milestone(user_id, milestone_title, milestone_description, milestone_date)
 
                     function_call_result_message = {
                         "role": "tool",
-                        "content": json.dumps({
-                            "user_id": user_id,
-                            "milestone_title": milestone_title,
-                            "milestone_description": milestone_description,
-                            "milestone_date": milestone_date
-                        }),
+                        "content": json.dumps(find_result),
                         "tool_call_id": tool_call.id
                     }
                     assistant_message = response.choices[0].message
@@ -1211,10 +1229,16 @@ class OpenAIClient:
                         messages.append(description_request_msg)
                         return messages
                     
-                    find_result = await self.add_user_milestone(user_id, milestone_title, milestone_description, milestone_date, milestone_significance)
+                    await self.add_user_milestone(user_id, milestone_title, milestone_description, milestone_date, milestone_significance)
                     function_call_result_message = {
                         "role": "tool",
-                        "content": json.dumps(find_result),
+                        "content": json.dumps({
+                            "user_id": user_id,
+                            "milestone_title": milestone_title,
+                            "milestone_description": milestone_description,
+                            "milestone_date": milestone_date,
+                            "milestone_significance": milestone_significance
+                        }),
                         "tool_call_id": tool_call.id
                     }
                     assistant_message = response.choices[0].message
@@ -1277,7 +1301,7 @@ class OpenAIClient:
         except Exception as e:
             print(f"Error writing user milestones to file: {e}")
 
-    async def update_user_milestones(self, user_id, user_milestones):
+    async def update_user_milestone_store(self, user_id, user_milestone):
         file_path = f"user_timeline/user_timeline.json"
         try:
             # Ensure the file exists and contains valid JSON
@@ -1291,20 +1315,15 @@ class OpenAIClient:
                 user_timeline = {}
             
             if user_id not in user_timeline:
-                user_timeline[user_id] = {"milestones": []}
+                return {"success":False, "message": "User not found."}
             
-            found_milestone = False
-            #find user milestone with matching user_milestone["title"] and update it
-            for milestone in user_timeline[user_id]["milestones"]:
-                if milestone["title"] == user_milestones["title"]:
-                    milestone = user_milestones
-                    found_milestone = True
+     
+            # Find user milestone with matching user_milestone["id"] and update it
+            for i, milestone in enumerate(user_timeline[user_id]["milestones"]):
+                if str(milestone["id"]) == str(user_milestone["id"]):
+                    user_timeline[user_id]["milestones"][i] = user_milestone
                     break
             
-            if not found_milestone:
-                user_timeline[user_id]["milestones"].append(user_milestones)
-                return {"message": "Milestone not found. Added new milestone."}
-
             with open(file_path, 'w') as file:
                 json.dump(user_timeline, file, indent=4)
             return user_timeline
@@ -1325,12 +1344,32 @@ class OpenAIClient:
             pass
         return True
     
-    async def update_user_milestone(self, user_id, milestone_title, milestone_description, milestone_date, milestone_significance):
+    async def update_user_milestone(self, user_id, milestone_id, milestone_title=None, milestone_description=None, milestone_date=None, milestone_significance=None):
         milestone = {"title": milestone_title, "description": milestone_description, "date": milestone_date, "significance": milestone_significance}
         try:
-            await self.write_user_milestones(user_id, milestone)
 
-            return await self.read_user_milestones(user_id)
+            user_milestones = await self.read_user_milestones(user_id)
+            updated_milestone = {}
+            found = False
+            for milestone in user_milestones["milestones"]:
+                if milestone["id"] == int(milestone_id):
+                    found = True
+                    if milestone_title:
+                        milestone["title"] = milestone_title
+                    if milestone_description:
+                        milestone["description"] = milestone_description
+                    if milestone_date:
+                        milestone["date"] = milestone_date
+                    if milestone_significance:
+                        milestone["significance"] = milestone_significance
+                    updated_milestone = milestone
+                    break
+            
+            if found:
+                await self.update_user_milestone_store(user_id, updated_milestone)
+                return {"success":True,"message": "Milestone updated.", "milestone": updated_milestone}
+            else:
+                return {"success":False,"message": "Milestone not found."}
         except Exception as e:
             print(e)
             pass
