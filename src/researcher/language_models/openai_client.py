@@ -1,3 +1,4 @@
+from datetime import datetime
 import asyncio
 import json
 import os
@@ -1084,7 +1085,8 @@ class OpenAIClient:
                             },
                             "milestone_date": {
                                 "type": "string",
-                                "description": "Date of the memory.",
+                                "format": "date",
+                                "description": "Date of the milestone in the format yyyy-mm-dd. If the day is not provided, default to '01'. If the month is not provided, default to '01'."
                             },
                             "milestone_significance": {
                                 "type": "string",
@@ -1119,7 +1121,8 @@ class OpenAIClient:
                             },
                             "milestone_date": {
                                 "type": "string",
-                                "description": "Date of the memory.",
+                                "format": "date",
+                                "description": "Date of the milestone in the format yyyy-mm-dd. If the day is not provided, default to '01'. If the month is not provided, default to '01'."
                             },
                             "milestone_significance": {
                                 "type": "string",
@@ -1335,7 +1338,7 @@ class OpenAIClient:
         try:
             user_milestones = await self.read_user_milestones(user_id)
             num_milestones = len(user_milestones["milestones"])
-            milestone = {"id": num_milestones,"title": milestone_title, "description": milestone_description, "date": milestone_date, "significance": milestone_significance}
+            milestone = {"id": num_milestones,"title": milestone_title, "description": milestone_description, "date": self.parse_date(milestone_date), "significance": milestone_significance}
             await self.write_user_milestones(user_id, milestone)
 
             return await self.read_user_milestones(user_id)
@@ -1345,9 +1348,7 @@ class OpenAIClient:
         return True
     
     async def update_user_milestone(self, user_id, milestone_id, milestone_title=None, milestone_description=None, milestone_date=None, milestone_significance=None):
-        milestone = {"title": milestone_title, "description": milestone_description, "date": milestone_date, "significance": milestone_significance}
         try:
-
             user_milestones = await self.read_user_milestones(user_id)
             updated_milestone = {}
             found = False
@@ -1359,7 +1360,7 @@ class OpenAIClient:
                     if milestone_description:
                         milestone["description"] = milestone_description
                     if milestone_date:
-                        milestone["date"] = milestone_date
+                        milestone["date"] = self.parse_date(milestone_date)
                     if milestone_significance:
                         milestone["significance"] = milestone_significance
                     updated_milestone = milestone
@@ -1431,6 +1432,24 @@ class OpenAIClient:
             pass
         return {"success":False,"message": "Milestones not found.", "milestone_ids": None}
     
+    def parse_date(self, input_date):
+        try:
+            # Split the date into parts
+            parts = input_date.split('-')
+            year = parts[0]
+            month = parts[1] if len(parts) > 1 else '01'
+            day = parts[2] if len(parts) > 2 else '01'
+            
+            # Construct the full date string
+            full_date = f"{year}-{month}-{day}"
+            
+            # Validate and format the date
+            formatted_date = datetime.strptime(full_date, "%Y-%m-%d").date()
+            return formatted_date.isoformat()  # Return in yyyy-mm-dd format
+        except ValueError:
+            raise ValueError("Invalid date format. Please use yyyy-mm-dd.")
+        
+
 async def run_web_page_data_example():
     # Example usage:
     client = OpenAIClient()
