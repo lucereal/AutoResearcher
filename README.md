@@ -1,6 +1,8 @@
 # AutoResearcher :robot:
 Automated Data Collection with LLM, Google Custom Search, Video Transcription, Web Scraping, Instagram API, OpenAI Vision, and OpenAI Whisper.
 
+This repo has kind of turned into a playground for me to use OpenAI LLMs.
+
 This Python project automates data collection on user provided topics. 
 
 ## Features
@@ -20,6 +22,10 @@ This Python project automates data collection on user provided topics.
     - Chat with LLM
     - Build character from instagram images
     - Chat with instagram character
+8. **Chat Assistant Timeline Builder**:
+    - Timeline builder assistant
+    - Saves, updates, suggests, finds milestones or memorie for a persons life.
+    - Uses GPT functions to modify user milestone store
 
 ## Technologies
 
