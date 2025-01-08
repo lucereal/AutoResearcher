@@ -6,6 +6,7 @@ import os
 import httpx
 from src.researcher.services.insta_persona_service import InstaPersonaService
 from src.researcher.language_models.openai_client import OpenAIClient
+from src.researcher.services.story_creation_service import StoryCreationService
 
 load_dotenv()
 
@@ -104,6 +105,15 @@ async def chat_history(user_id: str):
     service = OpenAIClient()
     try:
         result = await service.read_user_chat_history(user_id)
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/user-timeline/{user_id}")
+async def user_timeline(user_id: str):
+    service = StoryCreationService()
+    try:
+        result = await service.fetch_user_story(user_id)
         return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
