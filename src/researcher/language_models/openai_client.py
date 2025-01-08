@@ -1166,7 +1166,7 @@ class OpenAIClient:
                 "type": "function",
                 "function": {
                     "name": "get_milestone_topic_suggestions",
-                    "description": "Get topic suggestions based on the user's milestones. Call this whenever you finish a milestone addition for the user and want to add a new milestone. Call this whenever you need to suggest topics based on the user's memories, for example when a user asks 'What can we talk about?' or 'Can you suggest a topic?'",
+                    "description": "Get topic suggestions. Call this whenever you need to suggest topics based on the user's memories, for example when a user asks 'What kind of memories are you looking?' or 'What can we talk about?' or 'Can you suggest a topic?'",
                     "parameters": {
                         "type": "object",
                         "properties": {},
@@ -1302,7 +1302,7 @@ class OpenAIClient:
             if user_id in user_milestones:
                 return user_milestones[user_id]
             else:
-                return None
+                return {"milestones": []}
         except Exception as e:
             print(f"Error reading user milestones from file: {e}")
             return None
@@ -1466,99 +1466,58 @@ class OpenAIClient:
 
         try:
             user_milestones = await self.read_user_milestones(user_id)
+            if user_milestones is None:
+                return {"success": False, "message": "User milestones not found."}
+
             milestones_trimmed = []
             for milestone in user_milestones["milestones"]:
                 milestones_trimmed.append({"title": milestone["title"], "description": milestone["description"]})
+
+            universal_milestones = []
+            # Read universal milestones
+            file_path = "user_timeline/universal_milestones.json"
+            with open(file_path, 'r') as file:
+                universal_milestones = json.load(file)
+
+            milestone_importance_categories = ["Extreme","High", "Medium", "Low"]
+            for importance in milestone_importance_categories:
+                importance_milestones = [m for m in universal_milestones if m["significance"] == importance]
+                system_instructions = f"""
+                You are an assistant that helps users find relevant milestones. The user has the following milestones:
+                {json.dumps(user_milestones["milestones"], indent=4)}
+                Here are some  universal milestones to choose from:
+                {json.dumps(importance_milestones, indent=4)}
+
+                Your task is to identify any universal milestones that are not in the user's milestones and return them in a list of strings.
+                Only select a few milestones if there are any and be strict when determining if milestones are matching since we do not want to find false positives.
+                If no milestones are found, return an empty list.
+                """
+                system_message = {"role": "system", "content": system_instructions}
                 
-            # read file user_timeline/universal_milestones.json
-            # filter to get only high importance milestones
-            # use gpt to check if any high importance milestones are not in the user_milestones
-            # if some are found then return them
-            # if not then filter to get only medium importance milestones
-            # use gpt to check if any medium importance milestones are not in the user_milestones
-            # if some are found then return them
-            # repeat for low importance
+                messages = [system_message]
 
-            system_instructions = f"""
-            You are an assistant that help that helps to find new topics that a user can create milestones or memories for on their timeline. 
-            The user has provided a list of their existing milestones.
-            Here are the user's milestones: {json.dumps(milestones_trimmed, indent=4)}
-            Based on the user's existing milestones, generate a list of new topics that the user can create milestones or memories for.
-            Only select a few topics. Limit the list size to 5 topics that you choose. Choose a good variety. 
-            Here are some topics that you can choose from:
-            Personal Milestones
-            Birth: The beginning of their timeline.
-            Childhood Memories: First memory, favorite toy, first pet, or memorable family traditions.
-            First Friendship: Meeting a best friend or forming a significant relationship.
-            Coming of Age: A moment that made them feel more grown-up or independent.
-            Personal Discovery: Realizing a unique talent, interest, or aspect of their personality.
-            Educational Milestones
-            First Day of School: Starting formal education.
-            Graduation: Completing significant educational milestones like high school, college, or a specialized program.
-            Favorite Teacher/Mentor: Someone who inspired or influenced them.
-            Major Achievement: Winning an academic award, excelling in a subject, or completing a big project.
-            Transition Periods: Moving to a new school or starting higher education.
-            Career Milestones
-            First Job: Landing their first part-time or full-time job.
-            Career Achievement: A big promotion, recognition, or completing a major professional goal.
-            Changing Careers: Transitioning to a new field or role.
-            Starting a Business: Founding a company, freelance journey, or entrepreneurial ventures.
-            Retirement: Acknowledging the end of a professional career.
-            Relationship Milestones
-            First Love: Falling in love for the first time.
-            Marriage/Partnership: Celebrating a significant union.
-            First Child: Welcoming a child into the family.
-            Significant Friendships: Building lifelong or impactful friendships.
-            Family Moments: Key family gatherings, holidays, or events that stood out.
-            Health and Wellbeing Milestones
-            Major Health Event: Overcoming an illness or health challenge.
-            Fitness Achievement: Running a marathon, losing weight, or adopting a healthy lifestyle.
-            Mental Health Journey: Moments of personal growth, healing, or transformation.
-            Travel and Exploration
-            First Trip: First memorable travel experience.
-            Life-Changing Journey: A trip that shaped their perspective or opened their world.
-            Living Abroad: Relocating to a new city or country.
-            Challenges and Growth
-            Overcoming Obstacles: Facing and conquering a major challenge or adversity.
-            Loss: Dealing with the death of a loved one or an important separation.
-            Resilience: A time when they persevered despite hardships.
-            Cultural and Personal Growth
-            Creative Achievements: Publishing a book, creating art, or pursuing a passion project.
-            Religious/Spiritual Milestones: Discovering or deepening a faith or belief.
-            Community Contribution: Volunteering or contributing to a cause they care about.
-            Celebrations and Joy
-            Special Birthdays: A particularly memorable birthday celebration.
-            Major Purchases: Buying their first car, home, or other significant item.
-            Holidays and Festivals: Celebrating traditions or unforgettable holidays.
-            Transitions and Changes
-            Moving Homes: Relocating to a new place.
-            Life-Defining Decisions: Choosing a new direction, like leaving a job, ending a relationship, or starting fresh.
-            """
-            system_message = {"role": "system", "content": system_instructions}
-            
-            messages = [system_message]
+                completion = await self._openai.beta.chat.completions.parse(
+                    model=self._openai_model_mini,
+                    messages=messages,
+                    response_format=MileStoneTopics
+                )
 
-            completion = await self._openai.beta.chat.completions.parse(
-                model=self._openai_model_mini,
-                messages=messages,
-                response_format=MileStoneTopics
-            )
-
-            milestone_topics = []
-            if completion.choices[0].finish_reason == "stop":
-                response_msg = completion.choices[0].message
-                if response_msg.parsed:
-                    milestone_topics += response_msg.parsed.topics
-                    return {"success":True,"message": "Milestone topics found.", "milestone_topics": milestone_topics}
-                elif response_msg.refusal:
+                milestone_topics = []
+                if completion.choices[0].finish_reason == "stop":
+                    response_msg = completion.choices[0].message
+                    if response_msg.parsed:
+                        milestone_topics += response_msg.parsed.topics
+                        if len(milestone_topics) > 0:
+                            return {"success":True,"message": "Milestone topics found.", "milestone_topics": milestone_topics}
+                    elif response_msg.refusal:
+                        # handle refusal
+                        print("structured response not possible")
+                        return {"success":False,"message": "Encountered refusal while looking for mileston topics", "milestone_topics": None}
+                else:
                     # handle refusal
-                    print("structured response not possible")
-                    return {"success":False,"message": "Encountered refusal while looking for mileston topics", "milestone_topics": None}
-            else:
-                # handle refusal
-                print("finish reason not stop")
-                return {"success":False,"message": "Finish reason not stop", "milestone_topics": None}
-    
+                    print("finish reason not stop")
+                    return {"success":False,"message": "Finish reason not stop", "milestone_topics": None}
+        
 
         except Exception as e:
             print(e)
