@@ -1192,91 +1192,83 @@ class OpenAIClient:
                 requiresAction = False
                 #return "The content was filtered due to policy violations."
             elif finish_reason == "tool_calls":
-                tool_call = response.choices[0].message.tool_calls[0]
-                arguments = json.loads(tool_call.function.arguments)
-                
-                if tool_call.function.name == "get_milestone_topic_suggestions":
-                    suggestions = await self.get_milestone_topic_suggestions(user_id)
-                    function_call_result_message = {
-                        "role": "tool",
-                        "content": json.dumps(suggestions),
-                        "tool_call_id": tool_call.id
-                    }
-                    assistant_message = response.choices[0].message
-                    await self.write_chat_history("chat_history/chat_history.json", user_id, assistant_message.to_dict())
-                    await self.write_chat_history("chat_history/chat_history.json", user_id, function_call_result_message)
-                    messages.append(assistant_message.to_dict())
-                    messages.append(function_call_result_message)
-                    requiresAction = True
-                if tool_call.function.name == "update_user_milestone":
-                    milestone_id = arguments.get('milestone_id')
-                    milestone_title = arguments.get('milestone_title')
-                    milestone_description = arguments.get('milestone_description') 
-                    milestone_date = arguments.get('milestone_date')   
-                    milestone_significance = arguments.get('milestone_significance') 
-                    find_result = await self.update_user_milestone(user_id, milestone_id, milestone_title, milestone_description, milestone_date)
-                    function_call_result_message = {
-                        "role": "tool",
-                        "content": json.dumps(find_result),
-                        "tool_call_id": tool_call.id
-                    }
-                    assistant_message = response.choices[0].message
-                    await self.write_chat_history("chat_history/chat_history.json", user_id, assistant_message.to_dict())
-                    await self.write_chat_history("chat_history/chat_history.json", user_id, function_call_result_message)
-                    messages.append(assistant_message.to_dict())
-                    messages.append(function_call_result_message)
-                    requiresAction = True
-                if tool_call.function.name == "find_user_milestone":
-                    milestone_title = arguments.get('milestone_title')
-                    milestone_description = arguments.get('milestone_description') 
-                    milestone_date = arguments.get('milestone_date') 
-                    find_result = await self.find_user_milestone(user_id, milestone_title, milestone_description, milestone_date)
+                assistant_message = response.choices[0].message
+                await self.write_chat_history("chat_history/chat_history.json", user_id, assistant_message.to_dict())
+                messages.append(assistant_message.to_dict())
 
-                    function_call_result_message = {
-                        "role": "tool",
-                        "content": json.dumps(find_result),
-                        "tool_call_id": tool_call.id
-                    }
-                    assistant_message = response.choices[0].message
-                    await self.write_chat_history("chat_history/chat_history.json", user_id, assistant_message.to_dict())
-                    await self.write_chat_history("chat_history/chat_history.json", user_id, function_call_result_message)
-                    messages.append(assistant_message.to_dict())
-                    messages.append(function_call_result_message)
-                    requiresAction = True
-                if tool_call.function.name == "add_user_milestone":
-                    milestone_title = arguments.get('milestone_title')
-                    milestone_description = arguments.get('milestone_description') 
-                    milestone_date = arguments.get('milestone_date')   
-                    milestone_significance = arguments.get('milestone_significance')   
-                    if milestone_date is None or milestone_date == "":
-                        date_request_msg = {"role": "assistant", "content": "Please provide the date of the milestone."} 
-                        await self.write_chat_history("chat_history/chat_history.json", user_id, date_request_msg)
-                        messages.append(date_request_msg)
-                        return messages
-                    if milestone_description is None or milestone_description == "":
-                        description_request_msg = {"role": "assistant", "content": "Please provide a description of the milestone."} 
-                        await self.write_chat_history("chat_history/chat_history.json", user_id, description_request_msg)
-                        messages.append(description_request_msg)
-                        return messages
-                    
-                    await self.add_user_milestone(user_id, milestone_title, milestone_description, milestone_date, milestone_significance)
-                    function_call_result_message = {
-                        "role": "tool",
-                        "content": json.dumps({
-                            "user_id": user_id,
-                            "milestone_title": milestone_title,
-                            "milestone_description": milestone_description,
-                            "milestone_date": milestone_date,
-                            "milestone_significance": milestone_significance
-                        }),
-                        "tool_call_id": tool_call.id
-                    }
-                    assistant_message = response.choices[0].message
-                    await self.write_chat_history("chat_history/chat_history.json", user_id, assistant_message.to_dict())
-                    await self.write_chat_history("chat_history/chat_history.json", user_id, function_call_result_message)
-                    messages.append(assistant_message.to_dict())
-                    messages.append(function_call_result_message)
-                    requiresAction = True
+                for tool_call in completion.choices[0].message.tool_calls:
+                    arguments = json.loads(tool_call.function.arguments)
+                    if tool_call.function.name == "get_milestone_topic_suggestions":
+                        suggestions = await self.get_milestone_topic_suggestions(user_id)
+                        function_call_result_message = {
+                            "role": "tool",
+                            "content": json.dumps(suggestions),
+                            "tool_call_id": tool_call.id
+                        }
+                        
+                        await self.write_chat_history("chat_history/chat_history.json", user_id, function_call_result_message)
+                        messages.append(function_call_result_message)
+                        requiresAction = True
+                    if tool_call.function.name == "update_user_milestone":
+                        milestone_id = arguments.get('milestone_id')
+                        milestone_title = arguments.get('milestone_title')
+                        milestone_description = arguments.get('milestone_description') 
+                        milestone_date = arguments.get('milestone_date')   
+                        milestone_significance = arguments.get('milestone_significance') 
+                        find_result = await self.update_user_milestone(user_id, milestone_id, milestone_title, milestone_description, milestone_date)
+                        function_call_result_message = {
+                            "role": "tool",
+                            "content": json.dumps(find_result),
+                            "tool_call_id": tool_call.id
+                        }
+                        await self.write_chat_history("chat_history/chat_history.json", user_id, function_call_result_message)
+                        messages.append(function_call_result_message)
+                        requiresAction = True
+                    if tool_call.function.name == "find_user_milestone":
+                        milestone_title = arguments.get('milestone_title')
+                        milestone_description = arguments.get('milestone_description') 
+                        milestone_date = arguments.get('milestone_date') 
+                        find_result = await self.find_user_milestone(user_id, milestone_title, milestone_description, milestone_date)
+
+                        function_call_result_message = {
+                            "role": "tool",
+                            "content": json.dumps(find_result),
+                            "tool_call_id": tool_call.id
+                        }
+                        await self.write_chat_history("chat_history/chat_history.json", user_id, function_call_result_message)
+                        messages.append(function_call_result_message)
+                        requiresAction = True
+                    if tool_call.function.name == "add_user_milestone":
+                        milestone_title = arguments.get('milestone_title')
+                        milestone_description = arguments.get('milestone_description') 
+                        milestone_date = arguments.get('milestone_date')   
+                        milestone_significance = arguments.get('milestone_significance')   
+                        if milestone_date is None or milestone_date == "":
+                            date_request_msg = {"role": "assistant", "content": "Please provide the date of the milestone."} 
+                            await self.write_chat_history("chat_history/chat_history.json", user_id, date_request_msg)
+                            messages.append(date_request_msg)
+                            return messages
+                        if milestone_description is None or milestone_description == "":
+                            description_request_msg = {"role": "assistant", "content": "Please provide a description of the milestone."} 
+                            await self.write_chat_history("chat_history/chat_history.json", user_id, description_request_msg)
+                            messages.append(description_request_msg)
+                            return messages
+                        
+                        await self.add_user_milestone(user_id, milestone_title, milestone_description, milestone_date, milestone_significance)
+                        function_call_result_message = {
+                            "role": "tool",
+                            "content": json.dumps({
+                                "user_id": user_id,
+                                "milestone_title": milestone_title,
+                                "milestone_description": milestone_description,
+                                "milestone_date": milestone_date,
+                                "milestone_significance": milestone_significance
+                            }),
+                            "tool_call_id": tool_call.id
+                        }
+                        await self.write_chat_history("chat_history/chat_history.json", user_id, function_call_result_message)
+                        messages.append(function_call_result_message)
+                        requiresAction = True
             elif finish_reason == "stop":
                 assistant_message = response.choices[0].message
                 await self.write_chat_history("chat_history/chat_history.json", user_id, assistant_message.to_dict())
@@ -1376,28 +1368,38 @@ class OpenAIClient:
     
     async def update_user_milestone(self, user_id, milestone_id, milestone_title=None, milestone_description=None, milestone_date=None, milestone_significance=None):
         try:
-            user_milestones = await self.read_user_milestones(user_id)
-            updated_milestone = {}
-            found = False
-            for milestone in user_milestones["milestones"]:
-                if milestone["id"] == int(milestone_id):
-                    found = True
-                    if milestone_title:
-                        milestone["title"] = milestone_title
-                    if milestone_description:
-                        milestone["description"] = milestone_description
-                    if milestone_date:
-                        milestone["date"] = self.parse_date(milestone_date)
-                    if milestone_significance:
-                        milestone["significance"] = milestone_significance
-                    updated_milestone = milestone
-                    break
-            
-            if found:
-                await self.update_user_milestone_store(user_id, updated_milestone)
-                return {"success":True,"message": "Milestone updated.", "milestone": updated_milestone}
+            # Ensure milestone_id is an integer
+            if not isinstance(milestone_id, int):
+                try:
+                    milestone_id = int(milestone_id)
+                except ValueError:
+                    # If milestone_id is not an integer, find the milestone using other parameters
+                    found_milestones = await self.find_user_milestone(user_id, milestone_title, milestone_description, milestone_date)
+                    if not found_milestones:
+                        return {"success": False, "message": "Milestone not found."}
+                    found_milestone = found_milestones["milestones"][0]
             else:
+                user_milestones = await self.read_user_milestones(user_id)
+                found_milestone = next((milestone for milestone in user_milestones["milestones"] if milestone["id"] == milestone_id), None)
+            
+            if found_milestone is None:
                 return {"success":False,"message": "Milestone not found."}
+            
+            updated_milestone = {}
+
+            if milestone_title:
+                found_milestone["title"] = milestone_title
+            if milestone_description:
+                found_milestone["description"] = milestone_description
+            if milestone_date:
+                found_milestone["date"] = self.parse_date(milestone_date)
+            if milestone_significance:
+                found_milestone["significance"] = milestone_significance
+            updated_milestone = found_milestone
+            
+            await self.update_user_milestone_store(user_id, updated_milestone)
+            return {"success":True,"message": "Milestone updated.", "milestone": updated_milestone}
+        
         except Exception as e:
             print(e)
             pass
