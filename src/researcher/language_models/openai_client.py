@@ -1470,6 +1470,15 @@ class OpenAIClient:
             for milestone in user_milestones["milestones"]:
                 milestones_trimmed.append({"title": milestone["title"], "description": milestone["description"]})
                 
+            # read file user_timeline/universal_milestones.json
+            # filter to get only high importance milestones
+            # use gpt to check if any high importance milestones are not in the user_milestones
+            # if some are found then return them
+            # if not then filter to get only medium importance milestones
+            # use gpt to check if any medium importance milestones are not in the user_milestones
+            # if some are found then return them
+            # repeat for low importance
+
             system_instructions = f"""
             You are an assistant that help that helps to find new topics that a user can create milestones or memories for on their timeline. 
             The user has provided a list of their existing milestones.
