@@ -1107,10 +1107,6 @@ class OpenAIClient:
                     "parameters": {
                         "type": "object",
                         "properties": {
-                            "milestone_id": {
-                                "type": "string",
-                                "description": "id of the milestone to update. can be obtained from the find_user_milestone function.",
-                            },
                             "milestone_title": {
                                 "type": "string",
                                 "description": "A short, descriptive name for the milestone.",
@@ -1129,7 +1125,7 @@ class OpenAIClient:
                                 "description": "The importance of the milestone as rated by the user (e.g., life-changing, pivotal, challenging, etc.).",
                             }
                         },
-                        "required": ["milestone_id"],
+                        "required": ["milestone_title"],
                         "additionalProperties": True,
                     }, 
                     "strict" : False
@@ -1210,12 +1206,11 @@ class OpenAIClient:
                         messages.append(function_call_result_message)
                         requiresAction = True
                     if tool_call.function.name == "update_user_milestone":
-                        milestone_id = arguments.get('milestone_id')
                         milestone_title = arguments.get('milestone_title')
                         milestone_description = arguments.get('milestone_description') 
                         milestone_date = arguments.get('milestone_date')   
                         milestone_significance = arguments.get('milestone_significance') 
-                        find_result = await self.update_user_milestone(user_id, milestone_id, milestone_title, milestone_description, milestone_date)
+                        find_result = await self.update_user_milestone(user_id, milestone_title, milestone_description, milestone_date)
                         function_call_result_message = {
                             "role": "tool",
                             "content": json.dumps(find_result),
@@ -1366,22 +1361,15 @@ class OpenAIClient:
             pass
         return True
     
-    async def update_user_milestone(self, user_id, milestone_id, milestone_title=None, milestone_description=None, milestone_date=None, milestone_significance=None):
+    async def update_user_milestone(self, user_id, milestone_title=None, milestone_description=None, milestone_date=None, milestone_significance=None):
         try:
-            # Ensure milestone_id is an integer
-            if not isinstance(milestone_id, int):
-                try:
-                    milestone_id = int(milestone_id)
-                except ValueError:
-                    # If milestone_id is not an integer, find the milestone using other parameters
-                    found_milestones = await self.find_user_milestone(user_id, milestone_title, milestone_description, milestone_date)
-                    if not found_milestones:
-                        return {"success": False, "message": "Milestone not found."}
-                    found_milestone = found_milestones["milestones"][0]
-            else:
-                user_milestones = await self.read_user_milestones(user_id)
-                found_milestone = next((milestone for milestone in user_milestones["milestones"] if milestone["id"] == milestone_id), None)
-            
+
+            # found_milestones = await self.find_user_milestone(user_id, milestone_title, milestone_description, milestone_date)
+            # if not found_milestones:
+            #     return {"success": False, "message": "Milestone not found."}
+            # found_milestone = found_milestones["milestones"][0]
+            found_milestone_dto = await self.find_single_most_similar_milestone(user_id, milestone_title, milestone_description, milestone_date)
+            found_milestone = found_milestone_dto["milestone"]
             if found_milestone is None:
                 return {"success":False,"message": "Milestone not found."}
             
@@ -1460,6 +1448,67 @@ class OpenAIClient:
             print(e)
             pass
         return {"success":False,"message": "Milestones not found.", "milestone_ids": None}
+    
+    
+    async def find_most_similar_milestone(self, user_id, milestone_title, milestone_description, milestone_date, milestones):
+        
+        class MileStoneId(BaseModel):
+            id: int
+
+        try:
+            user_milestones = milestones
+            found_milestones_id = None
+            if user_milestones is not None:
+                prompt = f"""
+                You are an assistant that helps users find their milestones. The user has provider all or some of these values: 
+                milestone_title: "{milestone_title}", milestone_description: "{milestone_description}", milestone_date: "{milestone_date}".
+                Here are the user's milestones:
+                {json.dumps(user_milestones, indent=4)}
+                Based on the user input, find the single most relevant milestone id and return its id.
+                If no matching milestones are found, return None.
+                Be strict when determining if milestones are matching since we do not want to find false positives.
+                """
+                messages=[{"role": "system", "content": prompt}]
+                completion = await self._openai.beta.chat.completions.parse(
+                    model=self._openai_model_mini,
+                    messages=messages,
+                    response_format=MileStoneId
+                )
+
+                if completion.choices[0].finish_reason == "stop":
+                    response_msg = completion.choices[0].message
+                    if response_msg.parsed:
+                        found_milestones_id = response_msg.parsed.id
+                    elif response_msg.refusal:
+                        # handle refusal
+                        print("structured response not possible")
+                        return {"success":False,"message": "Encountered refusal while looking for milestones", "milestone_id": None}
+                else:
+                    # handle refusal
+                    print("finish reason not stop")
+                    return {"success":False,"message": "Finish reason not stop", "milestone_id": None}
+
+            found_milestone = None
+            user_milestones = await self.read_user_milestones(user_id)
+            for milestone in user_milestones["milestones"]:
+                if milestone["id"] == found_milestones_id:
+                    found_milestone = milestone
+            return {"success":True,"message": "Milestones found.", "milestone_id": found_milestones_id, "milestone": found_milestone}
+        
+        except Exception as e:
+            print(e)
+            pass
+        return {"success":False,"message": "Milestones not found.", "milestone_ids": None}
+    
+    async def find_single_most_similar_milestone(self, user_id, milestone_title, milestone_description, milestone_date): 
+        found_milestones = await self.find_user_milestone(user_id, milestone_title, milestone_description, milestone_date)
+        if not found_milestones:
+            return {"success": False, "message": "Milestone not found."}
+        #check if found_milestones is > 1 before calling find_most_similar_milestone
+        found_milestone = await self.find_most_similar_milestone(user_id, milestone_title, milestone_description, milestone_date, found_milestones["milestones"])
+        if not found_milestone:
+            return {"success": False, "message": "Milestone not found."}
+        return {"success": True, "message": "Milestone found.", "milestone": found_milestone["milestone"]}
     
     async def get_milestone_topic_suggestions(self, user_id):
         
