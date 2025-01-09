@@ -1083,10 +1083,19 @@ class OpenAIClient:
                                 "type": "string",
                                 "description": "A brief narrative about the event or experience.",
                             },
-                            "milestone_date": {
+                            "milestone_start_date": {
                                 "type": "string",
                                 "format": "date",
-                                "description": "Date of the milestone in the format yyyy-mm-dd. If the day is not provided, default to '01'. If the month is not provided, default to '01'."
+                                "description": "Start date of the milestone in the format yyyy-mm-dd. If the day is not provided, default to '01'. If the month is not provided, default to '01'."
+                            },
+                            "milestone_end_date": {
+                                "type": "string",
+                                "format": "date",
+                                "description": "End Date of the milestone in the format yyyy-mm-dd. If the day is not provided, default to '01'. If the month is not provided, default to '01'."
+                            },
+                            "milestone_location": {
+                                "type": "string",
+                                "description": "The location where the milestone occurred. If no location given then None.",
                             },
                             "milestone_significance": {
                                 "type": "string",
@@ -1115,10 +1124,19 @@ class OpenAIClient:
                                 "type": "string",
                                 "description": "A brief narrative about the event or experience.",
                             },
-                            "milestone_date": {
+                            "milestone_start_date": {
                                 "type": "string",
                                 "format": "date",
-                                "description": "Date of the milestone in the format yyyy-mm-dd. If the day is not provided, default to '01'. If the month is not provided, default to '01'."
+                                "description": "Start date of the milestone in the format yyyy-mm-dd. If the day is not provided, default to '01'. If the month is not provided, default to '01'."
+                            },
+                            "milestone_end_date": {
+                                "type": "string",
+                                "format": "date",
+                                "description": "End Date of the milestone in the format yyyy-mm-dd. If the day is not provided, default to '01'. If the month is not provided, default to '01'."
+                            },
+                            "milestone_location": {
+                                "type": "string",
+                                "description": "The location where the milestone occurred. If no location given then None.",
                             },
                             "milestone_significance": {
                                 "type": "string",
@@ -1147,10 +1165,20 @@ class OpenAIClient:
                                 "type": "string",
                                 "description": "A brief narrative about the event or experience.",
                             },
-                            "milestone_date": {
+                            "milestone_start_date": {
                                 "type": "string",
-                                "description": "Date of the memory.",
-                            }
+                                "format": "date",
+                                "description": "Start date of the milestone in the format yyyy-mm-dd. If the day is not provided, default to '01'. If the month is not provided, default to '01'."
+                            },
+                            "milestone_end_date": {
+                                "type": "string",
+                                "format": "date",
+                                "description": "End Date of the milestone in the format yyyy-mm-dd. If the day is not provided, default to '01'. If the month is not provided, default to '01'."
+                            },
+                            "milestone_location": {
+                                "type": "string",
+                                "description": "The location where the milestone occurred. If no location given then None.",
+                            },
                         },
                         "required": [],
                         "additionalProperties": True,
@@ -1208,9 +1236,11 @@ class OpenAIClient:
                     if tool_call.function.name == "update_user_milestone":
                         milestone_title = arguments.get('milestone_title')
                         milestone_description = arguments.get('milestone_description') 
-                        milestone_date = arguments.get('milestone_date')   
+                        milestone_start_date = arguments.get('milestone_start_date')
+                        milestone_end_date = arguments.get('milestone_end_date')
+                        milestone_location = arguments.get('milestone_location')   
                         milestone_significance = arguments.get('milestone_significance') 
-                        find_result = await self.update_user_milestone(user_id, milestone_title, milestone_description, milestone_date)
+                        find_result = await self.update_user_milestone(user_id, milestone_title, milestone_description, milestone_start_date, milestone_end_date, milestone_location)
                         function_call_result_message = {
                             "role": "tool",
                             "content": json.dumps(find_result),
@@ -1222,8 +1252,10 @@ class OpenAIClient:
                     if tool_call.function.name == "find_user_milestone":
                         milestone_title = arguments.get('milestone_title')
                         milestone_description = arguments.get('milestone_description') 
-                        milestone_date = arguments.get('milestone_date') 
-                        find_result = await self.find_user_milestone(user_id, milestone_title, milestone_description, milestone_date)
+                        milestone_start_date = arguments.get('milestone_start_date')
+                        milestone_end_date = arguments.get('milestone_end_date')
+                        milestone_location = arguments.get('milestone_location') 
+                        find_result = await self.find_user_milestone(user_id, milestone_title, milestone_description, milestone_start_date, milestone_end_date, milestone_location)
 
                         function_call_result_message = {
                             "role": "tool",
@@ -1236,9 +1268,11 @@ class OpenAIClient:
                     if tool_call.function.name == "add_user_milestone":
                         milestone_title = arguments.get('milestone_title')
                         milestone_description = arguments.get('milestone_description') 
-                        milestone_date = arguments.get('milestone_date')   
+                        milestone_start_date = arguments.get('milestone_start_date')
+                        milestone_end_date = arguments.get('milestone_end_date')
+                        milestone_location = arguments.get('milestone_location')     
                         milestone_significance = arguments.get('milestone_significance')   
-                        if milestone_date is None or milestone_date == "":
+                        if milestone_start_date is None or milestone_start_date == "":
                             date_request_msg = {"role": "assistant", "content": "Please provide the date of the milestone."} 
                             await self.write_chat_history("chat_history/chat_history.json", user_id, date_request_msg)
                             messages.append(date_request_msg)
@@ -1249,16 +1283,10 @@ class OpenAIClient:
                             messages.append(description_request_msg)
                             return messages
                         
-                        await self.add_user_milestone(user_id, milestone_title, milestone_description, milestone_date, milestone_significance)
+                        milestone_result = await self.add_user_milestone(user_id, milestone_title, milestone_description, milestone_start_date, milestone_end_date, milestone_location, milestone_significance)
                         function_call_result_message = {
                             "role": "tool",
-                            "content": json.dumps({
-                                "user_id": user_id,
-                                "milestone_title": milestone_title,
-                                "milestone_description": milestone_description,
-                                "milestone_date": milestone_date,
-                                "milestone_significance": milestone_significance
-                            }),
+                            "content": json.dumps(milestone_result),
                             "tool_call_id": tool_call.id
                         }
                         await self.write_chat_history("chat_history/chat_history.json", user_id, function_call_result_message)
@@ -1347,28 +1375,24 @@ class OpenAIClient:
         except Exception as e:
             print(f"Error writing user milestones to file: {e}")
 
-    async def add_user_milestone(self, user_id, milestone_title, milestone_description, milestone_date, milestone_significance):
+    async def add_user_milestone(self, user_id, milestone_title, milestone_description, milestone_start_date, milestone_end_date, milestone_location, milestone_significance):
         
         try:
             user_milestones = await self.read_user_milestones(user_id)
             num_milestones = len(user_milestones["milestones"])
-            milestone = {"id": num_milestones,"title": milestone_title, "description": milestone_description, "date": self.parse_date(milestone_date), "significance": milestone_significance}
+            milestone = {"id": num_milestones,"title": milestone_title, "description": milestone_description, 
+                         "start_date": self.parse_date(milestone_start_date) if milestone_start_date else None, "end_date": self.parse_date(milestone_end_date) if milestone_end_date else None,
+                         "location": milestone_location, "significance": milestone_significance}
             await self.write_user_milestones(user_id, milestone)
-
-            return await self.read_user_milestones(user_id)
+            return {"success":True,"message": "Milestone added.", "milestone": milestone}
         except Exception as e:
             print(e)
-            pass
-        return True
+            return {"success":False,"message": "Error adding milestone.", "milestone": None}
     
-    async def update_user_milestone(self, user_id, milestone_title=None, milestone_description=None, milestone_date=None, milestone_significance=None):
+    async def update_user_milestone(self, user_id, milestone_title=None, milestone_description=None, milestone_start_date=None, milestone_end_date=None, milestone_location=None, milestone_significance=None):
         try:
 
-            # found_milestones = await self.find_user_milestone(user_id, milestone_title, milestone_description, milestone_date)
-            # if not found_milestones:
-            #     return {"success": False, "message": "Milestone not found."}
-            # found_milestone = found_milestones["milestones"][0]
-            found_milestone_dto = await self.find_single_most_similar_milestone(user_id, milestone_title, milestone_description, milestone_date)
+            found_milestone_dto = await self.find_single_most_similar_milestone(user_id, milestone_title, milestone_description, milestone_start_date, milestone_end_date, milestone_location)
             found_milestone = found_milestone_dto["milestone"]
             if found_milestone is None:
                 return {"success":False,"message": "Milestone not found."}
@@ -1379,8 +1403,12 @@ class OpenAIClient:
                 found_milestone["title"] = milestone_title
             if milestone_description:
                 found_milestone["description"] = milestone_description
-            if milestone_date:
-                found_milestone["date"] = self.parse_date(milestone_date)
+            if milestone_start_date:
+                found_milestone["start_date"] = self.parse_date(milestone_start_date) if milestone_start_date else None
+            if milestone_end_date:
+                found_milestone["end_date"] = self.parse_date(milestone_end_date) if milestone_end_date else None
+            if milestone_location:
+                found_milestone["location"] = milestone_location
             if milestone_significance:
                 found_milestone["significance"] = milestone_significance
             updated_milestone = found_milestone
@@ -1393,7 +1421,7 @@ class OpenAIClient:
             pass
         return True
 
-    async def find_user_milestone(self, user_id, milestone_title, milestone_description, milestone_date):
+    async def find_user_milestone(self, user_id, milestone_title, milestone_description, milestone_start_date, milestone_end_date, milestone_location):
         
         class MileStoneIds(BaseModel):
             ids: List[int]
@@ -1409,7 +1437,7 @@ class OpenAIClient:
                 
                     prompt = f"""
                     You are an assistant that helps users find their milestones. The user has provider all or some of these values: 
-                    milestone_title: "{milestone_title}", milestone_description: "{milestone_description}", milestone_date: "{milestone_date}".
+                    milestone_title: "{milestone_title}", milestone_description: "{milestone_description}", milestone_start_date: "{milestone_start_date}, milestone_end_date: {milestone_end_date}, milestone_location: {milestone_location}".
                     Here are the user's milestones:
                     {json.dumps(batch, indent=4)}
                     Based on the user input, find the most relevant milestones ids and return them in a list.
@@ -1450,7 +1478,7 @@ class OpenAIClient:
         return {"success":False,"message": "Milestones not found.", "milestone_ids": None}
     
     
-    async def find_most_similar_milestone(self, user_id, milestone_title, milestone_description, milestone_date, milestones):
+    async def find_most_similar_milestone(self, user_id, milestone_title, milestone_description, milestone_start_date, milestone_end_date, milestone_location, milestones):
         
         class MileStoneId(BaseModel):
             id: int
@@ -1461,7 +1489,7 @@ class OpenAIClient:
             if user_milestones is not None:
                 prompt = f"""
                 You are an assistant that helps users find their milestones. The user has provider all or some of these values: 
-                milestone_title: "{milestone_title}", milestone_description: "{milestone_description}", milestone_date: "{milestone_date}".
+                milestone_title: "{milestone_title}", milestone_description: "{milestone_description}", milestone_start_date: "{milestone_start_date}, milestone_end_date: {milestone_end_date}, milestone_location: {milestone_location}".
                 Here are the user's milestones:
                 {json.dumps(user_milestones, indent=4)}
                 Based on the user input, find the single most relevant milestone id and return its id.
@@ -1500,12 +1528,12 @@ class OpenAIClient:
             pass
         return {"success":False,"message": "Milestones not found.", "milestone_ids": None}
     
-    async def find_single_most_similar_milestone(self, user_id, milestone_title, milestone_description, milestone_date): 
-        found_milestones = await self.find_user_milestone(user_id, milestone_title, milestone_description, milestone_date)
+    async def find_single_most_similar_milestone(self, user_id, milestone_title, milestone_description, milestone_start_date, milestone_end_date, milestone_location): 
+        found_milestones = await self.find_user_milestone(user_id, milestone_title, milestone_description, milestone_start_date, milestone_end_date, milestone_location)
         if not found_milestones:
             return {"success": False, "message": "Milestone not found."}
         #check if found_milestones is > 1 before calling find_most_similar_milestone
-        found_milestone = await self.find_most_similar_milestone(user_id, milestone_title, milestone_description, milestone_date, found_milestones["milestones"])
+        found_milestone = await self.find_most_similar_milestone(user_id, milestone_title, milestone_description, milestone_start_date, milestone_end_date, milestone_location, found_milestones["milestones"])
         if not found_milestone:
             return {"success": False, "message": "Milestone not found."}
         return {"success": True, "message": "Milestone found.", "milestone": found_milestone["milestone"]}
