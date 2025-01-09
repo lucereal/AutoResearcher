@@ -1322,6 +1322,16 @@ class OpenAIClient:
             print(f"Error reading user milestones from file: {e}")
             return None
     
+    async def read_universal_milestones(self):
+        file_path = f"user_timeline/universal_milestones.json"
+        try:
+            with open(file_path, 'r') as file:
+                universal_milestones = json.load(file)
+            return universal_milestones
+        except Exception as e:
+            print(f"Error reading user milestones from file: {e}")
+            return None
+
     async def write_user_milestones(self, user_id, user_milestones):
         file_path = f"user_timeline/user_timeline.json"
         try:
@@ -1377,12 +1387,47 @@ class OpenAIClient:
 
     async def add_user_milestone(self, user_id, milestone_title, milestone_description, milestone_start_date, milestone_end_date, milestone_location, milestone_significance):
         
+        class ImportanceLevel(BaseModel):
+            importance: str
         try:
             user_milestones = await self.read_user_milestones(user_id)
             num_milestones = len(user_milestones["milestones"])
             milestone = {"id": num_milestones,"title": milestone_title, "description": milestone_description, 
                          "start_date": self.parse_date(milestone_start_date) if milestone_start_date else None, "end_date": self.parse_date(milestone_end_date) if milestone_end_date else None,
                          "location": milestone_location, "significance": milestone_significance}
+            
+            universal_milestones = await self.read_universal_milestones()
+            universal_milestones_importance_levels = universal_milestones["milestone_importance"]
+
+            prompt = f"""
+            You are an assistant that helps users find the importance of their life milestones. The user has provider all or some of these values of the milestone: 
+            milestone_title: "{milestone_title}", milestone_description: "{milestone_description}", milestone_start_date: "{milestone_start_date}, milestone_end_date: {milestone_end_date}, milestone_location: {milestone_location}".
+            Here are some importance levels of common milestones:
+            {json.dumps(universal_milestones_importance_levels, indent=4)}
+            Based on the user input, find the importance level [high, medium, low] of the milestone based on the user's input. Return the importance level as a string.
+            If no importance level is found then return "unknown".
+            """
+            messages=[{"role": "system", "content": prompt}]
+            completion = await self._openai.beta.chat.completions.parse(
+                model=self._openai_model_mini,
+                messages=messages,
+                response_format=ImportanceLevel
+            )
+
+            importance = "unknown"
+            if completion.choices[0].finish_reason == "stop":
+                response_msg = completion.choices[0].message
+                if response_msg.parsed:
+                    importance = response_msg.parsed.importance
+                elif response_msg.refusal:
+                    # handle refusal
+                    print("structured response not possible")
+            else:
+                # handle refusal
+                print("finish reason not stop")
+
+            milestone["importance"] = importance
+
             await self.write_user_milestones(user_id, milestone)
             return {"success":True,"message": "Milestone added.", "milestone": milestone}
         except Exception as e:
