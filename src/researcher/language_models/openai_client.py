@@ -1152,6 +1152,47 @@ class OpenAIClient:
             {
                 "type": "function",
                 "function": {
+                    "name": "delete_user_milestone",
+                    "description": "Delete an existing user milestone in the user storage. Call this whenever you need to delete user milestone, for example when a user says something like 'Can we delete that one memory or milestone?', 'Can we remove this milestone or memory or event?', etc.",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "milestone_title": {
+                                "type": "string",
+                                "description": "A short, descriptive name for the milestone.",
+                            },
+                             "milestone_description": {
+                                "type": "string",
+                                "description": "A brief narrative about the event or experience.",
+                            },
+                            "milestone_start_date": {
+                                "type": "string",
+                                "format": "date",
+                                "description": "Start date of the milestone in the format yyyy-mm-dd. If the day is not provided, default to '01'. If the month is not provided, default to '01'."
+                            },
+                            "milestone_end_date": {
+                                "type": "string",
+                                "format": "date",
+                                "description": "End Date of the milestone in the format yyyy-mm-dd. If the day is not provided, default to '01'. If the month is not provided, default to '01'."
+                            },
+                            "milestone_location": {
+                                "type": "string",
+                                "description": "The location where the milestone occurred. If no location given then None.",
+                            },
+                            "milestone_significance": {
+                                "type": "string",
+                                "description": "The importance of the milestone as rated by the user (e.g., life-changing, pivotal, challenging, etc.).",
+                            }
+                        },
+                        "required": ["milestone_title"],
+                        "additionalProperties": True,
+                    }, 
+                    "strict" : False
+                }
+            },
+            {
+                "type": "function",
+                "function": {
                     "name": "find_user_milestone",
                     "description": "Find a user milestone in the user storage. You can find user milestone id, title, description, and date. Call this whenever you need to find a user milestone, for example when a user says something like 'Can you find that memory of the beach?', 'I remember a memory about a sunset', etc.",
                     "parameters": {
@@ -1222,6 +1263,22 @@ class OpenAIClient:
 
                 for tool_call in completion.choices[0].message.tool_calls:
                     arguments = json.loads(tool_call.function.arguments)
+                    if tool_call.function.name == "delete_user_milestone":
+                        milestone_title = arguments.get('milestone_title')
+                        milestone_description = arguments.get('milestone_description') 
+                        milestone_start_date = arguments.get('milestone_start_date')
+                        milestone_end_date = arguments.get('milestone_end_date')
+                        milestone_location = arguments.get('milestone_location')   
+                        milestone_significance = arguments.get('milestone_significance') 
+                        find_result = await self.delete_user_milestone(user_id, milestone_title, milestone_description, milestone_start_date, milestone_end_date, milestone_location)
+                        function_call_result_message = {
+                            "role": "tool",
+                            "content": json.dumps(find_result),
+                            "tool_call_id": tool_call.id
+                        }
+                        await self.write_chat_history("chat_history/chat_history.json", user_id, function_call_result_message)
+                        messages.append(function_call_result_message)
+                        requiresAction = True
                     if tool_call.function.name == "get_milestone_topic_suggestions":
                         suggestions = await self.get_milestone_topic_suggestions(user_id)
                         function_call_result_message = {
@@ -1385,6 +1442,36 @@ class OpenAIClient:
         except Exception as e:
             print(f"Error writing user milestones to file: {e}")
 
+    async def delete_user_milestone_store(self, user_id, user_milestone):
+        file_path = f"user_timeline/user_timeline.json"
+        try:
+            # Ensure the file exists and contains valid JSON
+            if not os.path.exists(file_path) or os.path.getsize(file_path) == 0:
+                with open(file_path, 'w') as file:
+                    json.dump({}, file)
+
+            with open(file_path, 'r') as file:
+                user_timeline = json.load(file)
+            if user_timeline is None:
+                user_timeline = {}
+            
+            if user_id not in user_timeline:
+                return {"success":False, "message": "User not found."}
+            
+     
+            # Find user milestone with matching user_milestone["id"] and del it
+            for i, milestone in enumerate(user_timeline[user_id]["milestones"]):
+                if str(milestone["id"]) == str(user_milestone["id"]):
+                    del user_timeline[user_id]["milestones"][i]
+                    break
+            
+            with open(file_path, 'w') as file:
+                json.dump(user_timeline, file, indent=4)
+            return user_timeline
+        except Exception as e:
+            print(f"Error writing user milestones to file: {e}")
+
+
     async def add_user_milestone(self, user_id, milestone_title, milestone_description, milestone_start_date, milestone_end_date, milestone_location, milestone_significance):
         
         class ImportanceLevel(BaseModel):
@@ -1465,6 +1552,21 @@ class OpenAIClient:
             print(e)
             pass
         return True
+
+    async def delete_user_milestone(self, user_id, milestone_title=None, milestone_description=None, milestone_start_date=None, milestone_end_date=None, milestone_location=None, milestone_significance=None):
+        try:
+
+            found_milestone_dto = await self.find_single_most_similar_milestone(user_id, milestone_title, milestone_description, milestone_start_date, milestone_end_date, milestone_location)
+            found_milestone = found_milestone_dto["milestone"]
+            if found_milestone is None:
+                return {"success":False,"message": "Milestone not found.", "milestone": None}
+            
+            await self.delete_user_milestone_store(user_id, found_milestone)
+            return {"success":True,"message": "Milestone deleted.", "milestone": found_milestone}
+        
+        except Exception as e:
+            print(e)
+            return {"success":False,"message": "Error when deleting milestone.", "milestone": None}
 
     async def find_user_milestone(self, user_id, milestone_title, milestone_description, milestone_start_date, milestone_end_date, milestone_location):
         
