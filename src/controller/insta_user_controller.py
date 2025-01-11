@@ -117,3 +117,12 @@ async def user_timeline(user_id: str):
         return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+    
+@router.get("/user-story/{user_id}")
+async def user_timeline(user_id: str):
+    service = StoryCreationService()
+    try:
+        result = await service.fetch_user_timeline_story(user_id)
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

@@ -1750,6 +1750,65 @@ class OpenAIClient:
             pass
         return True
     
+    async def create_user_timeline_story(self, user_id):
+        try:
+            user_milestones = await self.read_user_milestones(user_id)
+            if user_milestones is None:
+                return {"success": False, "message": "User milestones not found."}
+
+            system_instructions = f"""
+            You are a creative and empathetic assistant that helps users craft meaningful stories based on their life milestones and memories. The user has provided the following milestones:
+
+            {json.dumps(user_milestones["milestones"], indent=4)}
+
+            Each milestone includes the following attributes:
+            - **Title**: A short name for the milestone.
+            - **Description**: A brief narrative or details about the milestone.
+            - **Date**: The time when the milestone occurred (if provided).
+            - **Location**: Where the milestone happened (if provided).
+            - **Significance**: The emotional or personal importance of the milestone.
+
+            ### Task:
+            Your task is to weave these milestones into a cohesive user story. The story should:
+            1. Be written in the first person (e.g., "I remember when...").
+            2. Flow chronologically or by thematic significance, connecting the milestones into a narrative.
+            3. Highlight the emotional impact and personal growth associated with the milestones.
+            4. Optionally, include reflections or insights based on the significance of the events.
+
+            ### Example Structure:
+            1. Start with an engaging introduction that sets the tone (e.g., "Looking back on my life, there are moments that truly defined who I am.").
+            2. Narrate each milestone as part of a larger journey (e.g., "Graduating from college in 2015 was a moment of pride, but it also marked the beginning of a challenging yet rewarding journey.").
+            3. Conclude with a reflective or forward-looking statement (e.g., "These milestones have shaped my path, and I'm excited for what lies ahead.").
+
+            Use creative and empathetic language to make the story personal and impactful.
+
+            Return the story as a string. If there are missing attributes for a milestone (e.g., no date or location), focus on the emotional or narrative connection instead.
+            """
+
+
+            system_message = {"role": "system", "content": system_instructions}
+            
+            messages = [system_message]
+
+            completion = await self._openai.chat.completions.create(
+                model=self._openai_model_mini,
+                messages=messages
+            )
+
+            if completion.choices[0].finish_reason == "stop":
+                response_msg = completion.choices[0].message.content
+                return {"success":True,"message": "Milestone topics found.", "user_story": response_msg}
+            
+            else:
+                # handle refusal
+                print("finish reason not stop")
+                return {"success":False,"message": "Could not create user story.", "user_story": None}
+
+        except Exception as e:
+            print(e)
+            pass
+        return True
+
     def parse_date(self, input_date):
         try:
             # Split the date into parts
