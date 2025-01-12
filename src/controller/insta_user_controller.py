@@ -111,11 +111,13 @@ async def chat_with_images(
     user_id: str = Form(...),
     images: List[UploadFile] = File(...)
 ):
-    service = InstaPersonaService()
+    service = StoryCreationService()
     try:
         print("images ", images)
-        #result = await service.chat_with_timeline_builder(user_id, user_message)
-        result = {"status": "received code", "source": "external"}
+        if len(images) == 0:
+            result = await service.chat_with_timeline_builder(user_id, user_message)
+        else:
+            result = await service.chat_with_timeline_builder(user_id, user_message, images)
         return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

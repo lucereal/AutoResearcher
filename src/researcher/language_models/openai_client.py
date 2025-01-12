@@ -1,3 +1,4 @@
+import uuid
 from datetime import datetime
 import asyncio
 import json
@@ -7,7 +8,7 @@ from openai import OpenAI
 from dotenv import load_dotenv 
 from pydantic import BaseModel
 from typing import List
-
+from fastapi import UploadFile
 
 # Load environment variables from .env file
 load_dotenv()
@@ -1014,7 +1015,7 @@ class OpenAIClient:
             pass
         return None
     
-    async def chat_with_tools(self, user_id, user_message, system_prompt):
+    async def chat_with_tools(self, user_id, user_message, system_prompt, user_images=None,):
         try:
             tools = await self.get_persona_chat_tools()
 
@@ -1042,7 +1043,7 @@ class OpenAIClient:
                 tools=tools
             )
 
-            response_msgs = await self.handle_user_chat_with_tools(user_id, completion, messages, tools)
+            response_msgs = await self.handle_user_chat_with_tools(user_id, completion, messages, tools, user_images)
             
             response_msg = response_msgs[-1]["content"]
             return {"response": response_msg}
@@ -1244,7 +1245,7 @@ class OpenAIClient:
         ]
         return tools
 
-    async def handle_user_chat_with_tools(self, user_id, completion, messages, tools):
+    async def handle_user_chat_with_tools(self, user_id, completion, messages, tools, user_images=None):
         response = completion
         requiresAction = True
         while requiresAction:
@@ -1340,7 +1341,7 @@ class OpenAIClient:
                             messages.append(description_request_msg)
                             return messages
                         
-                        milestone_result = await self.add_user_milestone(user_id, milestone_title, milestone_description, milestone_start_date, milestone_end_date, milestone_location, milestone_significance)
+                        milestone_result = await self.add_user_milestone(user_id, milestone_title, milestone_description, milestone_start_date, milestone_end_date, milestone_location, milestone_significance, user_images)
                         function_call_result_message = {
                             "role": "tool",
                             "content": json.dumps(milestone_result),
@@ -1472,7 +1473,7 @@ class OpenAIClient:
             print(f"Error writing user milestones to file: {e}")
 
 
-    async def add_user_milestone(self, user_id, milestone_title, milestone_description, milestone_start_date, milestone_end_date, milestone_location, milestone_significance):
+    async def add_user_milestone(self, user_id, milestone_title, milestone_description, milestone_start_date, milestone_end_date, milestone_location, milestone_significance, user_images=None):
         
         class ImportanceLevel(BaseModel):
             importance: str
@@ -1515,6 +1516,13 @@ class OpenAIClient:
 
             milestone["importance"] = importance
 
+            #save_user_images(user_id: str, num_milestone: int, user_images: List[UploadFile], folder_path: str) -> List[str]:
+
+            if user_images:
+                user_images = await self.save_user_images(user_id, num_milestones, user_images, "user_timeline/user_images")
+                if user_images:
+                    milestone["images"] = user_images
+                    
             await self.write_user_milestones(user_id, milestone)
             return {"success":True,"message": "Milestone added.", "milestone": milestone}
         except Exception as e:
@@ -1826,6 +1834,24 @@ class OpenAIClient:
         except ValueError:
             raise ValueError("Invalid date format. Please use yyyy-mm-dd.")
         
+    async def save_user_images(user_id: str, num_milestone: int, user_images: List[UploadFile], folder_path: str) -> List[str]:
+        saved_image_paths = []
+        os.makedirs(folder_path, exist_ok=True)  # Ensure the folder exists
+
+        for image in user_images:
+            # Generate a unique filename
+            unique_filename = f"{user_id}_{num_milestone}_{uuid.uuid4()}{os.path.splitext(image.filename)[1]}"
+            file_path = os.path.join(folder_path, unique_filename)
+
+            # Save the image to the specified folder
+            with open(file_path, "wb") as file:
+                content = await image.read()
+                file.write(content)
+
+            saved_image_paths.append(file_path)
+
+        return saved_image_paths     
+
 
 async def run_web_page_data_example():
     # Example usage:
