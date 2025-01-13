@@ -1002,8 +1002,9 @@ class OpenAIClient:
 
             if completion.choices[0].finish_reason == "stop":
                 response_msg = completion.choices[0].message.content
+                assistant_msg = {"role": "assistant", "content": response_msg, "id": completion.id}
                 #chat_history[user_id].append({"role": "assistant", "content": response_msg})
-                await self.write_chat_history("chat_history/chat_history.json", user_id, {"role": "assistant", "content": response_msg})
+                await self.write_chat_history("chat_history/chat_history.json", user_id, assistant_msg)
 
                 return {"response": response_msg}
             else:
@@ -1031,7 +1032,8 @@ class OpenAIClient:
 
             # Append the user message to the chat history
             #chat_history[user_id].append({"role": "user", "content": user_message})
-            chat_history = await self.write_chat_history("chat_history/chat_history.json", user_id, {"role": "user", "content": user_message})
+            user_message_obj = {"role": "user", "content": user_message, "id": str(uuid.uuid4())}
+            chat_history = await self.write_chat_history("chat_history/chat_history.json", user_id, user_message_obj)
 
             # Construct the full message chain to send to OpenAI
             messages = [{"role": "system", "content": system_prompt}]
@@ -1259,7 +1261,9 @@ class OpenAIClient:
                 #return "The content was filtered due to policy violations."
             elif finish_reason == "tool_calls":
                 assistant_message = response.choices[0].message
-                await self.write_chat_history("chat_history/chat_history.json", user_id, assistant_message.to_dict())
+                assistant_message_obj = assistant_message.to_dict()
+                assistant_message_obj["id"] = response.id
+                await self.write_chat_history("chat_history/chat_history.json", user_id, assistant_message_obj)
                 messages.append(assistant_message.to_dict())
 
                 for tool_call in completion.choices[0].message.tool_calls:
@@ -1275,7 +1279,8 @@ class OpenAIClient:
                         function_call_result_message = {
                             "role": "tool",
                             "content": json.dumps(find_result),
-                            "tool_call_id": tool_call.id
+                            "tool_call_id": tool_call.id,
+                            "id": tool_call.id
                         }
                         await self.write_chat_history("chat_history/chat_history.json", user_id, function_call_result_message)
                         messages.append(function_call_result_message)
@@ -1285,7 +1290,8 @@ class OpenAIClient:
                         function_call_result_message = {
                             "role": "tool",
                             "content": json.dumps(suggestions),
-                            "tool_call_id": tool_call.id
+                            "tool_call_id": tool_call.id,
+                            "id": tool_call.id
                         }
                         
                         await self.write_chat_history("chat_history/chat_history.json", user_id, function_call_result_message)
@@ -1302,7 +1308,8 @@ class OpenAIClient:
                         function_call_result_message = {
                             "role": "tool",
                             "content": json.dumps(find_result),
-                            "tool_call_id": tool_call.id
+                            "tool_call_id": tool_call.id,
+                            "id": tool_call.id
                         }
                         await self.write_chat_history("chat_history/chat_history.json", user_id, function_call_result_message)
                         messages.append(function_call_result_message)
@@ -1318,7 +1325,8 @@ class OpenAIClient:
                         function_call_result_message = {
                             "role": "tool",
                             "content": json.dumps(find_result),
-                            "tool_call_id": tool_call.id
+                            "tool_call_id": tool_call.id,
+                            "id": tool_call.id
                         }
                         await self.write_chat_history("chat_history/chat_history.json", user_id, function_call_result_message)
                         messages.append(function_call_result_message)
@@ -1345,14 +1353,17 @@ class OpenAIClient:
                         function_call_result_message = {
                             "role": "tool",
                             "content": json.dumps(milestone_result),
-                            "tool_call_id": tool_call.id
+                            "tool_call_id": tool_call.id,
+                            "id": tool_call.id
                         }
                         await self.write_chat_history("chat_history/chat_history.json", user_id, function_call_result_message)
                         messages.append(function_call_result_message)
                         requiresAction = True
             elif finish_reason == "stop":
                 assistant_message = response.choices[0].message
-                await self.write_chat_history("chat_history/chat_history.json", user_id, assistant_message.to_dict())
+                assistant_message_obj = assistant_message.to_dict()
+                assistant_message_obj["id"] = response.id
+                await self.write_chat_history("chat_history/chat_history.json", user_id, assistant_message_obj)
                 messages.append(assistant_message.to_dict())
                 requiresAction = False
             else:
