@@ -1119,6 +1119,13 @@ class OpenAIClient:
                             "milestone_significance": {
                                 "type": "string",
                                 "description": "The importance of the milestone as rated by the user (e.g., life-changing, pivotal, challenging, etc.).",
+                            },
+                            "milestone_images_paths": {
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                },
+                                "description": "Any images paths associated with the milestone. If no images given then None.",
                             }
                         },
                         "required": ["milestone_title"],
@@ -1353,7 +1360,8 @@ class OpenAIClient:
                         milestone_start_date = arguments.get('milestone_start_date')
                         milestone_end_date = arguments.get('milestone_end_date')
                         milestone_location = arguments.get('milestone_location')     
-                        milestone_significance = arguments.get('milestone_significance')   
+                        milestone_significance = arguments.get('milestone_significance')
+                        milestone_images_paths = arguments.get('milestone_images_paths')   
                         if milestone_start_date is None or milestone_start_date == "":
                             date_request_msg = {"role": "assistant", "content": "Please provide the date of the milestone."} 
                             await self.write_chat_history("chat_history/chat_history.json", user_id, date_request_msg)
@@ -1365,7 +1373,7 @@ class OpenAIClient:
                             messages.append(description_request_msg)
                             return messages
                         
-                        milestone_result = await self.add_user_milestone(user_id, milestone_title, milestone_description, milestone_start_date, milestone_end_date, milestone_location, milestone_significance, user_images)
+                        milestone_result = await self.add_user_milestone(user_id, milestone_title, milestone_description, milestone_start_date, milestone_end_date, milestone_location, milestone_significance, milestone_images_paths)
                         function_call_result_message = {
                             "role": "tool",
                             "content": json.dumps(milestone_result),
@@ -1500,7 +1508,7 @@ class OpenAIClient:
             print(f"Error writing user milestones to file: {e}")
 
 
-    async def add_user_milestone(self, user_id, milestone_title, milestone_description, milestone_start_date, milestone_end_date, milestone_location, milestone_significance, user_images=None):
+    async def add_user_milestone(self, user_id, milestone_title, milestone_description, milestone_start_date, milestone_end_date, milestone_location, milestone_significance, milestone_images_paths=None):
         
         class ImportanceLevel(BaseModel):
             importance: str
@@ -1543,8 +1551,9 @@ class OpenAIClient:
 
             milestone["importance"] = importance
 
-            #save_user_images(user_id: str, num_milestone: int, user_images: List[UploadFile], folder_path: str) -> List[str]:
-                    
+            if milestone_images_paths:
+                milestone["images_paths"] = milestone_images_paths
+
             await self.write_user_milestones(user_id, milestone)
             return {"success":True,"message": "Milestone added.", "milestone": milestone}
         except Exception as e:
