@@ -5,7 +5,9 @@ from researcher.language_models.openai_client import OpenAIClient
 from researcher.data_source_clients.instagram_client import InstagramClient
 import networkx as nx
 import numpy as np
+from typing import List
 import os
+import base64
 
 class StoryCreationService:
     def __init__(self):
@@ -24,9 +26,26 @@ class StoryCreationService:
             with open(file_path, 'r') as file:
                 user_milestones = json.load(file)
             if user_id in user_milestones:
-                return user_milestones[user_id]
+                user_milestone = user_milestones[user_id]
+                for um in user_milestone["milestones"]:
+                    if um["images_paths"]:
+                        um["images"] = await self.read_timeline_images(um["images_paths"])
+                return user_milestone
             else:
                 return {"milestones": []}
+        except Exception as e:
+            print(f"Error reading user milestones from file: {e}")
+            return None
+        
+    async def read_timeline_images(self, images_paths) -> List[str]:
+        file_path = f"user_timeline/user_timeline.json"
+        try:
+            images = []
+            for image_path in images_paths:
+                with open(image_path, 'rb') as file:
+                    encoded_image = base64.b64encode(file.read()).decode('utf-8')
+                    images.append(encoded_image)
+            return images
         except Exception as e:
             print(f"Error reading user milestones from file: {e}")
             return None
