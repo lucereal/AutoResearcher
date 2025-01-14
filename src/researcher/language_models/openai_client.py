@@ -9,6 +9,8 @@ from dotenv import load_dotenv
 from pydantic import BaseModel
 from typing import List
 from fastapi import UploadFile
+from researcher.repository.user_timeline_repository import UserTimelineRepository
+
 
 # Load environment variables from .env file
 load_dotenv()
@@ -47,6 +49,7 @@ class OpenAIClient:
         self._openai_model = "gpt-4o"
         self._openai_model_mini = "gpt-4o-mini"
         self._openai_model_dalle3 = "dall-e-3"
+        self.user_timeline_repository = UserTimelineRepository()
   
 
     async def is_news_article_preview_usable(self, article_preview, topic_query):
@@ -1016,7 +1019,7 @@ class OpenAIClient:
             pass
         return None
     
-    async def chat_with_tools(self, user_id, user_message, system_prompt, user_images=None,):
+    async def chat_with_tools(self, user_id, user_message, system_prompt, user_images=None):
         try:
             tools = await self.get_persona_chat_tools()
 
@@ -1032,10 +1035,23 @@ class OpenAIClient:
 
             # Append the user message to the chat history
             #chat_history[user_id].append({"role": "user", "content": user_message})
-            user_message_obj = {"role": "user", "content": user_message, "id": str(uuid.uuid4())}
-            chat_history = await self.write_chat_history("chat_history/chat_history.json", user_id, user_message_obj)
+            user_message_id = str(uuid.uuid4())
+ 
+            user_timeline = await self.user_timeline_repository.read_user_timeline(user_id)
+            if user_images:
+                folder_path = "user_timeline/user_images"
+                user_images_paths = await self.user_timeline_repository.save_user_images(user_id, user_images, folder_path)
+                # if user_images_paths:
+                #     milestone["images"] = user_images_paths
+                if user_images_paths:
+                    user_message = user_message + " " + " ".join(user_images_paths)
+                    user_timeline = await self.user_timeline_repository.write_user_media_to_timeline(user_id, user_message_id, user_images_paths)
 
-            # Construct the full message chain to send to OpenAI
+            #make sure image isn't getting the same id as th other images
+
+            user_message_obj = {"role": "user", "content": user_message, "id": user_message_id}
+            chat_history = await self.write_chat_history("chat_history/chat_history.json", user_id, user_message_obj)      
+
             messages = [{"role": "system", "content": system_prompt}]
             messages += chat_history[user_id]
 
@@ -1528,11 +1544,6 @@ class OpenAIClient:
             milestone["importance"] = importance
 
             #save_user_images(user_id: str, num_milestone: int, user_images: List[UploadFile], folder_path: str) -> List[str]:
-
-            if user_images:
-                user_images = await self.save_user_images(user_id, num_milestones, user_images, "user_timeline/user_images")
-                if user_images:
-                    milestone["images"] = user_images
                     
             await self.write_user_milestones(user_id, milestone)
             return {"success":True,"message": "Milestone added.", "milestone": milestone}
