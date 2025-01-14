@@ -24,8 +24,10 @@ This Python project automates data collection on user provided topics.
     - Chat with instagram character
 8. **Chat Assistant Timeline Builder**:
     - Timeline builder assistant
-    - Saves, updates, suggests, finds milestones or memorie for a persons life.
-    - Uses GPT functions to modify user milestone store
+    - Saves, updates, suggests, finds milestones or memories for a persons life.
+    - Uses GPT functions to modify, add, update, delete, find user milestones from milestone store.
+    - Allows users to upload images to associate with milestones.
+    - Provies output for visualizing on a timeline in the front end.
 
 ## Technologies
 
