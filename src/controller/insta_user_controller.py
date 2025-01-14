@@ -1,11 +1,13 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, UploadFile, File, Form
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from dotenv import load_dotenv
 import os
 import httpx
+from typing import List
 from src.researcher.services.insta_persona_service import InstaPersonaService
 from src.researcher.language_models.openai_client import OpenAIClient
+from src.researcher.services.story_creation_service import StoryCreationService
 
 load_dotenv()
 
@@ -22,6 +24,11 @@ class TopicRequest(BaseModel):
 class ChatRequest(BaseModel):
     user_message: str
     user_id: str
+
+class ChatRequestImages(BaseModel):
+    user_message: str
+    user_id: str
+    images: List[UploadFile]
 
 @router.post("/get-user")
 async def gather_data(request: CodeRequest):
@@ -97,6 +104,23 @@ async def chat(request: ChatRequest):
         return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+    
+@router.post("/chat-timeline-images")
+async def chat_with_images(
+    user_message: str = Form(...),
+    user_id: str = Form(...),
+    images: List[UploadFile] = File(...)
+):
+    service = StoryCreationService()
+    try:
+        print("images ", images)
+        if len(images) == 0:
+            result = await service.chat_with_timeline_builder(user_id, user_message)
+        else:
+            result = await service.chat_with_timeline_builder(user_id, user_message, images)
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.get("/chat-history/{user_id}")
@@ -104,6 +128,24 @@ async def chat_history(user_id: str):
     service = OpenAIClient()
     try:
         result = await service.read_user_chat_history(user_id)
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/user-timeline/{user_id}")
+async def user_timeline(user_id: str):
+    service = StoryCreationService()
+    try:
+        result = await service.fetch_user_story(user_id)
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    
+@router.get("/user-story/{user_id}")
+async def user_timeline(user_id: str):
+    service = StoryCreationService()
+    try:
+        result = await service.fetch_user_timeline_story(user_id)
         return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
