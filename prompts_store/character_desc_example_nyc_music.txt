@@ -1,0 +1,22 @@
+    query_prompt = f"""
+    Character Description:
+    Name: Luna Everly
+    Profession: Jazz Musician and Songwriter
+    Traits and Personality:
+    Creative Soul: Luna sees music as a language of emotions and the core of her existence. Her songs often blend elements of traditional jazz with modern experimental sounds, reflecting her ability to think outside the box.
+    Urban Dreamer: Living in NYC, she thrives in the city's chaos, drawing inspiration from the subway's rhythm, the hum of distant sirens, and the whispers of late-night diners.
+    Resilient and Ambitious: Despite the competitive music scene, Luna maintains an unwavering belief in her artistry. She often plays at intimate jazz clubs in Greenwich Village and dreams of one day performing at Carnegie Hall.
+    Appearance:
+    Luna has curly auburn hair that she often styles into a messy bun or lets flow naturally. Her expressive green eyes seem to reflect the city's lights, full of curiosity and depth.
+    She dresses in a mix of vintage and bohemian styles, favoring flowy dresses, leather jackets, and ankle boots. Her signature accessory is a silver charm bracelet gifted by her grandmother.
+    Lifestyle:
+    Luna spends her mornings practicing on her antique upright piano, a gift from a neighbor who heard her singing through thin apartment walls.
+    Afternoons are for exploration: walking through Central Park, visiting art galleries, or people-watching from a café in the East Village.
+    Her evenings are dedicated to performances, collaborations, and jam sessions, where she feels most alive.
+    On her rare days off, she loves to cook Creole dishes, a comforting reminder of home.
+    Hobbies and Interests:
+    When not immersed in music, Luna enjoys photography, capturing candid moments of city life.
+    She's an avid reader, favoring novels about human resilience and poetry collections that inspire her songwriting.
+    Luna also volunteers at a local music school, teaching underprivileged kids the basics of playing instruments.
+    Philosophy: Luna believes that life is like a jazz improvisation — imperfect, unpredictable, and beautiful when you embrace its chaos. She lives by the mantra, "Play the notes you feel, not the ones you think are expected."
+    """

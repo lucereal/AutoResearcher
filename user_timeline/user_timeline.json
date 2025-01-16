@@ -1,0 +1,441 @@
+{
+    "f6d7216d-5478-4a39-89dc-123cac9e9739": {
+        "milestones": [
+            {
+                "title": "Day of Dog Death",
+                "description": "The heartbreaking moment when my dog died on January 4th, 2012, which left me devastated and in tears for days.",
+                "date": "2012-01-04",
+                "significance": "life-altering",
+                "id": 0
+            },
+            {
+                "id": 1,
+                "title": "Birth",
+                "description": "The moment I was born on February 29, 1996, in Ruidoso, New Mexico.",
+                "date": "1996-02-29",
+                "significance": "life-changing"
+            },
+            {
+                "id": 2,
+                "title": "Spiritual Awakening",
+                "description": "The day I felt I spiritually 'spawned' in 2nd grade at the age of 8, marking a significant awakening for me.",
+                "date": "2006-03-01",
+                "significance": "awakening"
+            }
+        ]
+    },
+    "27e50732-ef36-44e5-a7af-c960f909f309": {
+        "milestones": [
+            {
+                "id": 0,
+                "title": "First Memory",
+                "description": "A memory of walking around the neighborhood in my parents' first house in Ruidoso, New Mexico, with my mom. We would explore the area and walk down a giant hill.",
+                "date": "2000-01-01",
+                "significance": "This memory makes me feel happy, and it also brings up feelings of missing my mom."
+            },
+            {
+                "id": 1,
+                "title": "First Memory",
+                "description": "A memory of walking around the neighborhood in my parents' first house in Ruidoso, New Mexico, with my mom. We would explore the area and walk down a giant hill.",
+                "date": "2000-01-01",
+                "significance": "This memory makes me feel happy, and it also brings up feelings of missing my mom."
+            }
+        ]
+    },
+    "cb80bc49-6b79-414e-899c-79995cb687c7": {
+        "milestones": [
+            {
+                "id": 0,
+                "title": "Birth",
+                "description": "You were born on a unique leap day, February 29, 1996.",
+                "date": "1996-02-29",
+                "significance": "Significant as it adds a unique aspect to your life."
+            },
+            {
+                "id": 1,
+                "title": "First Memory",
+                "description": "A cherished moment with your mom in your first house in Ruidoso. You rode your scooter around the neighborhood, and you both walked down a giant hill back to your home.",
+                "date": "1999-01-01",
+                "significance": "This memory reflects the joy of childhood and the bond with your mother."
+            },
+            {
+                "id": 2,
+                "title": "Move to Euless, Texas",
+                "description": "At the age of 5, you moved to Euless, Texas, marking a significant change in your life.",
+                "date": "2001-01-01",
+                "significance": "This move represents a significant transition in your early life."
+            },
+            {
+                "id": 3,
+                "title": "Starting Kindergarten",
+                "description": "After moving to Euless, you began your kindergarten journey, entering formal education for the first time.",
+                "date": "2001-01-01",
+                "significance": "Beginning school marked an exciting new chapter in your life."
+            },
+            {
+                "id": 4,
+                "title": "Move to Bedford, Texas",
+                "description": "After a year in Euless, you moved to Bedford, Texas, marking another significant transition.",
+                "date": "2002-01-01",
+                "significance": "This move represented another change in your early life."
+            },
+            {
+                "id": 5,
+                "title": "Met Best Friend Cody",
+                "description": "In 1st grade, you made a new best friend named Cody, creating a meaningful connection during your childhood.",
+                "date": "2002-01-01",
+                "significance": "This friendship was significant as it shaped your early social experiences."
+            },
+            {
+                "id": 6,
+                "title": "Move to Hurst, Texas",
+                "description": "After living in Bedford for five years, you moved to Hurst, Texas, continuing your journey.",
+                "date": "2007-01-01",
+                "significance": "This move represents another chapter in your life."
+            },
+            {
+                "id": 7,
+                "title": "Finishing Elementary School",
+                "description": "Completed your elementary education in Hurst, Texas, marking the end of one phase of your education.",
+                "date": "2010-01-01",
+                "significance": "This milestone reflects a foundational stage in your education."
+            },
+            {
+                "id": 8,
+                "title": "Attending Bedford Junior High",
+                "description": "Attended Bedford Junior High from 7th to 9th grade, experiencing the transition to middle school.",
+                "date": "2010-01-01",
+                "significance": "This period marked the transition into adolescence and shaped your social experiences."
+            },
+            {
+                "id": 9,
+                "title": "Graduating from L.D. Bell High School",
+                "description": "Graduated from L.D. Bell High School after completing 10th to 12th grades.",
+                "date": "2013-01-01",
+                "significance": "This achievement represents a significant academic milestone."
+            },
+            {
+                "id": 10,
+                "title": "Moving to Texas Tech University",
+                "description": "Transitioned to Texas Tech University to study computer science for five years, marking the first time living alone away from your parents.",
+                "date": "2013-01-01",
+                "significance": "This move represents significant independence and a crucial step in your academic career."
+            },
+            {
+                "id": 11,
+                "title": "Graduating from Texas Tech University",
+                "description": "Completed your degree in computer science after five years of study.",
+                "date": "2018-01-01",
+                "significance": "This achievement marks the culmination of your hard work and dedication."
+            },
+            {
+                "id": 12,
+                "title": "Moving to Austin, Texas",
+                "description": "After graduating in May 2019, you moved to Austin, Texas, embarking on a new chapter in your life.",
+                "date": "2019-05-01",
+                "significance": "This move represents a step towards independence and new opportunities."
+            },
+            {
+                "id": 13,
+                "title": "Starting My First Job",
+                "description": "Began your career as a software engineer at General Motors on June 4th, 2019, marking the start of your professional journey.",
+                "date": "2019-06-04",
+                "significance": "This milestone signifies the transition from education to a professional career."
+            },
+            {
+                "id": 14,
+                "title": "Stopped Playing Soccer",
+                "description": "After graduating high school in 2014, you decided to stop playing soccer, concluding a significant chapter in your athletic life. This decision had an impact on you as it meant no longer being part of a team sport, with your last team being in Hurst, Texas.",
+                "date": "2014-06-01",
+                "significance": "This decision reflects a transition in your interests or priorities as you moved into adulthood."
+            }
+        ]
+    },
+    "3db7f928-3233-4ec3-a6cc-1be6991be158": {
+        "milestones": [
+            {
+                "id": 0,
+                "title": "Birth",
+                "description": "The very beginning of my life.",
+                "start_date": "1996-06-01",
+                "end_date": null,
+                "location": "Las Vegas, NV",
+                "significance": "No significant impact personally, but it's a notable start.",
+                "importance": "high"
+            },
+            {
+                "id": 1,
+                "title": "Brother's Birth",
+                "description": "Remembering the excitement of my younger brother's birth.",
+                "start_date": "1998-01-01",
+                "end_date": null,
+                "location": "Las Vegas, NV",
+                "significance": "Feeling excited when he was born.",
+                "importance": "high"
+            },
+            {
+                "id": 2,
+                "title": "Early Childhood in Ruidoso",
+                "description": "Living in Ruidoso from birth to age 5.",
+                "start_date": "1996-06-01",
+                "end_date": "2001-01-01",
+                "location": "Ruidoso, NM",
+                "significance": "A formative time in my early childhood.",
+                "importance": "medium"
+            },
+            {
+                "id": 3,
+                "title": "Moving to Euless, Texas",
+                "description": "The experience of moving from Ruidoso to Euless.",
+                "start_date": "2001-01-01",
+                "end_date": null,
+                "location": "Euless, TX",
+                "significance": "A significant change in my life.",
+                "importance": "medium"
+            },
+            {
+                "id": 4,
+                "title": "Shaun and Kayla Join Family",
+                "description": "My mom married my stepdad, who had a daughter named Kayla, becoming my sister.",
+                "start_date": "1997-01-01",
+                "end_date": null,
+                "location": "Las Vegas, NV",
+                "significance": "A significant family event that expanded my family and relationships.",
+                "importance": "high"
+            },
+            {
+                "id": 5,
+                "title": "Starting Kindergarten",
+                "description": "Beginning kindergarten in Euless, Texas, at age 5.",
+                "start_date": "2001-01-01",
+                "end_date": null,
+                "location": "Euless, TX",
+                "significance": "Exciting new beginnings.",
+                "importance": "medium"
+            },
+            {
+                "id": 6,
+                "title": "Elementary School at Shady Oaks",
+                "description": "Attending Shady Oaks from 1st to 4th grade.",
+                "start_date": "2001-01-01",
+                "end_date": "2005-01-01",
+                "location": "Bedford, TX",
+                "significance": "Formative years with early friendships.",
+                "importance": "medium"
+            },
+            {
+                "id": 7,
+                "title": "Elementary School at Shady Brook",
+                "description": "Attending Shady Brook for 5th and 6th grade.",
+                "start_date": "2005-01-01",
+                "end_date": "2007-01-01",
+                "location": "Bedford, TX",
+                "significance": "Transitioning and growing academically.",
+                "importance": "medium"
+            },
+            {
+                "id": 8,
+                "title": "Junior High at Bedford Junior High",
+                "description": "Attending Bedford Junior High from 7th to 9th grade.",
+                "start_date": "2007-01-01",
+                "end_date": "2009-01-01",
+                "location": "Bedford, TX",
+                "significance": "Navigating teenage years and changes.",
+                "importance": "medium"
+            },
+            {
+                "id": 9,
+                "title": "High School at LD Bell",
+                "description": "Attending LD Bell from 10th to 12th grade.",
+                "start_date": "2009-01-01",
+                "end_date": "2012-01-01",
+                "location": "Bedford, TX",
+                "significance": "Preparing for adulthood and building lasting friendships.",
+                "importance": "medium"
+            },
+            {
+                "id": 10,
+                "title": "Starting Soccer in High School",
+                "description": "Started playing school soccer in 9th grade for LD Bell High School and played until graduation.",
+                "start_date": "2009-01-01",
+                "end_date": "2012-01-01",
+                "location": "Bedford, TX",
+                "significance": "A significant activity that contributed to my physical fitness and teamwork skills.",
+                "importance": "medium"
+            },
+            {
+                "id": 11,
+                "title": "First Arrest in College",
+                "description": "The experience of getting arrested in the fall semester around November.",
+                "start_date": "2009-11-01",
+                "end_date": null,
+                "location": "Lubbock, TX",
+                "significance": "Disappointing event that impacted my college journey.",
+                "importance": "medium"
+            },
+            {
+                "id": 12,
+                "title": "Second Arrest in College",
+                "description": "The experience of getting arrested again in the spring semester around March, leading to being kicked out of college.",
+                "start_date": "2010-03-01",
+                "end_date": null,
+                "location": "Lubbock, TX",
+                "significance": "A pivotal moment that changed the course of my education.",
+                "importance": "medium"
+            },
+            {
+                "id": 13,
+                "title": "Attending Levelland Community College",
+                "description": "Had to attend Levelland Community College for my sophomore year after being kicked out of Texas Tech University.",
+                "start_date": "2013-01-01",
+                "end_date": "2014-01-01",
+                "location": "Levelland, TX",
+                "significance": "A necessary step in my education journey.",
+                "importance": "medium"
+            },
+            {
+                "id": 14,
+                "title": "Returning to Texas Tech University",
+                "description": "Returned to Texas Tech University for my junior and senior years after attending Levelland Community College.",
+                "start_date": "2014-01-01",
+                "end_date": "2015-01-01",
+                "location": "Lubbock, TX",
+                "significance": "Redemption and perseverance in my educational journey.",
+                "importance": "medium"
+            },
+            {
+                "id": 15,
+                "title": "Super Senior Year",
+                "description": "Completed my fifth year of college, reflecting on my growth and challenges over the years.",
+                "start_date": "2015-01-01",
+                "end_date": "2016-01-01",
+                "location": "Lubbock, TX",
+                "significance": "A year of consolidation and achievement.",
+                "importance": "medium"
+            }
+        ]
+    },
+    "f4efc47b-3e7e-40c2-8e0a-be50de0a2520": {
+        "media": [
+            {
+                "message_id": 0,
+                "media_paths": [
+                    "user_timeline/user_images/image1",
+                    "user_timeline/user_images/image1"
+                ]
+            }
+        ],
+        "milestones": [
+            {
+                "id": 0,
+                "title": "Birth",
+                "description": "I was born on the first day of the year, January 1st, 1999.",
+                "start_date": "1999-01-01",
+                "end_date": null,
+                "location": "Mexico City, Mexico",
+                "significance": "foundational, significant",
+                "importance": "high"
+            },
+            {
+                "id": 1,
+                "title": "Childhood in Mexico",
+                "description": "I lived in Mexico City, Mexico from birth until I turned 11 years old.",
+                "start_date": "1999-01-01",
+                "end_date": "2010-12-31",
+                "location": "Mexico City, Mexico",
+                "significance": "formative, important time in my life",
+                "importance": "medium"
+            },
+            {
+                "id": 2,
+                "title": "Moving to Texas",
+                "description": "I moved to Texas when I was 11 years old and lived there until 2025.",
+                "start_date": "2010-12-31",
+                "end_date": "2025-12-31",
+                "location": "Texas",
+                "significance": "significant transition in my life",
+                "importance": "medium"
+            }
+        ]
+    },
+    "0a024dce-3aaf-4726-ae29-4e8354f5805d": {
+        "milestones": [
+            {
+                "id": 0,
+                "title": "Birth",
+                "description": "The beginning of my life journey.",
+                "start_date": "1999-01-02",
+                "end_date": null,
+                "location": "Austin, Texas",
+                "significance": "Signifies the start of my existence and the journey that has followed.",
+                "importance": "high"
+            },
+            {
+                "id": 1,
+                "title": "Preschool Experience",
+                "description": "Attended preschool from the age of 2 to 4, an important time for socialization and early learning.",
+                "start_date": "2001-01-01",
+                "end_date": "2003-01-01",
+                "location": "Austin, Texas",
+                "significance": "Helped shape my early social skills and friendships.",
+                "importance": "medium"
+            }
+        ]
+    },
+    "e09f2fac-8810-4af2-b98a-4c6b2480620b": {
+        "milestones": [],
+        "media": [
+            {
+                "message_id": "44027a98-d09b-4c54-bf9e-8968b727078a",
+                "media": [
+                    "user_timeline/user_images\\e09f2fac-8810-4af2-b98a-4c6b2480620b_5eafee08-f2a3-4e5f-9a65-8be8b2274a7d.png"
+                ]
+            },
+            {
+                "message_id": "359d5159-8d38-43b3-834f-7a3fab9408a4",
+                "media": [
+                    "user_timeline/user_images\\e09f2fac-8810-4af2-b98a-4c6b2480620b_9dc94f9a-6409-4d04-a2f3-b3cbee8d8346.png"
+                ]
+            },
+            {
+                "message_id": "599804ab-50ad-457f-9c9b-71f279d9e8c0",
+                "media": [
+                    "user_timeline/user_images\\e09f2fac-8810-4af2-b98a-4c6b2480620b_94ccca43-d4eb-47b4-b667-3f6e2d09dcf5.png"
+                ]
+            },
+            {
+                "message_id": "7f42d440-ccab-4a05-84a1-fa364c5c4120",
+                "media": [
+                    "user_timeline/user_images\\e09f2fac-8810-4af2-b98a-4c6b2480620b_45519820.png"
+                ]
+            }
+        ]
+    },
+    "d57351d9-ef28-495e-b087-ca3ef88db68c": {
+        "milestones": [
+            {
+                "id": 0,
+                "title": "Birth",
+                "description": "I was born in 2017.",
+                "start_date": "2017-01-01",
+                "end_date": null,
+                "location": null,
+                "significance": "Life-changing",
+                "importance": "high",
+                "images_paths": [
+                    "user_timeline/user_images\\d57351d9-ef28-495e-b087-ca3ef88db68c_4c54d29d.png",
+                    "user_timeline/user_images\\d57351d9-ef28-495e-b087-ca3ef88db68c_ec32b42f.png"
+                ]
+            }
+        ],
+        "media": [
+            {
+                "message_id": "de713aa5-0511-46da-9a66-a4a62d4feea7",
+                "media": [
+                    "user_timeline/user_images\\d57351d9-ef28-495e-b087-ca3ef88db68c_4c54d29d.png",
+                    "user_timeline/user_images\\d57351d9-ef28-495e-b087-ca3ef88db68c_ec32b42f.png"
+                ]
+            }
+        ]
+    }
+}
