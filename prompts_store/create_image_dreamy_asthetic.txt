@@ -1,0 +1,17 @@
+    query_prompt_final = f"""
+    Generate a unique and visually abstract image of a character inspired by the following traits. 
+    The image should blend artistic interpretation and metaphorical representation of the traits. 
+    Avoid including any text, words, or captions in the image. 
+    Focus on creating a visually striking and imaginative depiction that captures the essence of the character in a surreal or symbolic way.
+
+    Character Description:
+    {query_prompt}
+
+    **Additional Notes for the Image**:
+    - Use symbolic elements or abstract forms to represent personality traits (e.g., vibrant colors, textures, or unique environments that reflect character traits).
+    - Create a setting in a way that feels fluid and dreamlike.
+    - Infuse artistic aesthetics that evoke introspection and creativity.
+    - Avoid literal depictions; lean into surreal, artistic, and emotionally resonant imagery.
+
+    The final image should feel like a harmonious blend of the traits, conveying the character's essence through a unique and abstract artistic lens.
+    """

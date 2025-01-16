@@ -1,0 +1,314 @@
+{
+  "milestone_importance":{
+    "high":[
+      "Birth",
+      "Graduation",
+      "Career Achievement",
+      "Starting a Business",
+      "Marriage/Partnership",
+      "Retirement",
+      "Having a Child",
+      "Major Health Event",
+      "Loss",
+      "Life-Defining Decisions",
+      "First Major Achievement or Award",
+      "Surviving a Life-Threatening Event",
+      "Life-Altering Diagnosis",
+      "Adopting a Child",
+      "New Family Immediate Family Member. Sibling or Parent"
+    ]
+    ,
+    "medium":[
+      "First Friendship",
+      "New Family Non Immediate Family Member",
+      "Childhood Memories",
+      "First Day of School",
+      "First Job",
+      "Coming of Age",
+      "Personal Discovery",
+      "Favorite Teacher/Mentor",
+      "Major Achievement",
+      "Transition Periods",
+      "Changing Careers",
+      "Overcoming Obstacles",
+      "First Love",
+      "Significant Friendships",
+      "Family Moments",
+      "Fitness Achievement",
+      "Mental Health Journey",
+      "Life-Changing Journey",
+      "Resilience",
+      "Creative Achievements",
+      "Religious/Spiritual Milestones",
+      "Community Contribution",
+      "Moving Homes",
+      "Becoming Financially Independent",
+      "First Travel Alone",
+      "Starting a Hobby or Passion Project",
+      "Joining a Group or Organization",
+      "Public Speaking or Leadership Moment",
+      "Reunion with a Loved One",
+      "Pet Adoption",
+      "Major Move to a New City or Country"
+    ],
+    "low":[
+      "Major Purchases",
+      "Holidays and Festivals",
+      "First Trip",
+      "Living Abroad",
+      "Special Birthdays",
+      "Attending a Concert or Event",
+      "First Time Voting",
+      "Learning a Skill or Language",
+      "A Unique Seasonal Tradition"
+    ]
+  },
+  
+    "universal_milestones": [
+      {
+        "category": "Personal Milestones",
+        "milestone": "Birth",
+        "importance": "High",
+        "default_prompt": "Let’s start with your birth. Do you know where and when you were born?"
+      },
+      {
+        "category": "Personal Milestones",
+        "milestone": "Childhood Memories",
+        "importance": "Medium",
+        "default_prompt": "What is your earliest childhood memory? Maybe your favorite toy or a family tradition?"
+      },
+      {
+        "category": "Personal Milestones",
+        "milestone": "First Friendship",
+        "importance": "Medium",
+        "default_prompt": "Tell me about your first best friend. How did you meet, and what made them special?"
+      },
+      {
+        "category": "Personal Milestones",
+        "milestone": "Coming of Age",
+        "importance": "Medium",
+        "default_prompt": "Can you recall a moment when you felt more grown-up or independent? What happened?"
+      },
+      {
+        "category": "Personal Milestones",
+        "milestone": "Personal Discovery",
+        "importance": "Medium",
+        "default_prompt": "Have you ever discovered a unique talent or interest that shaped who you are?"
+      },
+      {
+        "category": "Educational Milestones",
+        "milestone": "First Day of School",
+        "importance": "Medium",
+        "default_prompt": "Do you remember your first day of school? How did you feel, and what stood out to you?"
+      },
+      {
+        "category": "Educational Milestones",
+        "milestone": "Graduation",
+        "importance": "High",
+        "default_prompt": "Tell me about your graduation. What did you graduate from, and what did it mean to you?"
+      },
+      {
+        "category": "Educational Milestones",
+        "milestone": "Favorite Teacher/Mentor",
+        "importance": "Medium",
+        "default_prompt": "Was there a teacher or mentor who had a big impact on your life? What did they teach you?"
+      },
+      {
+        "category": "Educational Milestones",
+        "milestone": "Major Achievement",
+        "importance": "Medium",
+        "default_prompt": "What’s an academic achievement you’re especially proud of? How did you earn it?"
+      },
+      {
+        "category": "Educational Milestones",
+        "milestone": "Transition Periods",
+        "importance": "Medium",
+        "default_prompt": "Did you ever move to a new school or start higher education? How was that experience?"
+      },
+      {
+        "category": "Career Milestones",
+        "milestone": "First Job",
+        "importance": "Medium",
+        "default_prompt": "What was your first job? How did it feel to enter the workforce?"
+      },
+      {
+        "category": "Career Milestones",
+        "milestone": "Career Achievement",
+        "importance": "High",
+        "default_prompt": "What’s a big career milestone or achievement you’re proud of?"
+      },
+      {
+        "category": "Career Milestones",
+        "milestone": "Changing Careers",
+        "importance": "Medium",
+        "default_prompt": "Have you ever changed careers or transitioned to a new role? What led to that decision?"
+      },
+      {
+        "category": "Career Milestones",
+        "milestone": "Starting a Business",
+        "importance": "High",
+        "default_prompt": "Have you ever started a business or pursued a freelance venture? What was it like?"
+      },
+      {
+        "category": "Career Milestones",
+        "milestone": "Retirement",
+        "importance": "High",
+        "default_prompt": "If you’re retired, how did you feel about closing that chapter of your life?"
+      },
+      {
+        "category": "Relationship Milestones",
+        "milestone": "First Love",
+        "importance": "Medium",
+        "default_prompt": "Can you tell me about your first love? What made that relationship special?"
+      },
+      {
+        "category": "Relationship Milestones",
+        "milestone": "Marriage/Partnership",
+        "importance": "High",
+        "default_prompt": "Tell me about your marriage or partnership. When did it happen, and what was it like?"
+      },
+      {
+        "category": "Relationship Milestones",
+        "milestone": "Having a Child",
+        "importance": "High",
+        "default_prompt": "Becoming a parent is life-changing. Can you describe the moment you had your first child?"
+      },
+      {
+        "category": "Relationship Milestones",
+        "milestone": "Significant Friendships",
+        "importance": "Medium",
+        "default_prompt": "What’s a friendship that’s had a big impact on your life? How did it begin?"
+      },
+      {
+        "category": "Relationship Milestones",
+        "milestone": "Family Moments",
+        "importance": "Medium",
+        "default_prompt": "What’s a memorable family gathering or holiday you’ll never forget?"
+      },
+      {
+        "category": "Health and Wellbeing Milestones",
+        "milestone": "Major Health Event",
+        "importance": "High",
+        "default_prompt": "Have you experienced a major health challenge or event? How did you overcome it?"
+      },
+      {
+        "category": "Health and Wellbeing Milestones",
+        "milestone": "Fitness Achievement",
+        "importance": "Medium",
+        "default_prompt": "What’s a fitness goal or achievement you’re proud of, like running a marathon or losing weight?"
+      },
+      {
+        "category": "Health and Wellbeing Milestones",
+        "milestone": "Mental Health Journey",
+        "importance": "Medium",
+        "default_prompt": "Have you had moments of personal growth or healing in your mental health journey?"
+      },
+      {
+        "category": "Travel and Exploration",
+        "milestone": "First Trip",
+        "importance": "Low",
+        "default_prompt": "Do you remember your first trip or vacation? Where did you go, and how was it?"
+      },
+      {
+        "category": "Travel and Exploration",
+        "milestone": "Life-Changing Journey",
+        "importance": "Medium",
+        "default_prompt": "Have you ever gone on a trip that changed your perspective or opened your world?"
+      },
+      {
+        "category": "Travel and Exploration",
+        "milestone": "Living Abroad",
+        "importance": "Low",
+        "default_prompt": "Have you ever lived in a different city or country? How did it shape your life?"
+      },
+      {
+        "category": "Challenges and Growth",
+        "milestone": "Overcoming Obstacles",
+        "importance": "Medium",
+        "default_prompt": "Can you recall a major challenge or obstacle you overcame? What did you learn?"
+      },
+      {
+        "category": "Challenges and Growth",
+        "milestone": "Loss",
+        "importance": "High",
+        "default_prompt": "Have you experienced a significant loss? How did it affect you and your journey?"
+      },
+      {
+        "category": "Cultural and Personal Growth",
+        "milestone": "Creative Achievements",
+        "importance": "Medium",
+        "default_prompt": "Have you ever created something you’re proud of, like art, writing, or a project?"
+      },
+      {
+        "category": "Cultural and Personal Growth",
+        "milestone": "Religious/Spiritual Milestones",
+        "importance": "Medium",
+        "default_prompt": "Have you had a significant spiritual or religious experience in your life?"
+      },
+      {
+        "category": "Cultural and Personal Growth",
+        "milestone": "Community Contribution",
+        "importance": "Medium",
+        "default_prompt": "Have you ever volunteered or contributed to a cause? What did it mean to you?"
+      },
+  
+      {
+        "category": "Challenges and Growth",
+        "milestone": "Resilience",
+        "importance": "Medium",
+        "default_prompt": "Can you share a moment when you persevered despite hardships?"
+      },
+      {
+        "category": "Celebrations and Joy",
+        "milestone": "Major Purchases",
+        "importance": "Low",
+        "default_prompt": "Have you ever made a significant purchase, like a car or home? How did it feel?"
+      },
+      {
+        "category": "Celebrations and Joy",
+        "milestone": "Holidays and Festivals",
+        "importance": "Low",
+        "default_prompt": "Do you have a favorite holiday or festival memory? What made it unforgettable?"
+      },
+      {
+        "category": "Celebrations and Joy",
+        "milestone": "Special Birthdays",
+        "importance": "Low",
+        "default_prompt": "Have you celebrated a particularly memorable birthday? What made it special?"
+      },
+      {
+        "category": "Medium",
+        "milestone": "Becoming Financially Independent",
+        "importance": "Medium",
+        "default_prompt": "When did you first become financially independent? How did it change your life?"
+      },
+      {
+        "category": "Celebrations and Joy",
+        "milestone": "Attending a Concert or Event",
+        "importance": "Low",
+        "default_prompt": "Was there a concert or event you attended that left a lasting impression?"
+      },
+      {
+        "category": "Celebrations and Joy",
+        "milestone": "First Time Voting",
+        "importance": "Low",
+        "default_prompt": "How did it feel to cast your vote for the first time?"
+      },
+      {
+        "category": "Cultural and Personal Growth",
+        "milestone": "Learning a Skill or Language",
+        "importance": "Low",
+        "default_prompt": "Have you learned a new skill or language that you're proud of?"
+      },
+      {
+        "category": "Celebrations and Joy",
+        "milestone": "A Unique Seasonal Tradition",
+        "importance": "Low",
+        "default_prompt": "Do you have a seasonal tradition that holds special meaning for you?"
+      }
+    
+    ]
+  
+  
+  
+}
