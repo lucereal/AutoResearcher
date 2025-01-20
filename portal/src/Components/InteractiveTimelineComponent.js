@@ -42,7 +42,7 @@ const InteractiveTimelineComponent = ({userId, showTimeline}) => {
             };
             p.draw = () => {
                 p.fill(0);
-                p.ellipse(p.mouseX, p.mouseY, 20, 20);
+                p.ellipse(p.mouseX, p.mouseY, 5, 5);
             };
         };
         return sketch;
