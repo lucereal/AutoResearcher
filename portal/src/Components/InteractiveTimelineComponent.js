@@ -96,6 +96,7 @@ const InteractiveTimelineComponent = ({userId, showTimeline}) => {
                     setTimeSlider(ts);
                 };
                 p.draw = () => {
+                    console.log("in draw");
                     p.background(255);
     
                     displayLine(p, ts); //horizontal line in timeline
@@ -106,16 +107,16 @@ const InteractiveTimelineComponent = ({userId, showTimeline}) => {
                       //put events on line. see event function.
                     event(p,'The French and Indian War Ends\nFeb 10 1763',
                         'The French and Indian War ends. The UK is heavily in debt and begins to expect the colonies to help pay that debt, since the war resuced them from the French. This is important because the citizens of the US had no say in how they would be charged.',
-                        1763, 0, false, ts);
-                    // event('Stamp Act\nMar 22 1765',
-                    //     'Parliament imposes the Stamp Act on the colonies. Major protests against "taxation without representation" start. This is important because the citizens of the US resisted unfair taxation for the first significant time',1765,1,true);
+                        1763, 0, false);
+                    event(p,'Stamp Act\nMar 22 1765','Parliament imposes the Stamp Act on the colonies. Major protests against "taxation without representation" start. This is important because the citizens of the US resisted unfair taxation for the first significant time'
+                        ,1765,0,true);
                     
                     displayText(p, ts); //displays title and body on left
                 };
             };
             
         }
-        const event = (p, caption, body, year, imageID, up, ts) => {
+        const event = (p, caption, body, year, imageID, up) => {
             let xOffs = p.width / 2 + (year-1775)*400 + (25 - ts.value()) * 400; //offset to line up with moving line
             p.noStroke();
             p.textSize(12);
