@@ -1,0 +1,2106 @@
+{
+    "graph": {
+        "directed": false,
+        "multigraph": false,
+        "graph": {},
+        "nodes": [
+            {
+                "count": 11,
+                "id": "person",
+                "pos": [
+                    -1.8613526821136475,
+                    10.484354972839355
+                ],
+                "posx": -1.8613526821136475,
+                "posy": 10.484354972839355
+            },
+            {
+                "count": 1,
+                "id": "toy",
+                "pos": [
+                    -3.2853150367736816,
+                    10.270477294921875
+                ],
+                "posx": -3.2853150367736816,
+                "posy": 10.270477294921875
+            },
+            {
+                "count": 1,
+                "id": "red",
+                "pos": [
+                    -5.239768981933594,
+                    9.499349594116211
+                ],
+                "posx": -5.239768981933594,
+                "posy": 9.499349594116211
+            },
+            {
+                "count": 1,
+                "id": "hand",
+                "pos": [
+                    -6.277113914489746,
+                    6.124871730804443
+                ],
+                "posx": -6.277113914489746,
+                "posy": 6.124871730804443
+            },
+            {
+                "count": 2,
+                "id": "couch",
+                "pos": [
+                    -6.920045375823975,
+                    6.458407878875732
+                ],
+                "posx": -6.920045375823975,
+                "posy": 6.458407878875732
+            },
+            {
+                "count": 1,
+                "id": "legs",
+                "pos": [
+                    -6.740606784820557,
+                    7.292095184326172
+                ],
+                "posx": -6.740606784820557,
+                "posy": 7.292095184326172
+            },
+            {
+                "count": 2,
+                "id": "background",
+                "pos": [
+                    -6.287121295928955,
+                    7.776145935058594
+                ],
+                "posx": -6.287121295928955,
+                "posy": 7.776145935058594
+            },
+            {
+                "count": 2,
+                "id": "cat",
+                "pos": [
+                    -2.0583503246307373,
+                    -1.02556312084198
+                ],
+                "posx": -2.0583503246307373,
+                "posy": -1.02556312084198
+            },
+            {
+                "count": 4,
+                "id": "grass",
+                "pos": [
+                    -2.7530269622802734,
+                    0.6985715627670288
+                ],
+                "posx": -2.7530269622802734,
+                "posy": 0.6985715627670288
+            },
+            {
+                "count": 1,
+                "id": "leaves",
+                "pos": [
+                    1.6835261583328247,
+                    -0.6352193355560303
+                ],
+                "posx": 1.6835261583328247,
+                "posy": -0.6352193355560303
+            },
+            {
+                "count": 1,
+                "id": "path",
+                "pos": [
+                    0.6566001176834106,
+                    -1.2478793859481812
+                ],
+                "posx": 0.6566001176834106,
+                "posy": -1.2478793859481812
+            },
+            {
+                "count": 1,
+                "id": "tire",
+                "pos": [
+                    -0.28809040784835815,
+                    -1.5094244480133057
+                ],
+                "posx": -0.28809040784835815,
+                "posy": -1.5094244480133057
+            },
+            {
+                "count": 2,
+                "id": "car",
+                "pos": [
+                    0.2179446667432785,
+                    -0.16624830663204193
+                ],
+                "posx": 0.2179446667432785,
+                "posy": -0.16624830663204193
+            },
+            {
+                "count": 1,
+                "id": "pattern",
+                "pos": [
+                    -2.9351096153259277,
+                    -1.1601465940475464
+                ],
+                "posx": -2.9351096153259277,
+                "posy": -1.1601465940475464
+            },
+            {
+                "count": 1,
+                "id": "pillow",
+                "pos": [
+                    -3.675095796585083,
+                    -0.820600152015686
+                ],
+                "posx": -3.675095796585083,
+                "posy": -0.820600152015686
+            },
+            {
+                "count": 1,
+                "id": "can",
+                "pos": [
+                    -7.30317497253418,
+                    4.702655792236328
+                ],
+                "posx": -7.30317497253418,
+                "posy": 4.702655792236328
+            },
+            {
+                "count": 1,
+                "id": "bock",
+                "pos": [
+                    -3.6355321407318115,
+                    8.881084442138672
+                ],
+                "posx": -3.6355321407318115,
+                "posy": 8.881084442138672
+            },
+            {
+                "count": 1,
+                "id": "pear",
+                "pos": [
+                    -4.315952777862549,
+                    8.71013355255127
+                ],
+                "posx": -4.315952777862549,
+                "posy": 8.71013355255127
+            },
+            {
+                "count": 1,
+                "id": "cup",
+                "pos": [
+                    -5.419055938720703,
+                    7.770131587982178
+                ],
+                "posx": -5.419055938720703,
+                "posy": 7.770131587982178
+            },
+            {
+                "count": 1,
+                "id": "straw",
+                "pos": [
+                    -4.984814167022705,
+                    8.325369834899902
+                ],
+                "posx": -4.984814167022705,
+                "posy": 8.325369834899902
+            },
+            {
+                "count": 3,
+                "id": "table",
+                "pos": [
+                    -4.456202030181885,
+                    5.84599494934082
+                ],
+                "posx": -4.456202030181885,
+                "posy": 5.84599494934082
+            },
+            {
+                "count": 2,
+                "id": "tree",
+                "pos": [
+                    -4.8479204177856445,
+                    6.647063732147217
+                ],
+                "posx": -4.8479204177856445,
+                "posy": 6.647063732147217
+            },
+            {
+                "count": 1,
+                "id": "dog",
+                "pos": [
+                    3.5514156818389893,
+                    5.079416275024414
+                ],
+                "posx": 3.5514156818389893,
+                "posy": 5.079416275024414
+            },
+            {
+                "count": 2,
+                "id": "floor",
+                "pos": [
+                    3.268303155899048,
+                    5.812845230102539
+                ],
+                "posx": 3.268303155899048,
+                "posy": 5.812845230102539
+            },
+            {
+                "count": 1,
+                "id": "slippers",
+                "pos": [
+                    -1.0753095149993896,
+                    7.617096900939941
+                ],
+                "posx": -1.0753095149993896,
+                "posy": 7.617096900939941
+            },
+            {
+                "count": 1,
+                "id": "pants",
+                "pos": [
+                    -1.0715442895889282,
+                    8.758930206298828
+                ],
+                "posx": -1.0715442895889282,
+                "posy": 8.758930206298828
+            },
+            {
+                "count": 2,
+                "id": "wall",
+                "pos": [
+                    0.4890749156475067,
+                    8.841946601867676
+                ],
+                "posx": 0.4890749156475067,
+                "posy": 8.841946601867676
+            },
+            {
+                "count": 1,
+                "id": "shelves",
+                "pos": [
+                    -0.15073859691619873,
+                    9.232359886169434
+                ],
+                "posx": -0.15073859691619873,
+                "posy": 9.232359886169434
+            },
+            {
+                "count": 1,
+                "id": "dish",
+                "pos": [
+                    -0.2302345484495163,
+                    8.316854476928711
+                ],
+                "posx": -0.2302345484495163,
+                "posy": 8.316854476928711
+            },
+            {
+                "count": 1,
+                "id": "tent",
+                "pos": [
+                    2.113056182861328,
+                    1.9249626398086548
+                ],
+                "posx": 2.113056182861328,
+                "posy": 1.9249626398086548
+            },
+            {
+                "count": 1,
+                "id": "banner",
+                "pos": [
+                    -2.2804410457611084,
+                    5.155314922332764
+                ],
+                "posx": -2.2804410457611084,
+                "posy": 5.155314922332764
+            },
+            {
+                "count": 1,
+                "id": "DUMPLING",
+                "pos": [
+                    1.8532003164291382,
+                    3.735971450805664
+                ],
+                "posx": 1.8532003164291382,
+                "posy": 3.735971450805664
+            },
+            {
+                "count": 1,
+                "id": "HAUS",
+                "pos": [
+                    0.13345666229724884,
+                    2.621039390563965
+                ],
+                "posx": 0.13345666229724884,
+                "posy": 2.621039390563965
+            },
+            {
+                "count": 1,
+                "id": "food",
+                "pos": [
+                    1.2761515378952026,
+                    2.785560131072998
+                ],
+                "posx": 1.2761515378952026,
+                "posy": 2.785560131072998
+            },
+            {
+                "count": 2,
+                "id": "clouds",
+                "pos": [
+                    0.7905225157737732,
+                    3.6216108798980713
+                ],
+                "posx": 0.7905225157737732,
+                "posy": 3.6216108798980713
+            },
+            {
+                "count": 2,
+                "id": "sky",
+                "pos": [
+                    -0.556832492351532,
+                    4.426046371459961
+                ],
+                "posx": -0.556832492351532,
+                "posy": 4.426046371459961
+            },
+            {
+                "count": 1,
+                "id": "hammock",
+                "pos": [
+                    3.5477466583251953,
+                    3.2955665588378906
+                ],
+                "posx": 3.5477466583251953,
+                "posy": 3.2955665588378906
+            },
+            {
+                "count": 1,
+                "id": "charcoal",
+                "pos": [
+                    -0.733325719833374,
+                    1.3150460720062256
+                ],
+                "posx": -0.733325719833374,
+                "posy": 1.3150460720062256
+            },
+            {
+                "count": 1,
+                "id": "deck",
+                "pos": [
+                    -2.3580524921417236,
+                    3.836721897125244
+                ],
+                "posx": -2.3580524921417236,
+                "posy": 3.836721897125244
+            },
+            {
+                "count": 1,
+                "id": "pole",
+                "pos": [
+                    0.5615425109863281,
+                    1.5702569484710693
+                ],
+                "posx": 0.5615425109863281,
+                "posy": 1.5702569484710693
+            },
+            {
+                "count": 1,
+                "id": "string",
+                "pos": [
+                    -1.6222128868103027,
+                    2.406623125076294
+                ],
+                "posx": -1.6222128868103027,
+                "posy": 2.406623125076294
+            },
+            {
+                "count": 2,
+                "id": "light",
+                "pos": [
+                    0.9188497066497803,
+                    4.786083698272705
+                ],
+                "posx": 0.9188497066497803,
+                "posy": 4.786083698272705
+            },
+            {
+                "count": 2,
+                "id": "house",
+                "pos": [
+                    -1.243645429611206,
+                    4.181682586669922
+                ],
+                "posx": -1.243645429611206,
+                "posy": 4.181682586669922
+            },
+            {
+                "count": 1,
+                "id": "chair",
+                "pos": [
+                    -0.5440500974655151,
+                    3.1465137004852295
+                ],
+                "posx": -0.5440500974655151,
+                "posy": 3.1465137004852295
+            },
+            {
+                "count": 1,
+                "id": "bouldering",
+                "pos": [
+                    0.9813410043716431,
+                    7.7605366706848145
+                ],
+                "posx": 0.9813410043716431,
+                "posy": 7.7605366706848145
+            },
+            {
+                "count": 1,
+                "id": "holds",
+                "pos": [
+                    3.1145193576812744,
+                    7.42399787902832
+                ],
+                "posx": 3.1145193576812744,
+                "posy": 7.42399787902832
+            },
+            {
+                "count": 1,
+                "id": "mat",
+                "pos": [
+                    2.7966394424438477,
+                    6.76893424987793
+                ],
+                "posx": 2.7966394424438477,
+                "posy": 6.76893424987793
+            },
+            {
+                "count": 1,
+                "id": "ceiling",
+                "pos": [
+                    2.5223283767700195,
+                    8.250316619873047
+                ],
+                "posx": 2.5223283767700195,
+                "posy": 8.250316619873047
+            },
+            {
+                "count": 1,
+                "id": "group",
+                "pos": [
+                    1.9266389608383179,
+                    8.3735933303833
+                ],
+                "posx": 1.9266389608383179,
+                "posy": 8.3735933303833
+            },
+            {
+                "count": 1,
+                "id": "climbing",
+                "pos": [
+                    2.1792967319488525,
+                    7.510875701904297
+                ],
+                "posx": 2.1792967319488525,
+                "posy": 7.510875701904297
+            },
+            {
+                "count": 1,
+                "id": "taco",
+                "pos": [
+                    -7.618978500366211,
+                    2.315518379211426
+                ],
+                "posx": -7.618978500366211,
+                "posy": 2.315518379211426
+            },
+            {
+                "count": 1,
+                "id": "plate",
+                "pos": [
+                    2.7296056747436523,
+                    0.5518724322319031
+                ],
+                "posx": 2.7296056747436523,
+                "posy": 0.5518724322319031
+            },
+            {
+                "count": 1,
+                "id": "sauce",
+                "pos": [
+                    -6.320748329162598,
+                    1.3047341108322144
+                ],
+                "posx": -6.320748329162598,
+                "posy": 1.3047341108322144
+            },
+            {
+                "count": 1,
+                "id": "flower",
+                "pos": [
+                    -5.441524505615234,
+                    -0.2070857733488083
+                ],
+                "posx": -5.441524505615234,
+                "posy": -0.2070857733488083
+            },
+            {
+                "count": 1,
+                "id": "cream",
+                "pos": [
+                    -4.48926305770874,
+                    -0.5993908643722534
+                ],
+                "posx": -4.48926305770874,
+                "posy": -0.5993908643722534
+            },
+            {
+                "count": 1,
+                "id": "sesame",
+                "pos": [
+                    -4.71896505355835,
+                    0.332939088344574
+                ],
+                "posx": -4.71896505355835,
+                "posy": 0.332939088344574
+            },
+            {
+                "count": 1,
+                "id": "tablecloth",
+                "pos": [
+                    -5.567193031311035,
+                    0.5214119553565979
+                ],
+                "posx": -5.567193031311035,
+                "posy": 0.5214119553565979
+            },
+            {
+                "count": 1,
+                "id": "truck",
+                "pos": [
+                    -5.5867919921875,
+                    3.1014657020568848
+                ],
+                "posx": -5.5867919921875,
+                "posy": 3.1014657020568848
+            },
+            {
+                "count": 1,
+                "id": "road",
+                "pos": [
+                    -4.79453182220459,
+                    3.5730130672454834
+                ],
+                "posx": -4.79453182220459,
+                "posy": 3.5730130672454834
+            },
+            {
+                "count": 1,
+                "id": "shadow",
+                "pos": [
+                    -4.613432884216309,
+                    2.7366154193878174
+                ],
+                "posx": -4.613432884216309,
+                "posy": 2.7366154193878174
+            }
+        ],
+        "edges": [
+            {
+                "weight": 1,
+                "source": "person",
+                "target": "toy"
+            },
+            {
+                "weight": 1,
+                "source": "person",
+                "target": "red"
+            },
+            {
+                "weight": 1,
+                "source": "person",
+                "target": "hand"
+            },
+            {
+                "weight": 1,
+                "source": "person",
+                "target": "couch"
+            },
+            {
+                "weight": 1,
+                "source": "person",
+                "target": "legs"
+            },
+            {
+                "weight": 2,
+                "source": "person",
+                "target": "background"
+            },
+            {
+                "weight": 1,
+                "source": "person",
+                "target": "can"
+            },
+            {
+                "weight": 1,
+                "source": "person",
+                "target": "bock"
+            },
+            {
+                "weight": 1,
+                "source": "person",
+                "target": "pear"
+            },
+            {
+                "weight": 1,
+                "source": "person",
+                "target": "cup"
+            },
+            {
+                "weight": 1,
+                "source": "person",
+                "target": "straw"
+            },
+            {
+                "weight": 6,
+                "source": "person",
+                "target": "table"
+            },
+            {
+                "weight": 1,
+                "source": "person",
+                "target": "tree"
+            },
+            {
+                "weight": 1,
+                "source": "person",
+                "target": "dog"
+            },
+            {
+                "weight": 2,
+                "source": "person",
+                "target": "floor"
+            },
+            {
+                "weight": 1,
+                "source": "person",
+                "target": "slippers"
+            },
+            {
+                "weight": 1,
+                "source": "person",
+                "target": "pants"
+            },
+            {
+                "weight": 2,
+                "source": "person",
+                "target": "wall"
+            },
+            {
+                "weight": 1,
+                "source": "person",
+                "target": "shelves"
+            },
+            {
+                "weight": 1,
+                "source": "person",
+                "target": "dish"
+            },
+            {
+                "weight": 9,
+                "source": "person",
+                "target": "person"
+            },
+            {
+                "weight": 4,
+                "source": "person",
+                "target": "tent"
+            },
+            {
+                "weight": 4,
+                "source": "person",
+                "target": "banner"
+            },
+            {
+                "weight": 4,
+                "source": "person",
+                "target": "DUMPLING"
+            },
+            {
+                "weight": 4,
+                "source": "person",
+                "target": "HAUS"
+            },
+            {
+                "weight": 4,
+                "source": "person",
+                "target": "food"
+            },
+            {
+                "weight": 7,
+                "source": "person",
+                "target": "grass"
+            },
+            {
+                "weight": 4,
+                "source": "person",
+                "target": "car"
+            },
+            {
+                "weight": 7,
+                "source": "person",
+                "target": "clouds"
+            },
+            {
+                "weight": 4,
+                "source": "person",
+                "target": "sky"
+            },
+            {
+                "weight": 3,
+                "source": "person",
+                "target": "hammock"
+            },
+            {
+                "weight": 3,
+                "source": "person",
+                "target": "charcoal"
+            },
+            {
+                "weight": 3,
+                "source": "person",
+                "target": "deck"
+            },
+            {
+                "weight": 3,
+                "source": "person",
+                "target": "pole"
+            },
+            {
+                "weight": 3,
+                "source": "person",
+                "target": "string"
+            },
+            {
+                "weight": 4,
+                "source": "person",
+                "target": "light"
+            },
+            {
+                "weight": 3,
+                "source": "person",
+                "target": "house"
+            },
+            {
+                "weight": 3,
+                "source": "person",
+                "target": "chair"
+            },
+            {
+                "weight": 1,
+                "source": "person",
+                "target": "bouldering"
+            },
+            {
+                "weight": 1,
+                "source": "person",
+                "target": "holds"
+            },
+            {
+                "weight": 1,
+                "source": "person",
+                "target": "mat"
+            },
+            {
+                "weight": 1,
+                "source": "person",
+                "target": "ceiling"
+            },
+            {
+                "weight": 1,
+                "source": "person",
+                "target": "group"
+            },
+            {
+                "weight": 1,
+                "source": "person",
+                "target": "climbing"
+            },
+            {
+                "weight": 1,
+                "source": "toy",
+                "target": "red"
+            },
+            {
+                "weight": 1,
+                "source": "toy",
+                "target": "hand"
+            },
+            {
+                "weight": 1,
+                "source": "toy",
+                "target": "couch"
+            },
+            {
+                "weight": 1,
+                "source": "toy",
+                "target": "legs"
+            },
+            {
+                "weight": 1,
+                "source": "toy",
+                "target": "background"
+            },
+            {
+                "weight": 1,
+                "source": "red",
+                "target": "hand"
+            },
+            {
+                "weight": 1,
+                "source": "red",
+                "target": "couch"
+            },
+            {
+                "weight": 1,
+                "source": "red",
+                "target": "legs"
+            },
+            {
+                "weight": 1,
+                "source": "red",
+                "target": "background"
+            },
+            {
+                "weight": 1,
+                "source": "hand",
+                "target": "couch"
+            },
+            {
+                "weight": 1,
+                "source": "hand",
+                "target": "legs"
+            },
+            {
+                "weight": 1,
+                "source": "hand",
+                "target": "background"
+            },
+            {
+                "weight": 1,
+                "source": "couch",
+                "target": "legs"
+            },
+            {
+                "weight": 1,
+                "source": "couch",
+                "target": "background"
+            },
+            {
+                "weight": 1,
+                "source": "couch",
+                "target": "cat"
+            },
+            {
+                "weight": 1,
+                "source": "couch",
+                "target": "pattern"
+            },
+            {
+                "weight": 1,
+                "source": "couch",
+                "target": "pillow"
+            },
+            {
+                "weight": 1,
+                "source": "legs",
+                "target": "background"
+            },
+            {
+                "weight": 1,
+                "source": "background",
+                "target": "can"
+            },
+            {
+                "weight": 1,
+                "source": "background",
+                "target": "bock"
+            },
+            {
+                "weight": 1,
+                "source": "background",
+                "target": "pear"
+            },
+            {
+                "weight": 1,
+                "source": "background",
+                "target": "cup"
+            },
+            {
+                "weight": 1,
+                "source": "background",
+                "target": "straw"
+            },
+            {
+                "weight": 1,
+                "source": "background",
+                "target": "table"
+            },
+            {
+                "weight": 1,
+                "source": "background",
+                "target": "tree"
+            },
+            {
+                "weight": 1,
+                "source": "cat",
+                "target": "grass"
+            },
+            {
+                "weight": 1,
+                "source": "cat",
+                "target": "leaves"
+            },
+            {
+                "weight": 1,
+                "source": "cat",
+                "target": "path"
+            },
+            {
+                "weight": 1,
+                "source": "cat",
+                "target": "tire"
+            },
+            {
+                "weight": 1,
+                "source": "cat",
+                "target": "car"
+            },
+            {
+                "weight": 1,
+                "source": "cat",
+                "target": "pattern"
+            },
+            {
+                "weight": 1,
+                "source": "cat",
+                "target": "pillow"
+            },
+            {
+                "weight": 1,
+                "source": "grass",
+                "target": "leaves"
+            },
+            {
+                "weight": 1,
+                "source": "grass",
+                "target": "path"
+            },
+            {
+                "weight": 1,
+                "source": "grass",
+                "target": "tire"
+            },
+            {
+                "weight": 2,
+                "source": "grass",
+                "target": "car"
+            },
+            {
+                "weight": 1,
+                "source": "grass",
+                "target": "tent"
+            },
+            {
+                "weight": 1,
+                "source": "grass",
+                "target": "banner"
+            },
+            {
+                "weight": 1,
+                "source": "grass",
+                "target": "DUMPLING"
+            },
+            {
+                "weight": 1,
+                "source": "grass",
+                "target": "HAUS"
+            },
+            {
+                "weight": 1,
+                "source": "grass",
+                "target": "table"
+            },
+            {
+                "weight": 1,
+                "source": "grass",
+                "target": "food"
+            },
+            {
+                "weight": 2,
+                "source": "grass",
+                "target": "clouds"
+            },
+            {
+                "weight": 2,
+                "source": "grass",
+                "target": "sky"
+            },
+            {
+                "weight": 1,
+                "source": "grass",
+                "target": "hammock"
+            },
+            {
+                "weight": 1,
+                "source": "grass",
+                "target": "charcoal"
+            },
+            {
+                "weight": 1,
+                "source": "grass",
+                "target": "deck"
+            },
+            {
+                "weight": 1,
+                "source": "grass",
+                "target": "pole"
+            },
+            {
+                "weight": 1,
+                "source": "grass",
+                "target": "string"
+            },
+            {
+                "weight": 1,
+                "source": "grass",
+                "target": "light"
+            },
+            {
+                "weight": 2,
+                "source": "grass",
+                "target": "house"
+            },
+            {
+                "weight": 1,
+                "source": "grass",
+                "target": "chair"
+            },
+            {
+                "weight": 1,
+                "source": "grass",
+                "target": "truck"
+            },
+            {
+                "weight": 1,
+                "source": "grass",
+                "target": "tree"
+            },
+            {
+                "weight": 1,
+                "source": "grass",
+                "target": "road"
+            },
+            {
+                "weight": 1,
+                "source": "grass",
+                "target": "shadow"
+            },
+            {
+                "weight": 1,
+                "source": "leaves",
+                "target": "path"
+            },
+            {
+                "weight": 1,
+                "source": "leaves",
+                "target": "tire"
+            },
+            {
+                "weight": 1,
+                "source": "leaves",
+                "target": "car"
+            },
+            {
+                "weight": 1,
+                "source": "path",
+                "target": "tire"
+            },
+            {
+                "weight": 1,
+                "source": "path",
+                "target": "car"
+            },
+            {
+                "weight": 1,
+                "source": "tire",
+                "target": "car"
+            },
+            {
+                "weight": 1,
+                "source": "car",
+                "target": "tent"
+            },
+            {
+                "weight": 1,
+                "source": "car",
+                "target": "banner"
+            },
+            {
+                "weight": 1,
+                "source": "car",
+                "target": "DUMPLING"
+            },
+            {
+                "weight": 1,
+                "source": "car",
+                "target": "HAUS"
+            },
+            {
+                "weight": 1,
+                "source": "car",
+                "target": "table"
+            },
+            {
+                "weight": 1,
+                "source": "car",
+                "target": "food"
+            },
+            {
+                "weight": 1,
+                "source": "car",
+                "target": "clouds"
+            },
+            {
+                "weight": 1,
+                "source": "car",
+                "target": "sky"
+            },
+            {
+                "weight": 1,
+                "source": "pattern",
+                "target": "pillow"
+            },
+            {
+                "weight": 1,
+                "source": "can",
+                "target": "bock"
+            },
+            {
+                "weight": 1,
+                "source": "can",
+                "target": "pear"
+            },
+            {
+                "weight": 1,
+                "source": "can",
+                "target": "cup"
+            },
+            {
+                "weight": 1,
+                "source": "can",
+                "target": "straw"
+            },
+            {
+                "weight": 1,
+                "source": "can",
+                "target": "table"
+            },
+            {
+                "weight": 1,
+                "source": "can",
+                "target": "tree"
+            },
+            {
+                "weight": 1,
+                "source": "bock",
+                "target": "pear"
+            },
+            {
+                "weight": 1,
+                "source": "bock",
+                "target": "cup"
+            },
+            {
+                "weight": 1,
+                "source": "bock",
+                "target": "straw"
+            },
+            {
+                "weight": 1,
+                "source": "bock",
+                "target": "table"
+            },
+            {
+                "weight": 1,
+                "source": "bock",
+                "target": "tree"
+            },
+            {
+                "weight": 1,
+                "source": "pear",
+                "target": "cup"
+            },
+            {
+                "weight": 1,
+                "source": "pear",
+                "target": "straw"
+            },
+            {
+                "weight": 1,
+                "source": "pear",
+                "target": "table"
+            },
+            {
+                "weight": 1,
+                "source": "pear",
+                "target": "tree"
+            },
+            {
+                "weight": 1,
+                "source": "cup",
+                "target": "straw"
+            },
+            {
+                "weight": 1,
+                "source": "cup",
+                "target": "table"
+            },
+            {
+                "weight": 1,
+                "source": "cup",
+                "target": "tree"
+            },
+            {
+                "weight": 1,
+                "source": "straw",
+                "target": "table"
+            },
+            {
+                "weight": 1,
+                "source": "straw",
+                "target": "tree"
+            },
+            {
+                "weight": 1,
+                "source": "table",
+                "target": "tree"
+            },
+            {
+                "weight": 1,
+                "source": "table",
+                "target": "dog"
+            },
+            {
+                "weight": 1,
+                "source": "table",
+                "target": "floor"
+            },
+            {
+                "weight": 1,
+                "source": "table",
+                "target": "slippers"
+            },
+            {
+                "weight": 1,
+                "source": "table",
+                "target": "pants"
+            },
+            {
+                "weight": 1,
+                "source": "table",
+                "target": "wall"
+            },
+            {
+                "weight": 1,
+                "source": "table",
+                "target": "shelves"
+            },
+            {
+                "weight": 1,
+                "source": "table",
+                "target": "dish"
+            },
+            {
+                "weight": 1,
+                "source": "table",
+                "target": "tent"
+            },
+            {
+                "weight": 1,
+                "source": "table",
+                "target": "banner"
+            },
+            {
+                "weight": 1,
+                "source": "table",
+                "target": "DUMPLING"
+            },
+            {
+                "weight": 1,
+                "source": "table",
+                "target": "HAUS"
+            },
+            {
+                "weight": 1,
+                "source": "table",
+                "target": "food"
+            },
+            {
+                "weight": 1,
+                "source": "table",
+                "target": "clouds"
+            },
+            {
+                "weight": 1,
+                "source": "table",
+                "target": "sky"
+            },
+            {
+                "weight": 1,
+                "source": "tree",
+                "target": "truck"
+            },
+            {
+                "weight": 1,
+                "source": "tree",
+                "target": "sky"
+            },
+            {
+                "weight": 1,
+                "source": "tree",
+                "target": "house"
+            },
+            {
+                "weight": 1,
+                "source": "tree",
+                "target": "road"
+            },
+            {
+                "weight": 1,
+                "source": "tree",
+                "target": "shadow"
+            },
+            {
+                "weight": 1,
+                "source": "dog",
+                "target": "floor"
+            },
+            {
+                "weight": 1,
+                "source": "dog",
+                "target": "slippers"
+            },
+            {
+                "weight": 1,
+                "source": "dog",
+                "target": "pants"
+            },
+            {
+                "weight": 1,
+                "source": "dog",
+                "target": "wall"
+            },
+            {
+                "weight": 1,
+                "source": "dog",
+                "target": "shelves"
+            },
+            {
+                "weight": 1,
+                "source": "dog",
+                "target": "dish"
+            },
+            {
+                "weight": 1,
+                "source": "floor",
+                "target": "slippers"
+            },
+            {
+                "weight": 1,
+                "source": "floor",
+                "target": "pants"
+            },
+            {
+                "weight": 2,
+                "source": "floor",
+                "target": "wall"
+            },
+            {
+                "weight": 1,
+                "source": "floor",
+                "target": "shelves"
+            },
+            {
+                "weight": 1,
+                "source": "floor",
+                "target": "dish"
+            },
+            {
+                "weight": 1,
+                "source": "floor",
+                "target": "bouldering"
+            },
+            {
+                "weight": 1,
+                "source": "floor",
+                "target": "holds"
+            },
+            {
+                "weight": 1,
+                "source": "floor",
+                "target": "mat"
+            },
+            {
+                "weight": 1,
+                "source": "floor",
+                "target": "light"
+            },
+            {
+                "weight": 1,
+                "source": "floor",
+                "target": "ceiling"
+            },
+            {
+                "weight": 1,
+                "source": "floor",
+                "target": "group"
+            },
+            {
+                "weight": 1,
+                "source": "floor",
+                "target": "climbing"
+            },
+            {
+                "weight": 1,
+                "source": "slippers",
+                "target": "pants"
+            },
+            {
+                "weight": 1,
+                "source": "slippers",
+                "target": "wall"
+            },
+            {
+                "weight": 1,
+                "source": "slippers",
+                "target": "shelves"
+            },
+            {
+                "weight": 1,
+                "source": "slippers",
+                "target": "dish"
+            },
+            {
+                "weight": 1,
+                "source": "pants",
+                "target": "wall"
+            },
+            {
+                "weight": 1,
+                "source": "pants",
+                "target": "shelves"
+            },
+            {
+                "weight": 1,
+                "source": "pants",
+                "target": "dish"
+            },
+            {
+                "weight": 1,
+                "source": "wall",
+                "target": "shelves"
+            },
+            {
+                "weight": 1,
+                "source": "wall",
+                "target": "dish"
+            },
+            {
+                "weight": 1,
+                "source": "wall",
+                "target": "bouldering"
+            },
+            {
+                "weight": 1,
+                "source": "wall",
+                "target": "holds"
+            },
+            {
+                "weight": 1,
+                "source": "wall",
+                "target": "mat"
+            },
+            {
+                "weight": 1,
+                "source": "wall",
+                "target": "light"
+            },
+            {
+                "weight": 1,
+                "source": "wall",
+                "target": "ceiling"
+            },
+            {
+                "weight": 1,
+                "source": "wall",
+                "target": "group"
+            },
+            {
+                "weight": 1,
+                "source": "wall",
+                "target": "climbing"
+            },
+            {
+                "weight": 1,
+                "source": "shelves",
+                "target": "dish"
+            },
+            {
+                "weight": 1,
+                "source": "tent",
+                "target": "banner"
+            },
+            {
+                "weight": 1,
+                "source": "tent",
+                "target": "DUMPLING"
+            },
+            {
+                "weight": 1,
+                "source": "tent",
+                "target": "HAUS"
+            },
+            {
+                "weight": 1,
+                "source": "tent",
+                "target": "food"
+            },
+            {
+                "weight": 1,
+                "source": "tent",
+                "target": "clouds"
+            },
+            {
+                "weight": 1,
+                "source": "tent",
+                "target": "sky"
+            },
+            {
+                "weight": 1,
+                "source": "banner",
+                "target": "DUMPLING"
+            },
+            {
+                "weight": 1,
+                "source": "banner",
+                "target": "HAUS"
+            },
+            {
+                "weight": 1,
+                "source": "banner",
+                "target": "food"
+            },
+            {
+                "weight": 1,
+                "source": "banner",
+                "target": "clouds"
+            },
+            {
+                "weight": 1,
+                "source": "banner",
+                "target": "sky"
+            },
+            {
+                "weight": 1,
+                "source": "DUMPLING",
+                "target": "HAUS"
+            },
+            {
+                "weight": 1,
+                "source": "DUMPLING",
+                "target": "food"
+            },
+            {
+                "weight": 1,
+                "source": "DUMPLING",
+                "target": "clouds"
+            },
+            {
+                "weight": 1,
+                "source": "DUMPLING",
+                "target": "sky"
+            },
+            {
+                "weight": 1,
+                "source": "HAUS",
+                "target": "food"
+            },
+            {
+                "weight": 1,
+                "source": "HAUS",
+                "target": "clouds"
+            },
+            {
+                "weight": 1,
+                "source": "HAUS",
+                "target": "sky"
+            },
+            {
+                "weight": 1,
+                "source": "food",
+                "target": "clouds"
+            },
+            {
+                "weight": 1,
+                "source": "food",
+                "target": "sky"
+            },
+            {
+                "weight": 1,
+                "source": "clouds",
+                "target": "sky"
+            },
+            {
+                "weight": 1,
+                "source": "clouds",
+                "target": "hammock"
+            },
+            {
+                "weight": 1,
+                "source": "clouds",
+                "target": "charcoal"
+            },
+            {
+                "weight": 1,
+                "source": "clouds",
+                "target": "deck"
+            },
+            {
+                "weight": 1,
+                "source": "clouds",
+                "target": "pole"
+            },
+            {
+                "weight": 1,
+                "source": "clouds",
+                "target": "string"
+            },
+            {
+                "weight": 1,
+                "source": "clouds",
+                "target": "light"
+            },
+            {
+                "weight": 1,
+                "source": "clouds",
+                "target": "house"
+            },
+            {
+                "weight": 1,
+                "source": "clouds",
+                "target": "chair"
+            },
+            {
+                "weight": 1,
+                "source": "sky",
+                "target": "truck"
+            },
+            {
+                "weight": 1,
+                "source": "sky",
+                "target": "house"
+            },
+            {
+                "weight": 1,
+                "source": "sky",
+                "target": "road"
+            },
+            {
+                "weight": 1,
+                "source": "sky",
+                "target": "shadow"
+            },
+            {
+                "weight": 1,
+                "source": "hammock",
+                "target": "charcoal"
+            },
+            {
+                "weight": 1,
+                "source": "hammock",
+                "target": "deck"
+            },
+            {
+                "weight": 1,
+                "source": "hammock",
+                "target": "pole"
+            },
+            {
+                "weight": 1,
+                "source": "hammock",
+                "target": "string"
+            },
+            {
+                "weight": 1,
+                "source": "hammock",
+                "target": "light"
+            },
+            {
+                "weight": 1,
+                "source": "hammock",
+                "target": "house"
+            },
+            {
+                "weight": 1,
+                "source": "hammock",
+                "target": "chair"
+            },
+            {
+                "weight": 1,
+                "source": "charcoal",
+                "target": "deck"
+            },
+            {
+                "weight": 1,
+                "source": "charcoal",
+                "target": "pole"
+            },
+            {
+                "weight": 1,
+                "source": "charcoal",
+                "target": "string"
+            },
+            {
+                "weight": 1,
+                "source": "charcoal",
+                "target": "light"
+            },
+            {
+                "weight": 1,
+                "source": "charcoal",
+                "target": "house"
+            },
+            {
+                "weight": 1,
+                "source": "charcoal",
+                "target": "chair"
+            },
+            {
+                "weight": 1,
+                "source": "deck",
+                "target": "pole"
+            },
+            {
+                "weight": 1,
+                "source": "deck",
+                "target": "string"
+            },
+            {
+                "weight": 1,
+                "source": "deck",
+                "target": "light"
+            },
+            {
+                "weight": 1,
+                "source": "deck",
+                "target": "house"
+            },
+            {
+                "weight": 1,
+                "source": "deck",
+                "target": "chair"
+            },
+            {
+                "weight": 1,
+                "source": "pole",
+                "target": "string"
+            },
+            {
+                "weight": 1,
+                "source": "pole",
+                "target": "light"
+            },
+            {
+                "weight": 1,
+                "source": "pole",
+                "target": "house"
+            },
+            {
+                "weight": 1,
+                "source": "pole",
+                "target": "chair"
+            },
+            {
+                "weight": 1,
+                "source": "string",
+                "target": "light"
+            },
+            {
+                "weight": 1,
+                "source": "string",
+                "target": "house"
+            },
+            {
+                "weight": 1,
+                "source": "string",
+                "target": "chair"
+            },
+            {
+                "weight": 1,
+                "source": "light",
+                "target": "house"
+            },
+            {
+                "weight": 1,
+                "source": "light",
+                "target": "chair"
+            },
+            {
+                "weight": 1,
+                "source": "light",
+                "target": "bouldering"
+            },
+            {
+                "weight": 1,
+                "source": "light",
+                "target": "holds"
+            },
+            {
+                "weight": 1,
+                "source": "light",
+                "target": "mat"
+            },
+            {
+                "weight": 1,
+                "source": "light",
+                "target": "ceiling"
+            },
+            {
+                "weight": 1,
+                "source": "light",
+                "target": "group"
+            },
+            {
+                "weight": 1,
+                "source": "light",
+                "target": "climbing"
+            },
+            {
+                "weight": 1,
+                "source": "house",
+                "target": "chair"
+            },
+            {
+                "weight": 1,
+                "source": "house",
+                "target": "truck"
+            },
+            {
+                "weight": 1,
+                "source": "house",
+                "target": "road"
+            },
+            {
+                "weight": 1,
+                "source": "house",
+                "target": "shadow"
+            },
+            {
+                "weight": 1,
+                "source": "bouldering",
+                "target": "holds"
+            },
+            {
+                "weight": 1,
+                "source": "bouldering",
+                "target": "mat"
+            },
+            {
+                "weight": 1,
+                "source": "bouldering",
+                "target": "ceiling"
+            },
+            {
+                "weight": 1,
+                "source": "bouldering",
+                "target": "group"
+            },
+            {
+                "weight": 1,
+                "source": "bouldering",
+                "target": "climbing"
+            },
+            {
+                "weight": 1,
+                "source": "holds",
+                "target": "mat"
+            },
+            {
+                "weight": 1,
+                "source": "holds",
+                "target": "ceiling"
+            },
+            {
+                "weight": 1,
+                "source": "holds",
+                "target": "group"
+            },
+            {
+                "weight": 1,
+                "source": "holds",
+                "target": "climbing"
+            },
+            {
+                "weight": 1,
+                "source": "mat",
+                "target": "ceiling"
+            },
+            {
+                "weight": 1,
+                "source": "mat",
+                "target": "group"
+            },
+            {
+                "weight": 1,
+                "source": "mat",
+                "target": "climbing"
+            },
+            {
+                "weight": 1,
+                "source": "ceiling",
+                "target": "group"
+            },
+            {
+                "weight": 1,
+                "source": "ceiling",
+                "target": "climbing"
+            },
+            {
+                "weight": 1,
+                "source": "group",
+                "target": "climbing"
+            },
+            {
+                "weight": 1,
+                "source": "taco",
+                "target": "plate"
+            },
+            {
+                "weight": 1,
+                "source": "taco",
+                "target": "sauce"
+            },
+            {
+                "weight": 1,
+                "source": "taco",
+                "target": "flower"
+            },
+            {
+                "weight": 1,
+                "source": "taco",
+                "target": "cream"
+            },
+            {
+                "weight": 1,
+                "source": "taco",
+                "target": "sesame"
+            },
+            {
+                "weight": 1,
+                "source": "taco",
+                "target": "tablecloth"
+            },
+            {
+                "weight": 1,
+                "source": "plate",
+                "target": "sauce"
+            },
+            {
+                "weight": 1,
+                "source": "plate",
+                "target": "flower"
+            },
+            {
+                "weight": 1,
+                "source": "plate",
+                "target": "cream"
+            },
+            {
+                "weight": 1,
+                "source": "plate",
+                "target": "sesame"
+            },
+            {
+                "weight": 1,
+                "source": "plate",
+                "target": "tablecloth"
+            },
+            {
+                "weight": 1,
+                "source": "sauce",
+                "target": "flower"
+            },
+            {
+                "weight": 1,
+                "source": "sauce",
+                "target": "cream"
+            },
+            {
+                "weight": 1,
+                "source": "sauce",
+                "target": "sesame"
+            },
+            {
+                "weight": 1,
+                "source": "sauce",
+                "target": "tablecloth"
+            },
+            {
+                "weight": 1,
+                "source": "flower",
+                "target": "cream"
+            },
+            {
+                "weight": 1,
+                "source": "flower",
+                "target": "sesame"
+            },
+            {
+                "weight": 1,
+                "source": "flower",
+                "target": "tablecloth"
+            },
+            {
+                "weight": 1,
+                "source": "cream",
+                "target": "sesame"
+            },
+            {
+                "weight": 1,
+                "source": "cream",
+                "target": "tablecloth"
+            },
+            {
+                "weight": 1,
+                "source": "sesame",
+                "target": "tablecloth"
+            },
+            {
+                "weight": 1,
+                "source": "truck",
+                "target": "road"
+            },
+            {
+                "weight": 1,
+                "source": "truck",
+                "target": "shadow"
+            },
+            {
+                "weight": 1,
+                "source": "road",
+                "target": "shadow"
+            }
+        ]
+    }
+}
