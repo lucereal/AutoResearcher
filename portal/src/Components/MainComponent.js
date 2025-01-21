@@ -3,14 +3,16 @@ import useTheme from '@mui/material/styles/useTheme';
 import SummaryComponent from './SummaryComponent';
 import { useState,useEffect } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 const MainContainer = () => {
     const theme = useTheme();
+    const navigate = useNavigate();
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
     const [showSummaryComponent, setShowSummaryComponent] = useState(false);
 
     const handleButtonClick = () => {
-        setShowSummaryComponent(true);
+       navigate('/insta-persona');
         
     };
 
@@ -84,36 +86,19 @@ const MainContainer = () => {
     return (
         <>
         <Container sx={{ mt: 8 }}>
-        {showSummaryComponent ? ( <SummaryComponent /> ) : (
-        <>
-            <h1>Welcome to CheckMates</h1>
-            <p>Your one-stop solution for managing your tasks efficiently.</p>
-            <Box id="header-box" sx={{ display: 'flex',  alignItems: 'center', justifyContent: 'center',
-                            flexDirection: 'column', position: 'sticky', top: isMobile ? 54 : 64, zIndex: 1, 
-                            bgcolor: 'background.paper', width: '100%'}}>
-            <Typography sx={{ fontFamily: 'monospace', m: isMobile ? 1.5 : 2, fontWeight: 700, color: 'text.primary', textDecoration: 'none',
-                fontSize: isMobile ? '1.25rem' : '1.5rem'
-                }}>
-                        {"Receipt Breakdown"}
-            </Typography>
-                    
-            </Box>
             <Button variant="contained" color="primary" onClick={handleButtonClick}>
-                Show Summary Component
+                Insta Persona
             </Button>
 
             <div
-                        dangerouslySetInnerHTML={{
-                            __html: `<fb:login-button scope="public_profile,email" onlogin="checkLoginState();"></fb:login-button>`
-                        }}
-                    />
-        </>
-        )}
-        </Container>
+            dangerouslySetInnerHTML={{
+                __html: `<fb:login-button scope="public_profile,email" onlogin="checkLoginState();"></fb:login-button>`
+            }}
+            />
 
+        </Container>
         </>
     )
-
 }
 
 export default MainContainer;
