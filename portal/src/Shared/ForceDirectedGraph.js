@@ -24,7 +24,7 @@ let draggedNodeMag;
 let is_dragging_node = false;
 let last_mouse_pos = null;
 
-let zoom = 1, pan_x = 0, pan_y = 0;
+let zoom = 0.5, pan_x = 0, pan_y = 0;
 
 const forceDirectedGraphSketch = () => {
 
@@ -79,8 +79,6 @@ const forceDirectedGraphSketch = () => {
             }
           }
     
-    
-    
         const mouseReleased = () => {
             last_mouse_pos = null;
         }
@@ -106,17 +104,23 @@ const forceDirectedGraphSketch = () => {
         }
         
         const applyScale = (s) => {
-            if (!IS_FOCUSED_ON_CANVAS) return;
-            if ((zoom > 1.5 && s > 1) || (zoom < 0.2 && s < 1)) {
-                return;
-            }
-            zoom = zoom * s;
-            pan_x -= (p.mouseX - pan_x) * (s - 1);
-            pan_y -= (p.mouseY - pan_y) * (s - 1);
+          console.log("applying scale")
+          if (!IS_FOCUSED_ON_CANVAS) return;
+          if ((zoom > 1.5 && s > 1) || (zoom < 0.2 && s < 1)) {
+              return;
+          }
+          zoom = zoom * s;
+          pan_x -= (p.mouseX - pan_x) * (s - 1);
+          pan_y -= (p.mouseY - pan_y) * (s - 1);
         }
-        window.addEventListener("wheel", function(e) {
-            applyScale(e.deltaY > 0 ? 0.95 : 1.05);
-        } );
+
+        // window.addEventListener("wheel", function(e) {
+        //     applyScale(e.deltaY > 0 ? 0.95 : 1.05);
+        // } );
+
+        const handleWheel = (e) => {
+          applyScale(e.deltaY > 0 ? 0.95 : 1.05);
+        };
 
         p.mouseClicked = mouseClicked;
         p.mouseReleased = mouseReleased;
@@ -126,36 +130,47 @@ const forceDirectedGraphSketch = () => {
            
         }   
         p.setup = () => {
-            p.createCanvas(p.round(window.innerWidth * 0.97), p.round(window.innerHeight * 0.97));
-            p.frameRate(30);
-            p.textFont("MS Gothic");
-            pan_x = p.width / 2;
-            pan_y = p.height / 2;
-            for (let i = 0; i < database.elements.nodes.length; i++) {
-              var node = database.elements.nodes[i];
-              let x = p.random(-p.width/2, p.width/2)
-              let y = p.random(-p.height/2, p.height/2)
-              if (node.data.appeared) {
-                node = new Node(p,p.createVector(x, y), node.data);
-                nodes.push(node);
-              }
+          console.log("forceDirectedGraphSketch setup")
+
+          console.log("nodes length: " + nodes.length);
+          console.log("edges length: " + edges.length);
+          nodes = [];
+          edges = [];
+          
+          p.createCanvas(p.round(window.innerWidth * 0.97), p.round(window.innerHeight * 0.97));
+          p.frameRate(30);
+          p.textFont("MS Gothic");
+          pan_x = p.width / 2;
+          pan_y = p.height / 2;
+          for (let i = 0; i < database.elements.nodes.length; i++) {
+            var node = database.elements.nodes[i];
+            let x = p.random(-p.width/2, p.width/2)
+            let y = p.random(-p.height/2, p.height/2)
+            if (node.data.appeared) {
+              node = new Node(p,p.createVector(x, y), node.data);
+              nodes.push(node);
             }
-            draggedNode = nodes[0];
-            for (let i = 0; i < database.elements.edges.length; i++) {
-              var edge = database.elements.edges[i];
-              var src = nodes.find((node) => node.data.name == edge.data.source);
-              var dst = nodes.find((node) => node.data.name == edge.data.target);
-              if (src && dst) {
-                edges.push(new Edge(p,src, dst, edge.data));
-              }
+          }
+          draggedNode = nodes[0];
+          for (let i = 0; i < database.elements.edges.length; i++) {
+            var edge = database.elements.edges[i];
+            var src = nodes.find((node) => node.data.name == edge.data.source);
+            var dst = nodes.find((node) => node.data.name == edge.data.target);
+            if (src && dst) {
+              edges.push(new Edge(p,src, dst, edge.data));
             }
-            nodes.forEach((node) => {
-              node.data["out_degree"] = edges.filter((edge) => edge.data.source == node.data.name).length;
-              node.data["in_degree"] = edges.filter((edge) => edge.data.target == node.data.name).length;
-              node.data["degree"] = node.data["in_degree"] + node.data["out_degree"];
-            });
+          }
+          nodes.forEach((node) => {
+            node.data["out_degree"] = edges.filter((edge) => edge.data.source == node.data.name).length;
+            node.data["in_degree"] = edges.filter((edge) => edge.data.target == node.data.name).length;
+            node.data["degree"] = node.data["in_degree"] + node.data["out_degree"];
+          });
+
+          window.addEventListener("wheel", handleWheel);
+
         };
         p.draw = () => {
+          
             p.textAlign(p.CENTER, p.CENTER);
             p.translate(pan_x, pan_y);
             p.scale(zoom);
@@ -180,6 +195,14 @@ const forceDirectedGraphSketch = () => {
               }
             }
         };
+        
+        p.remove = () => {
+          console.log("forceDirectedGraphSketch remove")
+          nodes = [];
+          edges = [];
+          window.removeEventListener("wheel", handleWheel);
+
+        }
     };
     return pf;
 }

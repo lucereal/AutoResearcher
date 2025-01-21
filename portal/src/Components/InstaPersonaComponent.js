@@ -25,7 +25,7 @@ const InstaPersonaComponent = () => {
     const [userTimelineStory, setUserTimelineStory] = useState(null);
     const [openTimelineStoryDialog, setOpenTimelineStoryDialog] = useState(false); // State variable to control the visibility of TimelineComponent
     const [showInteractiveTimeline, setShowInteractiveTimeline] = useState(false); // State variable to control the visibility of InteractiveTimelineComponent
-    const [timelineSelectedComponent, setTimelineSelectedComponent] = useState(null); // State variable to store the selected component
+    const [timelineSelectedComponent, setTimelineSelectedComponent] = useState("None"); // State variable to store the selected component
 
     useEffect(() => {
       console.log("InstaPersonaComponent mounted");
@@ -52,7 +52,7 @@ const InstaPersonaComponent = () => {
 
   const handleTimelineSelectedComponentChange = (event) => {
         let selectedComponent = event.target.value;
-        console.log("Selected Component:", event.target.value);
+        
         setTimelineSelectedComponent(selectedComponent);
         if(selectedComponent === null || selectedComponent === undefined || selectedComponent === "" || selectedComponent === "None"){
           setCurrentUserId(localStorage.getItem('userId') || null)

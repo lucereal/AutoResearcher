@@ -5,29 +5,15 @@ import { forceDirectedGraphSketch } from '../Shared/ForceDirectedGraph';
 
 const InteractiveTimelineComponent = ({userId, showTimeline, selectedTimeline}) => {
     const sketchRef = useRef(null);
-    const [screenWidth, setScreenWidth] = useState(window.innerWidth);
-    const [screenHeight, setScreenHeight] = useState(window.innerHeight);
-
+    const [myP5Instance, setMyP5Instance] = useState(null);
 
     useEffect(() => {
-        console.log("TimelineComponent mounted");
-        console.log("selectedTimeline: ", selectedTimeline);
-        const handleResize = () => {
-            setScreenWidth(window.innerWidth);
-            setScreenHeight(window.innerHeight);
-        };
 
-        window.addEventListener('resize', handleResize);
+        if(myP5Instance){
+            console.log("removing p5 instance")
+            myP5Instance.remove();
+        }
 
-        return () => {
-            window.removeEventListener('resize', handleResize);
-        };
-    }, []);
-
-
-
-    useEffect(() => {
-        
         let sketch;
         if(selectedTimeline === "interactiveTimeline"){
             sketch = createSketch();
@@ -38,12 +24,17 @@ const InteractiveTimelineComponent = ({userId, showTimeline, selectedTimeline}) 
         }
     
         const container = sketchRef.current;
+        console.log("creating p5 instance")
         const myP5 = new p5(sketch, container)
+        setMyP5Instance(myP5);
 
         return () => {
-            myP5.remove();
+            if(myP5){
+                console.log("returning remove p5")
+                myP5.remove();
+            }
           };
-    }, []);
+    }, [selectedTimeline]);
 
 
 
