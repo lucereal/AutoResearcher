@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Box, Typography, Container, Link, Button,
-  Dialog, DialogTitle, DialogContent, DialogActions, TextField
+  Dialog, DialogTitle, DialogContent, DialogActions, TextField,
+  FormControl, InputLabel, Select, MenuItem
  } from '@mui/material';
 import axios from 'axios';
 import { Graph, DefaultLink, DefaultNode } from '@visx/network';
@@ -24,6 +25,7 @@ const InstaPersonaComponent = () => {
     const [userTimelineStory, setUserTimelineStory] = useState(null);
     const [openTimelineStoryDialog, setOpenTimelineStoryDialog] = useState(false); // State variable to control the visibility of TimelineComponent
     const [showInteractiveTimeline, setShowInteractiveTimeline] = useState(false); // State variable to control the visibility of InteractiveTimelineComponent
+    const [timelineSelectedComponent, setTimelineSelectedComponent] = useState(null); // State variable to store the selected component
 
     useEffect(() => {
       console.log("InstaPersonaComponent mounted");
@@ -48,7 +50,19 @@ const InstaPersonaComponent = () => {
     setShowTimeline(!showTimeline)
   }
 
-  
+  const handleTimelineSelectedComponentChange = (event) => {
+        let selectedComponent = event.target.value;
+        console.log("Selected Component:", event.target.value);
+        setTimelineSelectedComponent(selectedComponent);
+        if(selectedComponent === null || selectedComponent === undefined || selectedComponent === "" || selectedComponent === "None"){
+          setCurrentUserId(localStorage.getItem('userId') || null)
+          setShowInteractiveTimeline(false)
+        }else{
+          setCurrentUserId(localStorage.getItem('userId') || null)
+          setShowInteractiveTimeline(true)
+        }
+  };
+
   const handleOpenInteractiveTimeline = () => {
     setCurrentUserId(localStorage.getItem('userId') || null)
     setShowInteractiveTimeline(!showInteractiveTimeline)
@@ -163,7 +177,7 @@ const InstaPersonaComponent = () => {
         <>
          <Container disableGutters maxWidth={false} sx={{ mt: 2 }}>
             <Box sx={{ my: 4 }}>
-              
+            <Box sx={{ display:'flex', flexDirection: 'row', my: 4 }}>
               <Link href={"https://www.instagram.com/oauth/authorize?enable_fb_login=0&force_authentication=1&client_id=1573243976639384&redirect_uri=https://localhost:3000/insta-redirect&response_type=code&scope=business_basic%2Cbusiness_manage_messages%2Cbusiness_manage_comments%2Cbusiness_content_publish"} 
               target="_blank" rel="noopener" variant="body1">Link Account</Link>                                
               
@@ -176,12 +190,31 @@ const InstaPersonaComponent = () => {
               <Button variant="contained" color="primary" onClick={handleOpenTimeline} sx={{ mt: 2, ml: 2 }}>
                   {showTimeline ? 'Hide Timeline' : 'Show Timeline'}
               </Button>
-              <Button variant="contained" color="primary" onClick={handleOpenInteractiveTimeline} sx={{ mt: 2, ml: 2 }}>
+              {/* <Button variant="contained" color="primary" onClick={handleOpenInteractiveTimeline} sx={{ mt: 2, ml: 2 }}>
                   {showInteractiveTimeline ? 'Hide Interactive Timeline' : 'Show Interactive Timeline'}
-              </Button>
+              </Button> */}
+                <div>
+                  <FormControl variant="outlined" sx={{ mt: 2, ml: 2 }}>
+                      <InputLabel id="component-select-label">Select Component</InputLabel>
+                      <Select
+                          labelId="component-select-label"
+                          value={timelineSelectedComponent}
+                          onChange={handleTimelineSelectedComponentChange}
+                          label="Select Component"
+                      >
+                          <MenuItem value="None"><em>None</em></MenuItem>
+                          <MenuItem value="interactiveTimeline">Interactive Timeline</MenuItem>
+                          <MenuItem value="interactiveGraph">Interactive Graph</MenuItem>
+                          {/* Add more MenuItem components as needed */}
+                      </Select>
+                  </FormControl>
+
+                
+              </div>
               <Button variant="contained" color="primary" onClick={handleOpenTimelineDialog} sx={{ mt: 2, ml: 2 }}>
                   Timeline Story
               </Button>
+            </Box>
               {(openChatDialog || showTimeline) && (
                   <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'flex-start', width: '100%', height:'80vh' }}>
                   <Box sx={{ flex: 7, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
@@ -194,7 +227,7 @@ const InstaPersonaComponent = () => {
               )}
               {showInteractiveTimeline && (
                 <Box sx={{ width: '100%', height: '80vh' }}>
-                    <InteractiveTimelineComponent userId={currentUserId} showTimeline={showInteractiveTimeline} />
+                    <InteractiveTimelineComponent userId={currentUserId} showTimeline={showInteractiveTimeline} selectedTimeline={timelineSelectedComponent} />
                 </Box>
               )}
               {/* <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'flex-start', width: '100%', height:'80vh' }}>

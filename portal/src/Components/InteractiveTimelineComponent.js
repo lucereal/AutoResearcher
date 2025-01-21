@@ -1,20 +1,17 @@
 import React, { useState, useEffect, useRef } from 'react';
-
 import p5 from 'p5';
+import { createSketch } from '../Shared/TimelineSketch';
+import { forceDirectedGraphSketch } from '../Shared/ForceDirectedGraph';
 
-const InteractiveTimelineComponent = ({userId, showTimeline}) => {
+const InteractiveTimelineComponent = ({userId, showTimeline, selectedTimeline}) => {
     const sketchRef = useRef(null);
-    const [milestonesFetched, setMilestonesFetched] = useState(false);
     const [screenWidth, setScreenWidth] = useState(window.innerWidth);
     const [screenHeight, setScreenHeight] = useState(window.innerHeight);
-    const [milestoneData, setMilestoneData] = useState([]);
-    const [selectedMilestone, setSelectedMilestone] = useState(null);
-    const [timeline, setTimeline] = useState(null);
-    const [openDialog, setOpenDialog] = useState(false);
-    const [myP5, setMyP5] = useState(null);
+
 
     useEffect(() => {
         console.log("TimelineComponent mounted");
+        console.log("selectedTimeline: ", selectedTimeline);
         const handleResize = () => {
             setScreenWidth(window.innerWidth);
             setScreenHeight(window.innerHeight);
@@ -27,34 +24,28 @@ const InteractiveTimelineComponent = ({userId, showTimeline}) => {
         };
     }, []);
 
+
+
     useEffect(() => {
-        if (showTimeline && userId && !myP5) {
-            console.log("Creating timeline...");
-            setUpP5();
+        
+        let sketch;
+        if(selectedTimeline === "interactiveTimeline"){
+            sketch = createSketch();
+
+        }else if(selectedTimeline === "interactiveGraph"){
+            sketch = forceDirectedGraphSketch();
+ 
         }
-    }, [showTimeline, userId, myP5]);
-
-    const createSketch = () => {
-        const sketch = (p) => {
-            p.setup = () => {
-                p.createCanvas(screenWidth, screenHeight);
-                p.background(255);
-            };
-            p.draw = () => {
-                p.fill(0);
-                p.ellipse(p.mouseX, p.mouseY, 5, 5);
-            };
-        };
-        return sketch;
-    }
-
-    const setUpP5 = () => {
-        const sketch = createSketch();
+    
         const container = sketchRef.current;
         const myP5 = new p5(sketch, container)
-        setMyP5(myP5);
-    };
-  
+
+        return () => {
+            myP5.remove();
+          };
+    }, []);
+
+
 
     if (userId === null) return <div>Please select a user to view their timeline.</div>;
     if (showTimeline === null || showTimeline === undefined || showTimeline === false) return <div>Please select a user to view their timeline.</div>;
