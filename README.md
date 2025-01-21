@@ -1,6 +1,8 @@
 # AutoResearcher :robot:
 Automated Data Collection with LLM, Google Custom Search, Video Transcription, Web Scraping, Instagram API, OpenAI Vision, and OpenAI Whisper.
 
+Frontend for using the backend AI tools. 
+
 This repo has kind of turned into a playground for me to use OpenAI LLMs.
 
 This Python project automates data collection on user provided topics. 
@@ -12,28 +14,35 @@ This Python project automates data collection on user provided topics.
 3. **Data Scraping**: Uses Playwright and BeautifulSoup to fetch and extract web content. Uses MoviePy to extract audio data from videos. Uses OpenAI Whisper Model to create audio transcriptions.
 4. **Summarization**: LLM summarizes scraped data into concise reports.
 5. **End-to-End Automation**: Fully automated from input to summarized output.
-6. **Instagram Integration**:
+6. **Frontend**: Auto Researcher front end for viewing collected data. 
+7. **Instagram Integration**:
     - Read a user's Instagram.
     - Process pictures using OpenAI vision.
     - Create an object-weighted graph based on object occurrences in the pictures.
     - Summarize picture settings and subjects.
     - Summarize the user's Instagram in total.
-7. **Chat Functionality**:
+    - Weighted graph build off of Instagram profile
+    - Chat functionality to chat with character AI built off of instagram
+8. **Chat Functionality**:
     - Chat with LLM
     - Build character from instagram images
     - Chat with instagram character
-8. **Chat Assistant Timeline Builder**:
+    - Frontend for chat integration
+9. **Chat Assistant Timeline Builder**:
     - Timeline builder assistant
     - Saves, updates, suggests, finds milestones or memories for a persons life.
     - Uses GPT functions to modify, add, update, delete, find user milestones from milestone store.
     - Allows users to upload images to associate with milestones.
     - Provies output for visualizing on a timeline in the front end.
+    - Frontend for chat integration
+10. **p5.js Milestone, Event, Character Visualization**
+    - p5.js for creating timeline, force directed graph, and more
 
 ## Technologies
 
 - **Python**, **OpenAI API**, **Google Custom Search API**
 - **Playwright**, **BeautifulSoup**, **MoviePy**, **NewsAPI**
-- **InstagramAPI**, **NetworkX**
+- **InstagramAPI**, **NetworkX**, **p5.js**
 
 ## Setup
 
