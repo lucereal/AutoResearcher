@@ -22,13 +22,106 @@ let lerpValue = 0.2;
 let draggedNode;
 let draggedNodeMag;
 let is_dragging_node = false;
+let last_mouse_pos = null;
 
 let zoom = 1, pan_x = 0, pan_y = 0;
 
 const forceDirectedGraphSketch = () => {
 
-    return (p) => {
+    const applyForces = (nodes) => {
+        // apply force towards centre
+        nodes.forEach((node) => {
+          let gravity = node.pos.copy().mult(-1).mult(gravityConstant);
+          node.force = gravity;
+        })
+      
+        // apply repulsive force between nodes
+        for (let i = 0; i < nodes.length; i++) {
+          for (let j = i + 1; j < nodes.length; j++) {
+            let pos = nodes[i].pos;
+            let dir = nodes[j].pos.copy().sub(pos);
+            let force = dir.div(dir.mag() * dir.mag());
+            force.mult(forceConstant);
+            nodes[i].force.add(force.copy().mult(-1));
+            nodes[j].force.add(force);
+          }
+        }
+      
+        // apply forces applied by connections
+        edges.forEach(edge => {
+          let node1 = edge.src;
+          let node2 = edge.dst;
+          // let maxDis = edge[2];
+          let dis = node1.pos.copy().sub(node2.pos);
+          // diff = max(0.1, dis.mag() - maxDis);
+          // diff = dis.mag() - maxDis;
+          dis = dis.mult(0.1);
+          node1.force.sub(dis);
+          node2.force.add(dis);
+        })
+      }
+    
 
+    let pf = (p) => {
+        const mouseClicked = () => {
+            if (!IS_FOCUSED_ON_CANVAS) return;
+            if (is_dragging_node) {
+              is_dragging_node = false
+              lerpValue = 0.2
+            } else {
+              nodes.forEach((node) => {
+                if (node.isHovered()) {
+                  is_dragging_node = true;
+                  draggedNode = node;
+                  return;
+                }
+              })
+            }
+          }
+    
+    
+    
+        const mouseReleased = () => {
+            last_mouse_pos = null;
+        }
+    
+        const mouseDragged = () => {
+            if (!IS_FOCUSED_ON_CANVAS) return;
+            if (is_dragging_node) return;
+            
+            if (last_mouse_pos) {
+                var current_mouse_pos = p.createVector(p.mouseX, p.mouseY);
+                pan_x += current_mouse_pos.x - last_mouse_pos.x;
+                pan_y += current_mouse_pos.y - last_mouse_pos.y;
+            }
+            
+            last_mouse_pos = p.createVector(p.mouseX, p.mouseY);
+        }
+        const keyPressed = () => {
+            if (p.key == '-') {
+                applyScale(0.95);
+            } else if (p.key == '+') {
+                applyScale(1.05);
+            } 
+        }
+        
+        const applyScale = (s) => {
+            if (!IS_FOCUSED_ON_CANVAS) return;
+            if ((zoom > 1.5 && s > 1) || (zoom < 0.2 && s < 1)) {
+                return;
+            }
+            zoom = zoom * s;
+            pan_x -= (p.mouseX - pan_x) * (s - 1);
+            pan_y -= (p.mouseY - pan_y) * (s - 1);
+        }
+        window.addEventListener("wheel", function(e) {
+            applyScale(e.deltaY > 0 ? 0.95 : 1.05);
+        } );
+
+        p.mouseClicked = mouseClicked;
+        p.mouseReleased = mouseReleased;
+        p.mouseDragged = mouseDragged;
+        p.keyPressed = keyPressed;
         p.preload = () => {
            
         }   
@@ -68,7 +161,7 @@ const forceDirectedGraphSketch = () => {
             p.scale(zoom);
             
             p.background(BG_COLOR);
-            //applyForces(nodes)
+            applyForces(nodes)
             edges.forEach(edge => {
               edge.draw();
             })
@@ -88,7 +181,7 @@ const forceDirectedGraphSketch = () => {
             }
         };
     };
-    
+    return pf;
 }
 
 
