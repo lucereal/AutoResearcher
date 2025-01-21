@@ -1,7 +1,29 @@
+import { database } from "../data/forceDirectedGraphData";
 
 
+let BG_COLOR = "#f0eceb";
+let NODE_COLOR = "#ff7a7a";
+let NODE_HOVERED_COLOR = "#b66";
+let NODE_DRAGGED_COLOR = "#a44";
+let EDGE_BATTLE_COLOR = "#527aff";
+let EDGE_BATTLE_LABEL_COLOR = "#3750a6";
+let EDGE_MENTION_COLOR = "#39bd4c";
+let EDGE_MENTION_LABEL_COLOR = "#247d31";
+let EDGE_CAMEO_COLOR = "#d991ff";
+let EDGE_CAMEO_LABEL_COLOR = "#935db0";
+let IS_FOCUSED_ON_CANVAS = true;
 
+let gravityConstant = 0.3;
+let forceConstant = 4000;
 
+let nodes = [];
+let edges = [];
+let lerpValue = 0.2;
+let draggedNode;
+let draggedNodeMag;
+let is_dragging_node = false;
+
+let zoom = 1, pan_x = 0, pan_y = 0;
 
 const forceDirectedGraphSketch = () => {
 
@@ -11,15 +33,15 @@ const forceDirectedGraphSketch = () => {
            
         }   
         p.setup = () => {
-            p.createCanvas(round(windowWidth * 0.97), round(windowHeight * 0.97));
+            p.createCanvas(p.round(window.innerWidth * 0.97), p.round(window.innerHeight * 0.97));
             p.frameRate(30);
             p.textFont("MS Gothic");
-            pan_x = width / 2;
-            pan_y = height / 2;
+            pan_x = p.width / 2;
+            pan_y = p.height / 2;
             for (let i = 0; i < database.elements.nodes.length; i++) {
               var node = database.elements.nodes[i];
-              let x = p.random(-width/2, width/2)
-              let y = p.random(-height/2, height/2)
+              let x = p.random(-p.width/2, p.width/2)
+              let y = p.random(-p.height/2, p.height/2)
               if (node.data.appeared) {
                 node = new Node(p,p.createVector(x, y), node.data);
                 nodes.push(node);
@@ -41,12 +63,12 @@ const forceDirectedGraphSketch = () => {
             });
         };
         p.draw = () => {
-            p.textAlign(CENTER, CENTER);
+            p.textAlign(p.CENTER, p.CENTER);
             p.translate(pan_x, pan_y);
             p.scale(zoom);
             
             p.background(BG_COLOR);
-            p.applyForces(nodes)
+            //applyForces(nodes)
             edges.forEach(edge => {
               edge.draw();
             })
@@ -58,7 +80,7 @@ const forceDirectedGraphSketch = () => {
               edge.drawText();
             })
             if (is_dragging_node) {
-              let mousePos = p.createVector(mouseX - pan_x, mouseY - pan_y)
+              let mousePos = p.createVector(p.mouseX - pan_x, p.mouseY - pan_y)
               draggedNode.pos.lerp(mousePos, lerpValue)
               if (lerpValue < 0.95) {
                   lerpValue += 0.02;
@@ -73,7 +95,7 @@ const forceDirectedGraphSketch = () => {
 class Node {
     constructor(p, pos, data) {
       this.pos = pos;
-      this.force = this.p.createVector(0, 0);
+      this.force = p.createVector(0, 0);
       this.data = data;
       this.updateSize();
       this.p = p;
@@ -81,7 +103,7 @@ class Node {
       
     updateSize() {
       this.size = (this.data.out_degree + 2) * 8;
-      this.mass = (2 * PI * this.size) * 0.005;
+      this.mass = (2 * 3.1416 * this.size) * 0.005;
     }
   
     update() {
@@ -111,8 +133,8 @@ class Node {
     
     isHovered() {
       return this.p.dist(
-        (mouseX - pan_x) / zoom, 
-        (mouseY - pan_y) / zoom,
+        (this.p.mouseX - pan_x) / zoom, 
+        (this.p.mouseY - pan_y) / zoom,
         this.pos.x,
         this.pos.y
       ) < this.size / 2;
@@ -125,7 +147,7 @@ class Node {
     isVisible() {
       var global_pos_x = this.pos.x * zoom + pan_x;
       var global_pos_y = this.pos.y * zoom + pan_y;
-      return global_pos_x > 0 && global_pos_x <= width && global_pos_y > 0 && global_pos_y <= height;
+      return global_pos_x > 0 && global_pos_x <= this.p.width && global_pos_y > 0 && global_pos_y <= this.p.height;
     }
   }
   
@@ -203,8 +225,8 @@ class Node {
           this.p.fill(EDGE_CAMEO_LABEL_COLOR);
         }
         // strokeWeight(1);
-        this.p.translate(cos(a) * diff / 2, sin(a) * diff / 2);
-        this.p.textAlign(LEFT, CENTER);
+        this.p.translate(this.p.cos(a) * diff / 2, this.p.sin(a) * diff / 2);
+        this.p.textAlign(this.p.LEFT, this.p.CENTER);
         // stroke('black');
         this.p.text(this.data.label, -100, 0, 200)
       }
@@ -212,8 +234,8 @@ class Node {
     }
     
     isHovered() {
-      var x0 = (mouseX - pan_x) / zoom;
-      var y0 = (mouseY - pan_y) / zoom;
+      var x0 = (this.p.mouseX - pan_x) / zoom;
+      var y0 = (this.p.mouseY - pan_y) / zoom;
       var x1 = this.src.pos.x, y1 = this.src.pos.y;
       var x2 = this.dst.pos.x, y2 = this.dst.pos.y;
       

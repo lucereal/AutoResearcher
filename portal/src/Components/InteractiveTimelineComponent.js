@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import p5 from 'p5';
 import { createSketch } from '../Shared/TimelineSketch';
+import { forceDirectedGraphSketch } from '../Shared/ForceDirectedGraph';
 
 const InteractiveTimelineComponent = ({userId, showTimeline, selectedTimeline}) => {
     const sketchRef = useRef(null);
@@ -26,10 +27,18 @@ const InteractiveTimelineComponent = ({userId, showTimeline, selectedTimeline}) 
 
 
     useEffect(() => {
+        
+        let sketch;
+        if(selectedTimeline === "interactiveTimeline"){
+            sketch = createSketch();
 
-          const sketch = createSketch();
-          const container = sketchRef.current;
-          const myP5 = new p5(sketch, container)
+        }else if(selectedTimeline === "interactiveGraph"){
+            sketch = forceDirectedGraphSketch();
+ 
+        }
+    
+        const container = sketchRef.current;
+        const myP5 = new p5(sketch, container)
 
         return () => {
             myP5.remove();
