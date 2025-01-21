@@ -203,6 +203,7 @@ const InstaPersonaComponent = () => {
                           <MenuItem value="None">None</MenuItem>
                           <MenuItem value="interactiveTimeline">Interactive Timeline</MenuItem>
                           <MenuItem value="interactiveGraph">Interactive Graph</MenuItem>
+                          <MenuItem value="storyGraph">Story Graph</MenuItem>
                           {/* Add more MenuItem components as needed */}
                       </Select>
                   </FormControl>

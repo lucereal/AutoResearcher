@@ -1,4 +1,4 @@
-import { database } from "../data/forceDirectedGraphData";
+import { database } from "../data/storyGraphData.js";
 
 
 let BG_COLOR = "#f0eceb";
@@ -26,7 +26,7 @@ let last_mouse_pos = null;
 
 let zoom = 0.5, pan_x = 0, pan_y = 0;
 
-const forceDirectedGraphSketch = () => {
+const storyGraphSketch = () => {
 
     const applyForces = (nodes) => {
         // apply force towards centre
@@ -114,9 +114,6 @@ const forceDirectedGraphSketch = () => {
           pan_y -= (p.mouseY - pan_y) * (s - 1);
         }
 
-        // window.addEventListener("wheel", function(e) {
-        //     applyScale(e.deltaY > 0 ? 0.95 : 1.05);
-        // } );
 
         const handleWheel = (e) => {
           applyScale(e.deltaY > 0 ? 0.95 : 1.05);
@@ -201,7 +198,6 @@ const forceDirectedGraphSketch = () => {
           nodes = [];
           edges = [];
           window.removeEventListener("wheel", handleWheel);
-          
 
         }
     };
@@ -366,4 +362,4 @@ class Node {
 }
 
 
-export { forceDirectedGraphSketch };
+export { storyGraphSketch };
