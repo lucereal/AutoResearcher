@@ -176,7 +176,7 @@ const InstaPersonaComponent = () => {
     return (
         <>
          <Container disableGutters maxWidth={false} sx={{ mt: 2 }}>
-            <Box sx={{ display:'flex', flexDirection: 'row', my: 4, width: '100%', justifyContent: 'center', alignItems: 'center' }}>
+            <Box>
             <Box sx={{ display:'flex', flexDirection: 'row', my: 4, width: '100%', justifyContent: 'center', alignItems: 'center' }}>
               <Link href={"https://www.instagram.com/oauth/authorize?enable_fb_login=0&force_authentication=1&client_id=1573243976639384&redirect_uri=https://localhost:3000/insta-redirect&response_type=code&scope=business_basic%2Cbusiness_manage_messages%2Cbusiness_manage_comments%2Cbusiness_content_publish"} 
               target="_blank" rel="noopener" variant="body1">Link Account</Link>                                
@@ -190,9 +190,7 @@ const InstaPersonaComponent = () => {
               <Button variant="contained" color="primary" onClick={handleOpenTimeline} sx={{ mt: 2, ml: 2 }}>
                   {showTimeline ? 'Hide Timeline' : 'Show Timeline'}
               </Button>
-              {/* <Button variant="contained" color="primary" onClick={handleOpenInteractiveTimeline} sx={{ mt: 2, ml: 2 }}>
-                  {showInteractiveTimeline ? 'Hide Interactive Timeline' : 'Show Interactive Timeline'}
-              </Button> */}
+
                 
                   <FormControl variant="outlined" sx={{ mt: 2, ml: 2, minWidth: 120 }}>
                       <InputLabel id="component-select-label">Select Component</InputLabel>
@@ -230,15 +228,7 @@ const InstaPersonaComponent = () => {
                     <InteractiveTimelineComponent userId={currentUserId} showTimeline={showInteractiveTimeline} selectedTimeline={timelineSelectedComponent} />
                 </Box>
               )}
-              {/* <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'flex-start', width: '100%', height:'80vh' }}>
-                <Box sx={{ flex: 6, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                  {showTimeline && <TimelineComponent userId={currentUserId} showTimeline={showTimeline} />}
-                </Box>
-                <Box sx={{ flex: 4, width: '100%', height:'100%'   }}>
-                  {openChatDialog && ( <ChatComponent></ChatComponent>)}
-                </Box>
 
-              </Box> */}
 
               {showWordGraph && wordGraphData && (
                   <Box  sx={{ mt: 4 }}>
