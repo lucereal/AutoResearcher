@@ -173,7 +173,7 @@ const storyGraphSketch = () => {
             p.scale(zoom);
             
             p.background(BG_COLOR);
-            applyForces(nodes)
+            //applyForces(nodes)
             edges.forEach(edge => {
               edge.draw();
             })
